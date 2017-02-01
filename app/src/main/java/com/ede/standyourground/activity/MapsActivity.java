@@ -131,7 +131,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         currentLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
 
-        Intent intent = new Intent();
+        Intent intent = new Intent(this, GoogleDirectionsService.class);
         intent.putExtra(GoogleDirectionsService.ORIGIN, currentLocationMarker.getPosition());
         intent.putExtra(GoogleDirectionsService.DESTINATION, targetLocationMarker.getPosition());
 
