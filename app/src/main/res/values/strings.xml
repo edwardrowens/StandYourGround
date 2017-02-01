@@ -1,3 +1,6 @@
 <resources>
-    <string name="app_name">StandYourGround</string>
+    <string name="app_name">Stand Your Ground</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="start_game_button">Play</string>
+    <string name="title_activity_asdsad">Map</string>
 </resources>

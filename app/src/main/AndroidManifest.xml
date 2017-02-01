@@ -2,12 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ede.standyourground">
 
-    <!--<permission-->
-    <!--android:name="com.ede.standyourground.permission.MAPS_RECEIVE"-->
-    <!--android:protectionLevel="signature" />-->
+    <!-- <permission -->
+    <!-- android:name="com.ede.standyourground.permission.MAPS_RECEIVE" -->
+    <!-- android:protectionLevel="signature" /> -->
 
-    <!--<uses-permission android:name="com.ede.standyourground.permission.MAPS_RECEIVE" />-->
-    <!--<uses-permission android:name="com.google.android.providers.gsf.permissions.READ_GSERVICES" />-->
+
+    <!-- <uses-permission android:name="com.ede.standyourground.permission.MAPS_RECEIVE" /> -->
+    <!-- <uses-permission android:name="com.google.android.providers.gsf.permissions.READ_GSERVICES" /> -->
+
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -48,7 +50,11 @@
 
         <service
             android:name=".service.GoogleDirectionsService"
-            android:exported="false"></service>
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.asdsad"
+            android:label="@string/title_activity_asdsad"></activity>
     </application>
 
 </manifest>
