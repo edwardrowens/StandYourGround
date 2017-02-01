@@ -1,14 +1,22 @@
 package com.ede.standyourground.activity;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.View;
 
 import com.ede.standyourground.R;
+import com.ede.standyourground.model.Routes;
 import com.ede.standyourground.service.GoogleDirectionsService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -37,6 +45,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker currentLocationMarker;
     private Marker targetLocationMarker;
     private List<Marker> waypoints = new ArrayList<>();
+    private boolean bound = false;
+    private GoogleDirectionsService googleDirectionsService;
 
 
     @Override
@@ -54,15 +64,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     protected void onStart() {
-        googleApiClient.connect();
         super.onStart();
+        googleApiClient.connect();
+
+        // Bind to GoogleDirectionsService
+        Intent intent = new Intent(this, GoogleDirectionsService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
 
     @Override
     protected void onStop() {
-        googleApiClient.disconnect();
         super.onStop();
+        googleApiClient.disconnect();
+        if (bound) {
+            unbindService(serviceConnection);
+            bound = false;
+        }
     }
 
 
@@ -71,7 +89,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.i(MapsActivity.class.getName(), "Google API client connected");
         try {
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-        } catch(SecurityException e) {
+        } catch (SecurityException e) {
             Log.i(MapsActivity.class.getName(), "Fine location permission not granted");
             e.printStackTrace();
         }
@@ -100,12 +118,65 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * installed Google Play services and returned to the app.
      */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(final GoogleMap googleMap) {
         this.googleMap = googleMap;
 
         LatLng latLng = new LatLng(34.155323, -118.247092);
         targetLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
+
+        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(latLng);
+                waypoints.add(googleMap.addMarker(markerOptions));
+            }
+        });
     }
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.i(TAG, String.format("Location changed to %s", location.toString()));
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        currentLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
+        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
+
+        Routes routes = getRoutes();
+    }
+
+    public void onRoute(View view) {
+        Log.i(TAG, "Routing");
+
+        Routes routes = getRoutes();
+    }
+
+
+    private Routes getRoutes() {
+        ArrayList<LatLng> waypointsLatLng = new ArrayList<>();
+        for (Marker marker : waypoints)
+            waypointsLatLng.add(marker.getPosition());
+
+        return googleDirectionsService.getRoutes(currentLocationMarker.getPosition(),
+                targetLocationMarker.getPosition(),
+                waypointsLatLng);
+    }
+
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            bound = true;
+            GoogleDirectionsService.LocalBinder binder = (GoogleDirectionsService.LocalBinder) iBinder;
+            googleDirectionsService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            bound = false;
+        }
+    };
 
 
     private void getLocation() {
@@ -118,31 +189,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
-    }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-        Log.i(TAG, String.format("Location changed to %s", location.toString()));
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        if (currentLocationMarker != null) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-        }
-        currentLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
-        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
-
-        Intent intent = new Intent(this, GoogleDirectionsService.class);
-        intent.putExtra(GoogleDirectionsService.ORIGIN, currentLocationMarker.getPosition());
-        intent.putExtra(GoogleDirectionsService.DESTINATION, targetLocationMarker.getPosition());
-
-        // no streams :(
-        ArrayList<LatLng> waypointsLatLng = new ArrayList<>();
-        for (Marker marker : waypoints)
-            waypointsLatLng.add(marker.getPosition());
-
-        intent.putParcelableArrayListExtra(GoogleDirectionsService.WAYPOINTS, waypointsLatLng);
-
-        Log.i(TAG, "getting directions");
-        startService(intent);
     }
 }
