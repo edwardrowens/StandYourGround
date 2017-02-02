@@ -6,9 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
@@ -16,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.ede.standyourground.R;
+import com.ede.standyourground.model.Route;
 import com.ede.standyourground.model.Routes;
 import com.ede.standyourground.service.GoogleDirectionsService;
 import com.google.android.gms.common.ConnectionResult;
@@ -30,9 +29,16 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -47,6 +53,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private List<Marker> waypoints = new ArrayList<>();
     private boolean bound = false;
     private GoogleDirectionsService googleDirectionsService;
+    private Polyline polylineRoute;
 
 
     @Override
@@ -142,25 +149,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         currentLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
-
-        Routes routes = getRoutes();
     }
 
     public void onRoute(View view) {
-        Log.i(TAG, "Routing");
-
-        Routes routes = getRoutes();
+        if (polylineRoute != null) {
+            Log.i(TAG, "removing route");
+            polylineRoute.remove();
+        }
+        drawRoutes();
     }
 
 
-    private Routes getRoutes() {
+    private void drawRoutes() {
         ArrayList<LatLng> waypointsLatLng = new ArrayList<>();
         for (Marker marker : waypoints)
             waypointsLatLng.add(marker.getPosition());
 
-        return googleDirectionsService.getRoutes(currentLocationMarker.getPosition(),
-                targetLocationMarker.getPosition(),
-                waypointsLatLng);
+        googleDirectionsService.getRoutes(currentLocationMarker.getPosition(), targetLocationMarker.getPosition(), waypointsLatLng,
+                new Callback<Routes>() {
+                    @Override
+                    public void onResponse(Call<Routes> call, Response<Routes> response) {
+                        Log.i(TAG, "response with routes received");
+                        drawRoute(response.body().getRoutes().get(0));
+                    }
+
+                    @Override
+                    public void onFailure(Call<Routes> call, Throwable t) {
+                        t.printStackTrace();
+                    }
+                });
     }
 
 
@@ -189,5 +206,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+    }
+
+
+    private void drawRoute(Route route) {
+        if (route != null) {
+            Log.i(TAG, "drawing route");
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions = polylineOptions.addAll(PolyUtil.decode(route.getOverviewPolyline().getPoints()))
+                                             .width(20)
+                                             .color(R.color.teal)
+                                             .clickable(false);
+            polylineRoute = googleMap.addPolyline(polylineOptions);
+        } else {
+            Log.i(TAG, "no route returned for drawing");
+        }
     }
 }

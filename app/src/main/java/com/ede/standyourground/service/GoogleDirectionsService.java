@@ -13,26 +13,16 @@ import com.ede.standyourground.to.RoutesRequestTO;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
-import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class GoogleDirectionsService extends Service {
 
-    public static final String ORIGIN = "com.ede.standyourground.GoogleDirectionsService.extras.origin";
-    public static final String DESTINATION = "com.ede.standyourground.GoogleDirectionsService.extras.destination";
-    public static final String WAYPOINTS = "com.ede.standyourground.GoogleDirectionsService.extras.waypoints";
-
     private static final String TAG = GoogleDirectionsService.class.getName();
-    private static final String BASE_URL = "http://10.0.2.2:8000/";
 
     private final IBinder iBinder = new LocalBinder();
-    private Routes routes;
 
 
     @Nullable
@@ -49,38 +39,29 @@ public class GoogleDirectionsService extends Service {
     }
 
 
-    public Routes getRoutes(LatLng origin, LatLng destination, List<LatLng> waypoints) {
-        OkHttpClient.Builder httpClient = new OkHttpClient().newBuilder();
+    public void getRoutes(LatLng origin, LatLng destination, List<LatLng> waypoints, final Callback<Routes> callback) {
+        DirectionsApi directionsApi = ServiceGenerator.createService(DirectionsApi.class);
 
-        Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create());
-
-        Retrofit retrofit = builder.client(httpClient.build()).build();
-
-        DirectionsApi directionsApi = retrofit.create(DirectionsApi.class);
         RoutesRequestTO routesRequestTO = new RoutesRequestTO();
         routesRequestTO.setEndLat(destination.latitude);
         routesRequestTO.setEndLng(destination.longitude);
         routesRequestTO.setStartLat(origin.latitude);
         routesRequestTO.setStartLng(origin.longitude);
         routesRequestTO.setWaypoints(waypoints);
-        Call<Routes> call = directionsApi.calculateRoutes(routesRequestTO);
 
-        final AtomicReference<Routes> routes = new AtomicReference<>();
-        call.enqueue(new Callback<Routes>() {
+        Call<Routes> routesCall = directionsApi.calculateRoutes(routesRequestTO);
+
+        Log.i(TAG, "beginning call for directions");
+        routesCall.enqueue(new Callback<Routes>() {
             @Override
             public void onResponse(Call<Routes> call, Response<Routes> response) {
-                Log.i(TAG, "successful call made");
-                routes.set(response.body());
+                callback.onResponse(call, response);
             }
 
             @Override
             public void onFailure(Call<Routes> call, Throwable t) {
-                Log.i(TAG, "unsuccessful call made");
+                callback.onFailure(call, t);
             }
         });
-
-        return routes.get();
     }
 }

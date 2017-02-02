@@ -1,10 +1,7 @@
 package com.ede.standyourground.api;
 
-import com.ede.standyourground.model.Route;
 import com.ede.standyourground.model.Routes;
 import com.ede.standyourground.to.RoutesRequestTO;
-
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
