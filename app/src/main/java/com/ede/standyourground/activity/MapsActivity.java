@@ -141,15 +141,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         currentLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition
-                .builder()
-                .target(targetLocationMarker.getPosition())
-                .bearing(MathUtils.bearing(currentLocationMarker.getPosition(), targetLocationMarker.getPosition()))
-                .build()));
 
         LatLngBounds latLngBounds = LatLngBounds.builder().include(targetLocationMarker.getPosition()).include(currentLocationMarker.getPosition()).build();
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, CAMERA_PADDING);
-        googleMap.animateCamera(cameraUpdate);
+        googleMap.animateCamera(cameraUpdate, new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                float zoom = googleMap.getCameraPosition().zoom;
+                CameraPosition cameraPosition = CameraPosition.builder()
+                        .target(MathUtils.midpoint(currentLocationMarker.getPosition(), targetLocationMarker.getPosition()))
+                        .bearing(MathUtils.bearing(currentLocationMarker.getPosition(), targetLocationMarker.getPosition()))
+                        .zoom(zoom)
+                        .build();
+                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), new GoogleMap.CancelableCallback() {
+                    @Override
+                    public void onFinish() {
+                        googleMap.getUiSettings().setRotateGesturesEnabled(false);
+                        drawRoutes();
+                    }
+
+                    @Override
+                    public void onCancel() {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+
+
     }
 
 
@@ -184,17 +208,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onResponse(Call<Routes> call, Response<Routes> response) {
                         Log.i(TAG, "response with routes received");
                         drawRoute(response.body().getRoutes().get(0));
-
-                        LatLng southWest = response.body().getRoutes().get(0).getBounds().getSouthWest().toLatLng();
-                        LatLng northEast = response.body().getRoutes().get(0).getBounds().getNorthEast().toLatLng();
-
-                        LatLngBounds.Builder latLngBoundsBuilder = new LatLngBounds.Builder().include(southWest);
-                        latLngBoundsBuilder.include(northEast);
-                        LatLngBounds latLngBounds = latLngBoundsBuilder.build();
-
-                        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, CAMERA_PADDING);
-                        googleMap.animateCamera(cameraUpdate);
-
                     }
 
                     @Override
@@ -235,12 +248,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void drawRoute(Route route) {
         if (route != null) {
-            Log.i(TAG, "drawing route");
             PolylineOptions polylineOptions = new PolylineOptions();
             polylineOptions = polylineOptions.addAll(PolyUtil.decode(route.getOverviewPolyline().getPoints()))
                     .width(20)
                     .color(R.color.teal)
                     .clickable(false);
+            Log.i(TAG, "drawing route");
             polylineRoute = googleMap.addPolyline(polylineOptions);
         } else {
             Log.i(TAG, "no route returned for drawing");

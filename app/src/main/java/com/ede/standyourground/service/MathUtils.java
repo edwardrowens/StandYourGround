@@ -1,5 +1,7 @@
 package com.ede.standyourground.service;
 
+import android.util.Log;
+
 import com.google.android.gms.maps.model.LatLng;
 
 /**
@@ -8,12 +10,36 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class MathUtils {
 
-    public static float bearing(LatLng l1, LatLng l2) {
-        double dLon = l2.longitude - l1.longitude;
-        double y = Math.sin(dLon) * Math.cos(l2.latitude);
-        double x = Math.cos(l1.latitude) * Math.sin(l2.latitude) - Math.sin(l1.latitude) * Math.cos(l2.latitude) * Math.cos(dLon);
+    private static final String TAG = MathUtils.class.getName();
+
+    public static float bearing(LatLng to, LatLng from) {
+        double dLon = from.longitude - to.longitude;
+        double y = Math.sin(dLon) * Math.cos(from.latitude);
+        double x = Math.cos(to.latitude) * Math.sin(from.latitude) - Math.sin(to.latitude) * Math.cos(from.latitude) * Math.cos(dLon);
         double bearing = Math.toDegrees(Math.atan2(y, x));
         bearing = (360 - ((bearing + 360) % 360));
+        Log.i(TAG, "bearing calculated to be " + bearing);
         return (float) bearing;
+    }
+
+
+    public static LatLng midpoint(LatLng l1, LatLng l2) {
+        double lat1 = l1.latitude;
+        double lat2 = l2.latitude;
+        double lon1 = l1.longitude;
+        double lon2 = l2.longitude;
+
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        //convert to radians
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+        lon1 = Math.toRadians(lon1);
+
+        double Bx = Math.cos(lat2) * Math.cos(dLon);
+        double By = Math.cos(lat2) * Math.sin(dLon);
+
+        return new LatLng(Math.toDegrees(Math.atan2(Math.sin(lat1) + Math.sin(lat2), Math.sqrt((Math.cos(lat1) + Bx) * (Math.cos(lat1) + Bx) + By * By))),
+                          Math.toDegrees(lon1 + Math.atan2(By, Math.cos(lat1) + Bx)));
     }
 }
