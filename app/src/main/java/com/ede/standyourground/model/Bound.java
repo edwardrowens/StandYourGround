@@ -1,5 +1,6 @@
 package com.ede.standyourground.model;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -31,5 +32,9 @@ public class Bound {
 
     public void setLng(Double lng) {
         this.lng = lng;
+    }
+
+    public LatLng toLatLng() {
+        return new LatLng(lat, lng);
     }
 }

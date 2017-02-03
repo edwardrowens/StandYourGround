@@ -17,16 +17,20 @@ import com.ede.standyourground.R;
 import com.ede.standyourground.model.Route;
 import com.ede.standyourground.model.Routes;
 import com.ede.standyourground.service.GoogleDirectionsService;
+import com.ede.standyourground.service.MathUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -44,6 +48,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final long LOCATION_INTERVAL = 5000;
     private static final String TAG = MapsActivity.class.getName();
+    private static final int CAMERA_PADDING = 100;
 
     private GoogleMap googleMap;
     private GoogleApiClient googleApiClient;
@@ -103,18 +108,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -148,8 +141,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         currentLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition
+                .builder()
+                .target(targetLocationMarker.getPosition())
+                .bearing(MathUtils.bearing(currentLocationMarker.getPosition(), targetLocationMarker.getPosition()))
+                .build()));
+
+        LatLngBounds latLngBounds = LatLngBounds.builder().include(targetLocationMarker.getPosition()).include(currentLocationMarker.getPosition()).build();
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, CAMERA_PADDING);
+        googleMap.animateCamera(cameraUpdate);
     }
+
 
     public void onRoute(View view) {
         if (polylineRoute != null) {
@@ -157,6 +159,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             polylineRoute.remove();
         }
         drawRoutes();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 
 
@@ -171,6 +184,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onResponse(Call<Routes> call, Response<Routes> response) {
                         Log.i(TAG, "response with routes received");
                         drawRoute(response.body().getRoutes().get(0));
+
+                        LatLng southWest = response.body().getRoutes().get(0).getBounds().getSouthWest().toLatLng();
+                        LatLng northEast = response.body().getRoutes().get(0).getBounds().getNorthEast().toLatLng();
+
+                        LatLngBounds.Builder latLngBoundsBuilder = new LatLngBounds.Builder().include(southWest);
+                        latLngBoundsBuilder.include(northEast);
+                        LatLngBounds latLngBounds = latLngBoundsBuilder.build();
+
+                        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, CAMERA_PADDING);
+                        googleMap.animateCamera(cameraUpdate);
+
                     }
 
                     @Override
@@ -214,9 +238,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Log.i(TAG, "drawing route");
             PolylineOptions polylineOptions = new PolylineOptions();
             polylineOptions = polylineOptions.addAll(PolyUtil.decode(route.getOverviewPolyline().getPoints()))
-                                             .width(20)
-                                             .color(R.color.teal)
-                                             .clickable(false);
+                    .width(20)
+                    .color(R.color.teal)
+                    .clickable(false);
             polylineRoute = googleMap.addPolyline(polylineOptions);
         } else {
             Log.i(TAG, "no route returned for drawing");
