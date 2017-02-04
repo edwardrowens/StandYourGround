@@ -6,7 +6,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
@@ -18,6 +21,12 @@ import com.ede.standyourground.app.model.Route;
 import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.service.GoogleDirectionsService;
 import com.ede.standyourground.app.service.MathUtils;
+import com.ede.standyourground.framework.Logger;
+import com.ede.standyourground.framework.UpdateLoop;
+import com.ede.standyourground.framework.UpdateLoopTask;
+import com.ede.standyourground.game.model.FootSoldier;
+import com.ede.standyourground.game.model.MovableUnit;
+import com.ede.standyourground.game.model.Unit;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -38,7 +47,9 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,7 +58,7 @@ import retrofit2.Response;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final long LOCATION_INTERVAL = 5000;
-    private static final String TAG = MapsActivity.class.getName();
+    private final Logger logger = new Logger(MapsActivity.class);
     private static final int CAMERA_PADDING = 100;
 
     private GoogleMap googleMap;
@@ -59,7 +70,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private boolean bound = false;
     private GoogleDirectionsService googleDirectionsService;
     private Polyline polylineRoute;
-
+    private final Map<Unit, Marker> units = new HashMap<>();
+    private UpdateLoop updateLoop = new UpdateLoop();
+    private Handler handler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message message) {
+            logger.i("Received message from update thread");
+            UpdateLoopTask updateLoopTask = (UpdateLoopTask) message.obj;
+            for (Unit unit : updateLoopTask.getUpdatedUnits()) {
+                units.get(unit).setPosition(unit.getPosition());
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +141,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(final GoogleMap googleMap) {
+        logger.i("starting map");
         this.googleMap = googleMap;
 
         googleMap.getUiSettings().setMapToolbarEnabled(false);
@@ -134,12 +157,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 waypoints.add(googleMap.addMarker(markerOptions));
             }
         });
+
     }
 
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.i(TAG, String.format("Location changed to %s", location.toString()));
+        logger.i("Location changed to %s", location.toString());
+        updateLoop.startLoop();
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         currentLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
@@ -178,10 +203,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-
     public void onRoute(View view) {
+        logger.i("On route clicked");
         if (polylineRoute != null) {
-            Log.i(TAG, "removing route");
+            logger.i("removing route");
             polylineRoute.remove();
         }
         drawRoutes();
@@ -208,7 +233,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 new Callback<Routes>() {
                     @Override
                     public void onResponse(Call<Routes> call, Response<Routes> response) {
-                        Log.i(TAG, "response with routes received");
+                        logger.i("response with routes received");
                         drawRoute(response.body().getRoutes().get(0));
                     }
 
@@ -254,10 +279,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             polylineOptions = polylineOptions.addAll(PolyUtil.decode(route.getOverviewPolyline().getPoints()))
                     .width(20)
                     .color(R.color.teal);
-            Log.i(TAG, "drawing route");
+            logger.i("drawing route");
             polylineRoute = googleMap.addPolyline(polylineOptions);
+
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.position(currentLocationMarker.getPosition());
+            Marker m = googleMap.addMarker(markerOptions);
+            MovableUnit unit = new FootSoldier(1500, polylineRoute.getPoints(),m.getPosition());
+            updateLoop.addUnit(unit);
+            units.put(unit, m);
         } else {
-            Log.i(TAG, "no route returned for drawing");
+            logger.i("no route returned for drawing");
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.ede.standyourground.app.service;
 
 import android.util.Log;
+import android.view.animation.LinearInterpolator;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -11,6 +12,7 @@ import com.google.android.gms.maps.model.LatLng;
 public class MathUtils {
 
     private static final String TAG = MathUtils.class.getName();
+    private static final LinearInterpolator linearInterpolator = new LinearInterpolator();
 
     public static float bearing(LatLng to, LatLng from) {
         double dLon = from.longitude - to.longitude;

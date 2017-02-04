@@ -1,11 +1,10 @@
 package com.ede.standyourground.game.model;
 
-import android.os.SystemClock;
-
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Polyline;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -15,36 +14,38 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MovableUnit extends Unit implements Movable {
 
     private int speed;
-    private long createdTime;
-    private Polyline path;
-    private AtomicReference<LatLng> position;
+    private List<LatLng> path;
+    private AtomicInteger currentTarget = new AtomicInteger(0);
 
-    public MovableUnit(int speed, Polyline path, LatLng position) {
+    public MovableUnit(int speed, List<LatLng> path, LatLng position) {
+        super(position);
         this.speed = speed;
-        this.path = path;
-        createdTime = SystemClock.uptimeMillis();
-        this.position = new AtomicReference<>(position);
+        this.path = Collections.synchronizedList(path);
     }
 
     @Override
     public void move(long elapsedTime) {
     }
 
-    public long getCreatedTime() {
-        return createdTime;
-    }
-
     public int getSpeed() {
         return speed;
     }
 
-    @Override
-    public LatLng getPosition() {
-        return position.get();
+    public void incrementTarget() {
+        if (currentTarget.get() < path.size() - 1) {
+            currentTarget.incrementAndGet();
+        }
     }
 
-    @Override
+    public LatLng getTarget() {
+        return path.get(currentTarget.get());
+    }
+
+    public boolean reachedEnemy() {
+        return currentTarget.get() >= path.size();
+    }
+
     public void setPosition(LatLng position) {
-        this.position.set(position);
+        this.position = position;
     }
 }
