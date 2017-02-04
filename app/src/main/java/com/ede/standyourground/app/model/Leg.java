@@ -1,14 +1,15 @@
-package com.ede.standyourground.model;
+package com.ede.standyourground.app.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
 
 /**
  * Created by Eddie on 1/30/2017.
  */
 
-public class Step {
-
+public class Leg {
 
     @SerializedName("distance")
     @Expose
@@ -18,25 +19,25 @@ public class Step {
     @Expose
     private DirectionsPair duration;
 
+    @SerializedName("end_address")
+    @Expose
+    private String endAddress;
+
     @SerializedName("end_location")
     @Expose
     private Bound endLocation;
 
-    @SerializedName("polyline")
+    @SerializedName("start_address")
     @Expose
-    private Polyline polyline;
+    private String startAddress;
 
     @SerializedName("start_location")
     @Expose
     private Bound startLocation;
 
-    @SerializedName("travel_mode")
+    @SerializedName("steps")
     @Expose
-    private String travelMode;
-
-    @SerializedName("maneuver")
-    @Expose
-    private String maneuver;
+    private List<Step> steps = null;
 
     public DirectionsPair getDistance() {
         return distance;
@@ -54,6 +55,14 @@ public class Step {
         this.duration = duration;
     }
 
+    public String getEndAddress() {
+        return endAddress;
+    }
+
+    public void setEndAddress(String endAddress) {
+        this.endAddress = endAddress;
+    }
+
     public Bound getEndLocation() {
         return endLocation;
     }
@@ -62,12 +71,12 @@ public class Step {
         this.endLocation = endLocation;
     }
 
-    public Polyline getPolyline() {
-        return polyline;
+    public String getStartAddress() {
+        return startAddress;
     }
 
-    public void setPolyline(Polyline polyline) {
-        this.polyline = polyline;
+    public void setStartAddress(String startAddress) {
+        this.startAddress = startAddress;
     }
 
     public Bound getStartLocation() {
@@ -78,19 +87,11 @@ public class Step {
         this.startLocation = startLocation;
     }
 
-    public String getTravelMode() {
-        return travelMode;
+    public List<Step> getSteps() {
+        return steps;
     }
 
-    public void setTravelMode(String travelMode) {
-        this.travelMode = travelMode;
-    }
-
-    public String getManeuver() {
-        return maneuver;
-    }
-
-    public void setManeuver(String maneuver) {
-        this.maneuver = maneuver;
+    public void setSteps(List<Step> steps) {
+        this.steps = steps;
     }
 }

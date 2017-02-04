@@ -1,4 +1,4 @@
-package com.ede.standyourground.to;
+package com.ede.standyourground.app.to;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.annotations.Expose;

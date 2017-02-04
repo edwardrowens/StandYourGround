@@ -25,7 +25,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.MainActivity">
+        <activity android:name=".app.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -45,15 +45,15 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".activity.MapsActivity"
+            android:name=".app.activity.MapsActivity"
             android:label="@string/title_activity_maps" />
 
         <service
-            android:name=".service.GoogleDirectionsService"
+            android:name=".app.service.GoogleDirectionsService"
             android:exported="false" />
 
         <activity
-            android:name=".activity.asdsad"
+            android:name=".app.activity.asdsad"
             android:label="@string/title_activity_asdsad"></activity>
     </application>
 

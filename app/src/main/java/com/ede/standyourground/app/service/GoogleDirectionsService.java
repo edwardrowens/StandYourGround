@@ -1,4 +1,4 @@
-package com.ede.standyourground.service;
+package com.ede.standyourground.app.service;
 
 import android.app.Service;
 import android.content.Intent;
@@ -7,9 +7,9 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.ede.standyourground.api.DirectionsApi;
-import com.ede.standyourground.model.Routes;
-import com.ede.standyourground.to.RoutesRequestTO;
+import com.ede.standyourground.app.api.DirectionsApi;
+import com.ede.standyourground.app.model.Routes;
+import com.ede.standyourground.app.to.RoutesRequestTO;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;

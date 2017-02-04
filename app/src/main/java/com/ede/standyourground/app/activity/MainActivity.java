@@ -1,4 +1,4 @@
-package com.ede.standyourground.activity;
+package com.ede.standyourground.app.activity;
 
 import android.Manifest;
 import android.content.Intent;

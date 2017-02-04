@@ -1,4 +1,4 @@
-package com.ede.standyourground.activity;
+package com.ede.standyourground.app.activity;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -14,10 +14,10 @@ import android.util.Log;
 import android.view.View;
 
 import com.ede.standyourground.R;
-import com.ede.standyourground.model.Route;
-import com.ede.standyourground.model.Routes;
-import com.ede.standyourground.service.GoogleDirectionsService;
-import com.ede.standyourground.service.MathUtils;
+import com.ede.standyourground.app.model.Route;
+import com.ede.standyourground.app.model.Routes;
+import com.ede.standyourground.app.service.GoogleDirectionsService;
+import com.ede.standyourground.app.service.MathUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -120,6 +120,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         this.googleMap = googleMap;
+
+        googleMap.getUiSettings().setMapToolbarEnabled(false);
 
         LatLng latLng = new LatLng(34.155323, -118.247092);
         targetLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
@@ -251,8 +253,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             PolylineOptions polylineOptions = new PolylineOptions();
             polylineOptions = polylineOptions.addAll(PolyUtil.decode(route.getOverviewPolyline().getPoints()))
                     .width(20)
-                    .color(R.color.teal)
-                    .clickable(false);
+                    .color(R.color.teal);
             Log.i(TAG, "drawing route");
             polylineRoute = googleMap.addPolyline(polylineOptions);
         } else {

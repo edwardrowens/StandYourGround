@@ -1,4 +1,4 @@
-package com.ede.standyourground.service;
+package com.ede.standyourground.app.service;
 
 import android.util.Log;
 
