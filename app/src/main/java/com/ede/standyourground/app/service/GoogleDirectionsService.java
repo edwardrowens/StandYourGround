@@ -5,11 +5,11 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.ede.standyourground.app.api.DirectionsApi;
 import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.to.RoutesRequestTO;
+import com.ede.standyourground.framework.Logger;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -20,7 +20,7 @@ import retrofit2.Response;
 
 public class GoogleDirectionsService extends Service {
 
-    private static final String TAG = GoogleDirectionsService.class.getName();
+    private Logger logger = new Logger(GoogleDirectionsService.class);
 
     private final IBinder iBinder = new LocalBinder();
 
@@ -51,7 +51,6 @@ public class GoogleDirectionsService extends Service {
 
         Call<Routes> routesCall = directionsApi.calculateRoutes(routesRequestTO);
 
-        Log.i(TAG, "beginning call for directions");
         routesCall.enqueue(new Callback<Routes>() {
             @Override
             public void onResponse(Call<Routes> call, Response<Routes> response) {

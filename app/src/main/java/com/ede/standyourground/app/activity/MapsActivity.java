@@ -8,7 +8,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,6 +22,7 @@ import com.ede.standyourground.app.service.GoogleDirectionsService;
 import com.ede.standyourground.app.service.MathUtils;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.UpdateLoop;
+import com.ede.standyourground.framework.UpdateLoopManager;
 import com.ede.standyourground.framework.UpdateLoopTask;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.MovableUnit;
@@ -72,12 +72,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Polyline polylineRoute;
     private final Map<Unit, Marker> units = new HashMap<>();
     private UpdateLoop updateLoop = new UpdateLoop();
-    private Handler handler = new Handler(Looper.getMainLooper()) {
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message message) {
-            logger.i("Received message from update thread");
             UpdateLoopTask updateLoopTask = (UpdateLoopTask) message.obj;
             for (Unit unit : updateLoopTask.getUpdatedUnits()) {
+                logger.i("%s", unit.getPosition().toString());
                 units.get(unit).setPosition(unit.getPosition());
             }
         }
@@ -92,6 +92,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        UpdateLoopManager.setHandler(handler);
         getLocation();
     }
 
@@ -285,7 +286,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             MarkerOptions markerOptions = new MarkerOptions();
             markerOptions.position(currentLocationMarker.getPosition());
             Marker m = googleMap.addMarker(markerOptions);
-            MovableUnit unit = new FootSoldier(1500, polylineRoute.getPoints(),m.getPosition());
+            MovableUnit unit = new FootSoldier(10000, polylineRoute.getPoints(),m.getPosition());
             updateLoop.addUnit(unit);
             units.put(unit, m);
         } else {

@@ -3,6 +3,7 @@ package com.ede.standyourground.framework;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
+import java.util.IllegalFormatConversionException;
 
 /**
  * Created by Eddie on 2/4/2017.
@@ -17,22 +18,38 @@ public class Logger {
 
     public void i(String message, Object... format) {
         String tag = createTag();
-        Log.i(tag, String.format(message, format));
+        try {
+            Log.i(tag, String.format(message, format));
+        } catch (IllegalFormatConversionException e) {
+            Log.i(Logger.class.getName(), e.getMessage());
+        }
     }
 
     public void w(String message, Object... format) {
         String tag = createTag();
-        Log.w(tag, String.format(message, format));
+        try {
+            Log.w(tag, String.format(message, format));
+        } catch (IllegalFormatConversionException e) {
+            Log.w(Logger.class.getName(), e.getMessage());
+        }
     }
 
     public void e(String message, Object... format) {
         String tag = createTag();
-        Log.e(tag, String.format(message, format));
+        try {
+            Log.e(tag, String.format(message, format));
+        } catch (IllegalFormatConversionException e) {
+            Log.e(Logger.class.getName(), e.getMessage());
+        }
     }
 
     public void d(String message, Object... format) {
         String tag = createTag();
-        Log.d(tag, String.format(message, format));
+        try {
+            Log.d(tag, String.format(message, format));
+        } catch (IllegalFormatConversionException e) {
+            Log.d(Logger.class.getName(), e.getMessage());
+        }
     }
 
     private String createTag() {

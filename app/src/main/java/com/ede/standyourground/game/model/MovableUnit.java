@@ -28,7 +28,7 @@ public class MovableUnit extends Unit implements Movable {
     }
 
     public int getSpeed() {
-        return speed;
+        return speed / path.size();
     }
 
     public void incrementTarget() {

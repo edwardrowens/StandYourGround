@@ -1,7 +1,6 @@
 package com.ede.standyourground.framework;
 
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 
 /**
@@ -10,16 +9,16 @@ import android.os.Message;
 
 public class UpdateLoopManager {
 
+    private static Logger logger = new Logger(UpdateLoopManager.class);
     private static final UpdateLoopManager instance = new UpdateLoopManager();
-    private Handler handler;
+    private static Handler handler;
 
     private UpdateLoopManager() {
-        handler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message message) {
-                UpdateLoopTask updateLoopTask = (UpdateLoopTask) message.obj;
-            }
-        };
+    }
+
+    public static void setHandler(Handler handler) {
+        if (UpdateLoopManager.handler == null )
+            UpdateLoopManager.handler = handler;
     }
 
     public static UpdateLoopManager getInstance() {

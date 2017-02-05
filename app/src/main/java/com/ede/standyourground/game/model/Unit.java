@@ -5,6 +5,7 @@ import android.os.SystemClock;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by Eddie on 2/3/2017.
@@ -12,20 +13,24 @@ import java.util.UUID;
 
 public class Unit {
     protected LatLng position;
-    private long createdTime;
+    private AtomicLong arrivalTime = new AtomicLong();
     public final UUID id = UUID.randomUUID();
 
     public Unit(LatLng position) {
         this.position = position;
-        this.createdTime = SystemClock.uptimeMillis();
+        this.arrivalTime.set(SystemClock.uptimeMillis());
     }
 
     public LatLng getPosition() {
         return position;
     }
 
-    public long getCreatedTime() {
-        return createdTime;
+    public long getArrivalTime() {
+        return arrivalTime.get();
+    }
+
+    public void setArrivalTime(long arrivalTime) {
+        this.arrivalTime.set(arrivalTime);
     }
 
     public UUID getId() {
