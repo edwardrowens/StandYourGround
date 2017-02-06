@@ -15,11 +15,21 @@ public class Routes {
     @Expose
     private List<Route> routes;
 
+    private int totalDistance;
+
     public List<Route> getRoutes() {
         return routes;
     }
 
     public void setRoutes(List<Route> routes) {
         this.routes = routes;
+    }
+
+    public int getTotalDistance() {
+        return totalDistance;
+    }
+
+    public void setTotalDistance(int totalDistance) {
+        this.totalDistance = totalDistance;
     }
 }

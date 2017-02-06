@@ -20,12 +20,14 @@ import com.ede.standyourground.app.model.Route;
 import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.service.GoogleDirectionsService;
 import com.ede.standyourground.app.service.MathUtils;
+import com.ede.standyourground.app.service.RouteUtil;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.UpdateLoop;
 import com.ede.standyourground.framework.UpdateLoopManager;
 import com.ede.standyourground.framework.UpdateLoopTask;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.MovableUnit;
+import com.ede.standyourground.game.model.Path;
 import com.ede.standyourground.game.model.Unit;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -69,7 +71,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private List<Marker> waypoints = new ArrayList<>();
     private boolean bound = false;
     private GoogleDirectionsService googleDirectionsService;
-    private Polyline polylineRoute;
     private final Map<Unit, Marker> units = new HashMap<>();
     private UpdateLoop updateLoop = new UpdateLoop();
     private Handler handler = new Handler() {
@@ -77,7 +78,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         public void handleMessage(Message message) {
             UpdateLoopTask updateLoopTask = (UpdateLoopTask) message.obj;
             for (Unit unit : updateLoopTask.getUpdatedUnits()) {
-                logger.i("%s", unit.getPosition().toString());
                 units.get(unit).setPosition(unit.getPosition());
             }
         }
@@ -206,10 +206,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void onRoute(View view) {
         logger.i("On route clicked");
-        if (polylineRoute != null) {
-            logger.i("removing route");
-            polylineRoute.remove();
-        }
         drawRoutes();
     }
 
@@ -235,7 +231,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void onResponse(Call<Routes> call, Response<Routes> response) {
                         logger.i("response with routes received");
-                        drawRoute(response.body().getRoutes().get(0));
+                        Polyline polyline = drawRoute(response.body().getRoutes().get(0));
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(currentLocationMarker.getPosition());
+                        Marker m = googleMap.addMarker(markerOptions);
+                        Path path = new Path(polyline.getPoints(), RouteUtil.getDistanceOfSteps(response.body()));
+                        MovableUnit unit = new FootSoldier(20000, path, m.getPosition());
+                        updateLoop.addUnit(unit);
+                        units.put(unit, m);
                     }
 
                     @Override
@@ -274,23 +277,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    private void drawRoute(Route route) {
-        if (route != null) {
-            PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions = polylineOptions.addAll(PolyUtil.decode(route.getOverviewPolyline().getPoints()))
-                    .width(20)
-                    .color(R.color.teal);
-            logger.i("drawing route");
-            polylineRoute = googleMap.addPolyline(polylineOptions);
-
-            MarkerOptions markerOptions = new MarkerOptions();
-            markerOptions.position(currentLocationMarker.getPosition());
-            Marker m = googleMap.addMarker(markerOptions);
-            MovableUnit unit = new FootSoldier(10000, polylineRoute.getPoints(),m.getPosition());
-            updateLoop.addUnit(unit);
-            units.put(unit, m);
-        } else {
-            logger.i("no route returned for drawing");
-        }
+    private Polyline drawRoute(Route route) {
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions = polylineOptions.addAll(PolyUtil.decode(route.getOverviewPolyline().getPoints()))
+                .width(20)
+                .color(R.color.teal);
+        logger.i("drawing route");
+        return googleMap.addPolyline(polylineOptions);
     }
 }

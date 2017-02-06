@@ -2,8 +2,6 @@ package com.ede.standyourground.game.model;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -14,13 +12,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MovableUnit extends Unit implements Movable {
 
     private int speed;
-    private List<LatLng> path;
+    private Path path;
     private AtomicInteger currentTarget = new AtomicInteger(0);
 
-    public MovableUnit(int speed, List<LatLng> path, LatLng position) {
+    public MovableUnit(int speed, Path path, LatLng position) {
         super(position);
         this.speed = speed;
-        this.path = Collections.synchronizedList(path);
+        this.path = path;
     }
 
     @Override
@@ -28,24 +26,24 @@ public class MovableUnit extends Unit implements Movable {
     }
 
     public int getSpeed() {
-        return speed / path.size();
+        return speed;
     }
 
     public void incrementTarget() {
-        if (currentTarget.get() < path.size() - 1) {
+        if (currentTarget.get() < path.getPoints().size() - 1) {
             currentTarget.incrementAndGet();
         }
     }
 
     public LatLng getTarget() {
-        return path.get(currentTarget.get());
+        return path.getPoints().get(path.getPoints().size() - 1);
     }
 
     public boolean reachedEnemy() {
-        return currentTarget.get() >= path.size();
+        return currentTarget.get() >= path.getPoints().size();
     }
 
     public void setPosition(LatLng position) {
-        this.position = position;
+        this.position.set(position);
     }
 }

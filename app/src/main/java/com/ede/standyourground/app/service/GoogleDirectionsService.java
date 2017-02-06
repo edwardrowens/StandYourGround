@@ -54,6 +54,7 @@ public class GoogleDirectionsService extends Service {
         routesCall.enqueue(new Callback<Routes>() {
             @Override
             public void onResponse(Call<Routes> call, Response<Routes> response) {
+                response.body().setTotalDistance(RouteUtil.getTotalDistance(response.body()));
                 callback.onResponse(call, response);
             }
 

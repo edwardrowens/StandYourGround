@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UpdateLoop implements Runnable {
 
     private final Logger logger = new Logger(UpdateLoop.class);
-    private static final long LOOP_DELAY = 10;
+    private static final long LOOP_DELAY = 16;
 
     private static final Map<UUID, MovableUnit> units = new ConcurrentHashMap();
     private final LinearInterpolator linearInterpolator = new LinearInterpolator();
@@ -54,12 +54,11 @@ public class UpdateLoop implements Runnable {
         stateChange = false;
         for (MovableUnit unit : units.values()) {
             long elapsed = SystemClock.uptimeMillis() - unit.getArrivalTime();
-            stateChange = true;
-            logger.i("interpolation: %.7f",(float) elapsed / unit.getSpeed());
             double t = linearInterpolator.getInterpolation((float) elapsed / unit.getSpeed());
             LatLng intermediatePosition = SphericalUtil.interpolate(unit.getPosition(), unit.getTarget(), t);
 
             unit.setPosition(intermediatePosition);
+            stateChange = true;
             updatedUnits.add(unit);
             if (t >= 1 && !unit.reachedEnemy()) {
                 unit.setArrivalTime(SystemClock.uptimeMillis());
