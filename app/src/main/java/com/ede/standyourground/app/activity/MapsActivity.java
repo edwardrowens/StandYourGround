@@ -235,8 +235,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         MarkerOptions markerOptions = new MarkerOptions();
                         markerOptions.position(currentLocationMarker.getPosition());
                         Marker m = googleMap.addMarker(markerOptions);
-                        Path path = new Path(polyline.getPoints(), RouteUtil.getDistanceOfSteps(response.body()));
-                        MovableUnit unit = new FootSoldier(20000, path, m.getPosition());
+                        logger.d("distances are %s", RouteUtil.getDistanceOfSteps(polyline.getPoints()));
+                        logger.d("size of dist %d", RouteUtil.getDistanceOfSteps(polyline.getPoints()).size());
+                        logger.d("size of points %d", polyline.getPoints().size());
+                        Path path = new Path(polyline.getPoints(), RouteUtil.getDistanceOfSteps(polyline.getPoints()));
+                        MovableUnit unit = new FootSoldier(100, path, m.getPosition());
                         updateLoop.addUnit(unit);
                         units.put(unit, m);
                     }

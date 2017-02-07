@@ -7,7 +7,7 @@ import com.google.android.gms.maps.model.LatLng;
  */
 
 public class FootSoldier extends MovableUnit {
-    public FootSoldier(int speed, Path path, LatLng position) {
-        super(speed, path, position);
+    public FootSoldier(double mph, Path path, LatLng position) {
+        super(mph, path, position);
     }
 }

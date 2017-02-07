@@ -6,6 +6,7 @@ import android.os.SystemClock;
 import android.view.animation.LinearInterpolator;
 
 import com.ede.standyourground.game.model.MovableUnit;
+import com.ede.standyourground.game.service.UnitUtil;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
@@ -53,16 +54,15 @@ public class UpdateLoop implements Runnable {
         List<MovableUnit> updatedUnits = new ArrayList<>();
         stateChange = false;
         for (MovableUnit unit : units.values()) {
-            long elapsed = SystemClock.uptimeMillis() - unit.getArrivalTime();
-            double t = linearInterpolator.getInterpolation((float) elapsed / unit.getSpeed());
-            LatLng intermediatePosition = SphericalUtil.interpolate(unit.getPosition(), unit.getTarget(), t);
+            long elapsed = SystemClock.uptimeMillis() - unit.getCreatedTime();
+//            double t = linearInterpolator.getInterpolation((float) elapsed / unit.getArrivalTime());
+            LatLng intermediatePosition = SphericalUtil.interpolate(unit.getPosition(), UnitUtil.findNextTarget(unit, elapsed), (float) elapsed / unit.getArrivalTime());
 
             unit.setPosition(intermediatePosition);
             stateChange = true;
             updatedUnits.add(unit);
-            if (t >= 1 && !unit.reachedEnemy()) {
-                unit.setArrivalTime(SystemClock.uptimeMillis());
-                unit.incrementTarget();
+            if ((float) elapsed / unit.getArrivalTime() >= 1) {
+                unit.setReachedEnemy(true);
             }
         }
         if (stateChange) {
