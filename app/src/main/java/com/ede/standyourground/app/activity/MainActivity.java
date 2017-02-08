@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 } else {
                     Log.i(TAG, "Access fine location denied");
                 }
-                return;
             }
         }
     }

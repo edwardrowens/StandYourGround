@@ -3,8 +3,11 @@ package com.ede.standyourground.game.model;
 import com.ede.standyourground.app.service.RouteUtil;
 import com.ede.standyourground.framework.Logger;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.Polyline;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -19,16 +22,19 @@ public class MovableUnit extends Unit {
     private Path path;
     private long arrivalTime;
     private AtomicBoolean reachedEnemy;
+    private int totalDistance;
+    private int currentTarget;
+    private AtomicReference<LatLng> position;
 
-    public MovableUnit(double mph, Path path, LatLng position) {
-        super(position);
-        this.path = path;
+    public MovableUnit(double mph, Polyline polyline, LatLng position, Marker marker) {
+        super(position, marker, polyline);
+        this.path = new Path(polyline.getPoints(), RouteUtil.getDistanceOfSteps(polyline.getPoints(), position));
         this.mph = mph;
-        int totalDistance = RouteUtil.calculateTotalDistance(path);
-        logger.d("totalDistance is %d", totalDistance);
+        this.totalDistance = RouteUtil.calculateTotalDistance(path);
         arrivalTime = RouteUtil.timeToDestination(RouteUtil.valueToMiles(totalDistance), mph);
-        logger.d("arrivalTime is %d", arrivalTime);
         reachedEnemy = new AtomicBoolean(false);
+        currentTarget = 0;
+        this.position = new AtomicReference<>(this.getStartingPosition());
     }
 
     public Path getPath() {
@@ -37,6 +43,10 @@ public class MovableUnit extends Unit {
 
     public void setPosition(LatLng position) {
         this.position.set(position);
+    }
+
+    public LatLng getPosition() {
+        return position.get();
     }
 
     public double getMph() {
@@ -53,5 +63,18 @@ public class MovableUnit extends Unit {
 
     public void setReachedEnemy(boolean reachedEnemy) {
         this.reachedEnemy.set(reachedEnemy);
+    }
+
+    public int getTotalDistance() {
+        return totalDistance;
+    }
+
+    public void incrementTarget() {
+        if (currentTarget < path.getDistances().size() - 1)
+            ++currentTarget;
+    }
+
+    public int getCurrentTarget() {
+        return currentTarget;
     }
 }

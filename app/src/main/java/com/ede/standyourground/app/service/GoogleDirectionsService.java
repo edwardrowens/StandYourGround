@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import com.ede.standyourground.app.api.DirectionsApi;
 import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.to.RoutesRequestTO;
-import com.ede.standyourground.framework.Logger;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -19,8 +18,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class GoogleDirectionsService extends Service {
-
-    private Logger logger = new Logger(GoogleDirectionsService.class);
 
     private final IBinder iBinder = new LocalBinder();
 

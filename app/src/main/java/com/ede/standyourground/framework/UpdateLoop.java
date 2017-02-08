@@ -3,18 +3,16 @@ package com.ede.standyourground.framework;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.view.animation.LinearInterpolator;
 
+import com.ede.standyourground.app.service.MathUtils;
+import com.ede.standyourground.app.service.RouteUtil;
 import com.ede.standyourground.game.model.MovableUnit;
-import com.ede.standyourground.game.service.UnitUtil;
+import com.ede.standyourground.game.model.Unit;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Eddie on 2/4/2017.
@@ -25,9 +23,6 @@ public class UpdateLoop implements Runnable {
     private final Logger logger = new Logger(UpdateLoop.class);
     private static final long LOOP_DELAY = 16;
 
-    private static final Map<UUID, MovableUnit> units = new ConcurrentHashMap();
-    private final LinearInterpolator linearInterpolator = new LinearInterpolator();
-
     private static Handler handler;
 
     private boolean stateChange = false;
@@ -37,11 +32,6 @@ public class UpdateLoop implements Runnable {
         new Thread(this).start();
     }
 
-    public void addUnit(MovableUnit unit) {
-        units.put(unit.getId(), unit);
-        logger.i("Added unit. Size is now %d", units.size());
-    }
-
 
     @Override
     public void run() {
@@ -49,20 +39,37 @@ public class UpdateLoop implements Runnable {
             Looper.prepare();
             handler = new Handler();
             handler.postDelayed(this, LOOP_DELAY);
+            logger.i("Update thread started");
             Looper.loop();
         }
-        List<MovableUnit> updatedUnits = new ArrayList<>();
+        List<Unit> updatedUnits = new ArrayList<>();
         stateChange = false;
-        for (MovableUnit unit : units.values()) {
-            long elapsed = SystemClock.uptimeMillis() - unit.getCreatedTime();
-//            double t = linearInterpolator.getInterpolation((float) elapsed / unit.getArrivalTime());
-            LatLng intermediatePosition = SphericalUtil.interpolate(unit.getPosition(), UnitUtil.findNextTarget(unit, elapsed), (float) elapsed / unit.getArrivalTime());
+        for (Unit unit : WorldManager.getInstance().getUnits()) {
+            if (unit instanceof  MovableUnit) {
+                MovableUnit movableUnit = (MovableUnit) unit;
+                long elapsed = SystemClock.uptimeMillis() - unit.getCreatedTime();
+                int valuesTraveled = (int)Math.round((RouteUtil.milesToValue(movableUnit.getMph()) / 60d / 60 / 1000) * elapsed);
 
-            unit.setPosition(intermediatePosition);
-            stateChange = true;
-            updatedUnits.add(unit);
-            if ((float) elapsed / unit.getArrivalTime() >= 1) {
-                unit.setReachedEnemy(true);
+                int sumOfPreviousTargets = MathUtils.sumTo(movableUnit.getPath().getDistances(), movableUnit.getCurrentTarget());
+                int distanceTraveledToTarget = valuesTraveled - sumOfPreviousTargets;
+                double proportionToNextPoint = distanceTraveledToTarget / (double) movableUnit.getPath().getDistances().get(movableUnit.getCurrentTarget());
+
+                LatLng currentPosition = movableUnit.getCurrentTarget() == 0 ? unit.getStartingPosition() : movableUnit.getPath().getPoints().get(movableUnit.getCurrentTarget() - 1);
+                LatLng currentTarget = movableUnit.getPath().getPoints().get(movableUnit.getCurrentTarget());
+
+                LatLng intermediatePosition = SphericalUtil.interpolate(currentPosition, currentTarget, proportionToNextPoint);
+
+                movableUnit.setPosition(intermediatePosition);
+
+                if (proportionToNextPoint >= 1) {
+                    movableUnit.incrementTarget();
+                    if (movableUnit.getCurrentTarget() >= movableUnit.getPath().getDistances().size()) {
+                        movableUnit.setReachedEnemy(true);
+                    }
+                }
+
+                stateChange = true;
+                updatedUnits.add(movableUnit);
             }
         }
         if (stateChange) {

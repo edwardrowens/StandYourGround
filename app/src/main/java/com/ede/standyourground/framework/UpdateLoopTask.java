@@ -1,6 +1,6 @@
 package com.ede.standyourground.framework;
 
-import com.ede.standyourground.game.model.MovableUnit;
+import com.ede.standyourground.game.model.Unit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,14 +10,13 @@ import java.util.List;
  */
 
 public class UpdateLoopTask {
-    private Logger logger = new Logger(UpdateLoopTask.class);
 
-    private List<MovableUnit> updatedUnits = new ArrayList<>();
-    public List<MovableUnit> getUpdatedUnits() {
+    private List<Unit> updatedUnits = new ArrayList<>();
+    public List<Unit> getUpdatedUnits() {
         return updatedUnits;
     }
 
-    public void setUpdatedUnits(List<MovableUnit> updatedUnits) {
+    public void setUpdatedUnits(List<Unit> updatedUnits) {
         this.updatedUnits = updatedUnits;
     }
 

@@ -2,29 +2,32 @@ package com.ede.standyourground.game.model;
 
 import android.os.SystemClock;
 
-import com.ede.standyourground.framework.Logger;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.Polyline;
 
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by Eddie on 2/3/2017.
  */
 
 public class Unit {
-    private Logger logger = new Logger(Unit.class);
-    protected AtomicReference<LatLng> position;
-    public final UUID id = UUID.randomUUID();
-    private long createdTime;
+    private final LatLng startingPosition;
+    private final UUID id = UUID.randomUUID();
+    private final long createdTime;
+    private final Marker marker;
+    private final Polyline polyline;
 
-    public Unit(LatLng position) {
-        this.position = new AtomicReference<>(position);
+    public Unit(LatLng startingPosition, Marker marker, Polyline polyline) {
+        this.startingPosition = startingPosition;
         this.createdTime = SystemClock.uptimeMillis();
+        this.marker = marker;
+        this.polyline = polyline;
     }
 
-    public LatLng getPosition() {
-        return position.get();
+    public LatLng getStartingPosition() {
+        return startingPosition;
     }
 
     public UUID getId() {
@@ -33,5 +36,13 @@ public class Unit {
 
     public long getCreatedTime() {
         return createdTime;
+    }
+
+    public Polyline getPolyline() {
+        return polyline;
+    }
+
+    public Marker getMarker() {
+        return marker;
     }
 }

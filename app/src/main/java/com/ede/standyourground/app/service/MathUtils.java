@@ -1,9 +1,10 @@
 package com.ede.standyourground.app.service;
 
 import android.util.Log;
-import android.view.animation.LinearInterpolator;
 
 import com.google.android.gms.maps.model.LatLng;
+
+import java.util.List;
 
 /**
  * Created by Eddie on 2/2/2017.
@@ -12,7 +13,6 @@ import com.google.android.gms.maps.model.LatLng;
 public class MathUtils {
 
     private static final String TAG = MathUtils.class.getName();
-    private static final LinearInterpolator linearInterpolator = new LinearInterpolator();
 
     public static float bearing(LatLng to, LatLng from) {
         double dLon = from.longitude - to.longitude;
@@ -43,5 +43,12 @@ public class MathUtils {
 
         return new LatLng(Math.toDegrees(Math.atan2(Math.sin(lat1) + Math.sin(lat2), Math.sqrt((Math.cos(lat1) + Bx) * (Math.cos(lat1) + Bx) + By * By))),
                           Math.toDegrees(lon1 + Math.atan2(By, Math.cos(lat1) + Bx)));
+    }
+
+    public static int sumTo(List<Integer> list, int index) {
+        int sum = 0;
+        for (int i = 0; i < index; ++i)
+            sum+=list.get(i);
+        return sum;
     }
 }

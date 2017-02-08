@@ -6,9 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
@@ -20,15 +18,10 @@ import com.ede.standyourground.app.model.Route;
 import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.service.GoogleDirectionsService;
 import com.ede.standyourground.app.service.MathUtils;
-import com.ede.standyourground.app.service.RouteUtil;
 import com.ede.standyourground.framework.Logger;
-import com.ede.standyourground.framework.UpdateLoop;
-import com.ede.standyourground.framework.UpdateLoopManager;
-import com.ede.standyourground.framework.UpdateLoopTask;
+import com.ede.standyourground.framework.WorldManager;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.MovableUnit;
-import com.ede.standyourground.game.model.Path;
-import com.ede.standyourground.game.model.Unit;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -49,9 +42,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -71,17 +62,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private List<Marker> waypoints = new ArrayList<>();
     private boolean bound = false;
     private GoogleDirectionsService googleDirectionsService;
-    private final Map<Unit, Marker> units = new HashMap<>();
-    private UpdateLoop updateLoop = new UpdateLoop();
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message message) {
-            UpdateLoopTask updateLoopTask = (UpdateLoopTask) message.obj;
-            for (Unit unit : updateLoopTask.getUpdatedUnits()) {
-                units.get(unit).setPosition(unit.getPosition());
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +72,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        UpdateLoopManager.setHandler(handler);
         getLocation();
     }
 
@@ -165,7 +144,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(Location location) {
         logger.i("Location changed to %s", location.toString());
-        updateLoop.startLoop();
+        WorldManager.getInstance().startLoop();
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         currentLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
@@ -235,13 +214,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         MarkerOptions markerOptions = new MarkerOptions();
                         markerOptions.position(currentLocationMarker.getPosition());
                         Marker m = googleMap.addMarker(markerOptions);
-                        logger.d("distances are %s", RouteUtil.getDistanceOfSteps(polyline.getPoints()));
-                        logger.d("size of dist %d", RouteUtil.getDistanceOfSteps(polyline.getPoints()).size());
-                        logger.d("size of points %d", polyline.getPoints().size());
-                        Path path = new Path(polyline.getPoints(), RouteUtil.getDistanceOfSteps(polyline.getPoints()));
-                        MovableUnit unit = new FootSoldier(100, path, m.getPosition());
-                        updateLoop.addUnit(unit);
-                        units.put(unit, m);
+                        MovableUnit unit = new FootSoldier(100, polyline, currentLocationMarker.getPosition(), m);
+                        WorldManager.getInstance().addUnit(unit);
                     }
 
                     @Override

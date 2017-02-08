@@ -29,10 +29,16 @@ public class RouteUtil {
         return distance;
     }
 
-    public static List<Integer> getDistanceOfSteps(List<LatLng> points) {
+    public static List<Integer> getDistanceOfSteps(List<LatLng> points, LatLng currentPosition) {
         List<Integer> distances = new ArrayList<>();
+        if (points.size() == 0)
+            return distances;
 
         float[] results = new float[1];
+
+        Location.distanceBetween(currentPosition.latitude,currentPosition.longitude, points.get(0).latitude, points.get(0).longitude, results);
+        distances.add(Math.round(results[0]));
+
         for (int i = 0; i < points.size() - 1; ++i) {
             Location.distanceBetween(points.get(i).latitude,points.get(i).longitude, points.get(i+1).latitude, points.get(i+1).longitude, results);
             distances.add(Math.round(results[0]));
