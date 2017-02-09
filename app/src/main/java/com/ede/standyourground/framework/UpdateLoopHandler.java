@@ -20,7 +20,7 @@ public class UpdateLoopHandler extends Handler {
         for (Unit unit : updateLoopTask.getUpdatedUnits()) {
             if (unit instanceof MovableUnit) {
                 MovableUnit movableUnit = (MovableUnit) WorldManager.getInstance().getUnit(unit.getId());
-                movableUnit.getMarker().setPosition(movableUnit.getPosition());
+                movableUnit.getCircle().setCenter(movableUnit.getPosition());
             }
         }
     }

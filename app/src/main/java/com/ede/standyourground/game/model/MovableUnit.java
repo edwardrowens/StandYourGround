@@ -2,8 +2,8 @@ package com.ede.standyourground.game.model;
 
 import com.ede.standyourground.app.service.RouteUtil;
 import com.ede.standyourground.framework.Logger;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.Polyline;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,8 +26,8 @@ public class MovableUnit extends Unit {
     private int currentTarget;
     private AtomicReference<LatLng> position;
 
-    public MovableUnit(double mph, Polyline polyline, LatLng position, Marker marker) {
-        super(position, marker, polyline);
+    public MovableUnit(double mph, Polyline polyline, LatLng position, Circle circle) {
+        super(position, circle, polyline);
         this.path = new Path(polyline.getPoints(), RouteUtil.getDistanceOfSteps(polyline.getPoints(), position));
         this.mph = mph;
         this.totalDistance = RouteUtil.calculateTotalDistance(path);

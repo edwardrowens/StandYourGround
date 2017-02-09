@@ -1,7 +1,7 @@
 package com.ede.standyourground.game.model;
 
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.Polyline;
 
 /**
@@ -9,7 +9,7 @@ import com.google.android.gms.maps.model.Polyline;
  */
 
 public class FootSoldier extends MovableUnit {
-    public FootSoldier(double mph, Polyline polyline, LatLng position, Marker marker) {
-        super(mph, polyline, position, marker);
+    public FootSoldier(double mph, Polyline polyline, LatLng position, Circle circle) {
+        super(mph, polyline, position, circle);
     }
 }

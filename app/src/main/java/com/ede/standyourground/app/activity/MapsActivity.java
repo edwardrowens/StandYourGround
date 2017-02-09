@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -12,6 +13,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.HorizontalScrollView;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.model.Route;
@@ -22,6 +25,7 @@ import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.WorldManager;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.MovableUnit;
+import com.ede.standyourground.game.model.Units;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -33,6 +37,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -54,6 +60,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private final Logger logger = new Logger(MapsActivity.class);
     private static final int CAMERA_PADDING = 100;
 
+    // VIEWS
+    private HorizontalScrollView unitChoicesScrollView;
+    private Button confirmRouteButton;
+
     private GoogleMap googleMap;
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
@@ -62,6 +72,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private List<Marker> waypoints = new ArrayList<>();
     private boolean bound = false;
     private GoogleDirectionsService googleDirectionsService;
+    private Units selectedUnit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,19 +136,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         this.googleMap = googleMap;
 
         googleMap.getUiSettings().setMapToolbarEnabled(false);
+        googleMap.getUiSettings().setCompassEnabled(false);
 
         LatLng latLng = new LatLng(34.155323, -118.247092);
         targetLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
 
-        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(latLng);
-                waypoints.add(googleMap.addMarker(markerOptions));
-            }
-        });
-
+        confirmRouteButton = (Button) findViewById(R.id.confirmRouteButton);
+        unitChoicesScrollView = (HorizontalScrollView) findViewById(R.id.unitChoicesScrollView);
     }
 
 
@@ -164,7 +169,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void onFinish() {
                         googleMap.getUiSettings().setRotateGesturesEnabled(false);
-                        drawRoutes();
                     }
 
                     @Override
@@ -185,7 +189,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void onRoute(View view) {
         logger.i("On route clicked");
-        drawRoutes();
+        drawRoutesForUnit();
+
+        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                return;
+            }
+        });
+        for (Marker marker : waypoints)
+            marker.remove();
+        waypoints.clear();
+        confirmRouteButton.setVisibility(View.GONE);
+        unitChoicesScrollView.setVisibility(View.VISIBLE);
+    }
+
+    public void onSelectUnit(View view) {
+        unitChoicesScrollView.setVisibility(View.GONE);
+        confirmRouteButton.setVisibility(View.VISIBLE);
+        switch(view.getId()) {
+            case R.id.footSoldier:
+                selectedUnit = Units.FOOT_SOLDIER;
+                logger.i("Selected foot soldier");
+                break;
+        }
+
+        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(latLng);
+                waypoints.add(googleMap.addMarker(markerOptions));
+            }
+        });
     }
 
     @Override
@@ -200,7 +236,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    private void drawRoutes() {
+    private void drawRoutesForUnit() {
         ArrayList<LatLng> waypointsLatLng = new ArrayList<>();
         for (Marker marker : waypoints)
             waypointsLatLng.add(marker.getPosition());
@@ -211,11 +247,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onResponse(Call<Routes> call, Response<Routes> response) {
                         logger.i("response with routes received");
                         Polyline polyline = drawRoute(response.body().getRoutes().get(0));
-                        MarkerOptions markerOptions = new MarkerOptions();
-                        markerOptions.position(currentLocationMarker.getPosition());
-                        Marker m = googleMap.addMarker(markerOptions);
-                        MovableUnit unit = new FootSoldier(100, polyline, currentLocationMarker.getPosition(), m);
-                        WorldManager.getInstance().addUnit(unit);
+                        Circle circle = googleMap.addCircle(new CircleOptions().center(currentLocationMarker.getPosition()).clickable(false).radius(50).fillColor(Color.BLUE).strokeColor(Color.BLUE).zIndex(1.0f));
+                        MovableUnit unit = null;
+                        switch (selectedUnit) {
+                            case FOOT_SOLDIER:
+                                unit = new FootSoldier(100, polyline, currentLocationMarker.getPosition(), circle);
+                                break;
+                        }
+                        if (unit != null) {
+                            WorldManager.getInstance().addUnit(unit);
+                        }
                     }
 
                     @Override
@@ -258,7 +299,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions = polylineOptions.addAll(PolyUtil.decode(route.getOverviewPolyline().getPoints()))
                 .width(20)
-                .color(R.color.teal);
+                .color(Color.BLACK);
         logger.i("drawing route");
         return googleMap.addPolyline(polylineOptions);
     }
