@@ -53,8 +53,14 @@
             android:exported="false" />
 
         <activity
-            android:name=".app.activity.asdsad"
-            android:label="@string/title_activity_asdsad"></activity>
+            android:name=".app.activity.FindMatchActivity"
+            android:label="@string/title_activity_find_match"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <service
+            android:name=".app.service.FindMatchService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

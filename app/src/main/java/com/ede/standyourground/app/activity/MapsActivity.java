@@ -58,7 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final long LOCATION_INTERVAL = 5000;
     private final Logger logger = new Logger(MapsActivity.class);
-    private static final int CAMERA_PADDING = 100;
+    private static final int CAMERA_PADDING = 200;
 
     // VIEWS
     private HorizontalScrollView unitChoicesScrollView;
@@ -138,7 +138,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setCompassEnabled(false);
 
-        LatLng latLng = new LatLng(34.155323, -118.247092);
+        LatLng latLng = new LatLng(34.154319, -118.227570);
         targetLocationMarker = this.googleMap.addMarker(new MarkerOptions().position(latLng));
 
         confirmRouteButton = (Button) findViewById(R.id.confirmRouteButton);

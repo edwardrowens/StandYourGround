@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     public void startGame(View view) {
         Log.i(TAG, "Starting game");
-        Intent intent = new Intent(this, MapsActivity.class);
+        Intent intent = new Intent(this, FindMatchActivity.class);
         startActivity(intent);
     }
 
