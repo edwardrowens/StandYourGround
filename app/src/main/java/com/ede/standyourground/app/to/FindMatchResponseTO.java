@@ -7,6 +7,7 @@ package com.ede.standyourground.app.to;
 public class FindMatchResponseTO {
     private double lat;
     private double lng;
+    private String ip;
 
     public double getLat() {
         return lat;
@@ -22,5 +23,13 @@ public class FindMatchResponseTO {
 
     public void setLng(double lng) {
         this.lng = lng;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 }
