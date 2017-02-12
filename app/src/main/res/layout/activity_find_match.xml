@@ -11,12 +11,13 @@
     tools:context=".app.activity.MainActivity">
 
     <Button
+        android:id="@+id/onSearchButton"
         android:text="Find Game"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:id="@+id/maps_button"
         android:onClick="onSearch"
+        android:enabled="false"
         style="@style/Widget.AppCompat.Button.Colored" />
 </RelativeLayout>

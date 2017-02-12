@@ -1,11 +1,13 @@
 package com.ede.standyourground.app.service;
 
-import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.ResultReceiver;
+import android.support.annotation.Nullable;
 
 import com.ede.standyourground.app.activity.FindMatchActivity;
 import com.ede.standyourground.app.api.MatchMakingApi;
@@ -18,10 +20,10 @@ import java.io.IOException;
 import retrofit2.Call;
 import retrofit2.Response;
 
-public class FindMatchService extends IntentService implements Runnable {
+public class FindMatchService extends Service implements Runnable {
 
-    private static final String FIND_MATCH_RESPONSE = FindMatchService.class.getName() + ".findMatchResponse";
-    private static final String FIND_MATCH_REQUEST = FindMatchService.class.getName() + ".findMatchRequest";
+    public static final String FIND_MATCH_RESPONSE = FindMatchService.class.getName() + ".findMatchResponse";
+    public static final String FIND_MATCH_REQUEST = FindMatchService.class.getName() + ".findMatchRequest";
 
     private static Logger logger = new Logger(FindMatchService.class);
 
@@ -30,19 +32,16 @@ public class FindMatchService extends IntentService implements Runnable {
     private FindMatchRequestTO findMatchRequestTO;
     private ResultReceiver resultReceiver;
 
-    FindMatchService() {
-        super("FindMatchService");
-    }
-
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
             resultReceiver = bundle.getParcelable(FindMatchActivity.FIND_MATCH_RESULT_RECEIVER);
             findMatchRequestTO = bundle.getParcelable(FIND_MATCH_REQUEST);
-            findMatch();
         }
+        new Thread(this).start();
+        return START_STICKY;
     }
 
     @Override
@@ -59,7 +58,8 @@ public class FindMatchService extends IntentService implements Runnable {
         try {
             response = findMatchCall.execute();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.e("Server could not be found");
+            logger.e(e.getMessage());
         }
 
         return response;
@@ -69,6 +69,7 @@ public class FindMatchService extends IntentService implements Runnable {
         if (handler == null) {
             Looper.prepare();
             handler = new Handler();
+            handler.post(this);
             Looper.loop();
         }
         Response<FindMatchResponseTO> response = findMatch(findMatchRequestTO);
@@ -76,10 +77,16 @@ public class FindMatchService extends IntentService implements Runnable {
             logger.i("Found match!");
             Bundle bundle = new Bundle();
             bundle.putParcelable(FindMatchService.FIND_MATCH_RESPONSE, response.body());
-            resultReceiver.send(0, bundle);
+            resultReceiver.send(FindMatchRequestTO.REQUEST_CODE, bundle);
         } else {
             logger.i("Could not find match. Searching...");
-            handler.postDelayed(this, 10000);
+            handler.postDelayed(this, 1000);
         }
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 }

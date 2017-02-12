@@ -10,11 +10,13 @@ import java.util.UUID;
  */
 
 public class FindMatchRequestTO implements Parcelable {
+    public static final int REQUEST_CODE = 0;
+
+    public FindMatchRequestTO(){}
     private double lat;
     private double lng;
     private int radius;
     private UUID id;
-    private String ip;
 
     public double getLat() {
         return lat;
@@ -48,14 +50,6 @@ public class FindMatchRequestTO implements Parcelable {
         this.id = id;
     }
 
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
     @Override
     public int describeContents() {
         return 0;
@@ -67,7 +61,6 @@ public class FindMatchRequestTO implements Parcelable {
         dest.writeDouble(lng);
         dest.writeInt(radius);
         dest.writeSerializable(id);
-        dest.writeString(ip);
     }
 
     public static final Parcelable.Creator<FindMatchRequestTO> CREATOR
@@ -86,6 +79,5 @@ public class FindMatchRequestTO implements Parcelable {
         lng = in.readDouble();
         radius = in.readInt();
         id = (UUID) in.readSerializable();
-        ip = in.readString();
     }
 }
