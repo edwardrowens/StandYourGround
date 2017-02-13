@@ -1,8 +1,9 @@
 package com.ede.standyourground;
 
-import org.junit.Test;
+import com.ede.standyourground.app.to.FindMatchResponseTO;
+import com.google.gson.Gson;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -12,6 +13,12 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() throws Exception {
-        assertEquals(4, 2 + 2);
+        String json = "{\n" +
+                "\"lat\": 34.15497,\n" +
+                "\"lng\": -118.2471346,\n" +
+                "\"ip\": \"::ffff:192.168.0.100\"\n" +
+                "}";
+        FindMatchResponseTO findMatchResponseTO = new Gson().fromJson(json, FindMatchResponseTO.class);
+        System.out.println(findMatchResponseTO.getLat());
     }
 }

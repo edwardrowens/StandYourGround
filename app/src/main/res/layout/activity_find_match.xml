@@ -8,16 +8,43 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".app.activity.MainActivity">
+    tools:context=".app.activity.FindMatchActivity">
 
     <Button
-        android:id="@+id/onSearchButton"
-        android:text="Find Game"
+        android:id="@+id/onFindMatchButton"
+        style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:onClick="onSearch"
+        android:layout_centerVertical="true"
         android:enabled="false"
-        style="@style/Widget.AppCompat.Button.Colored" />
+        android:onClick="onFindMatch"
+        android:text="Find Match" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/findingMatchText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Searching..."
+            android:gravity="center"
+            android:visibility="invisible"/>
+        <ProgressBar
+            android:id="@+id/findingMatchProgressBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:visibility="invisible"
+            android:indeterminate="true"/>
+
+    </LinearLayout>
+
 </RelativeLayout>

@@ -73,6 +73,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         playerLocation = (LatLng) getIntent().getExtras().get(FindMatchActivity.PLAYER_LOCATION);
         opponentLocation = (LatLng) getIntent().getExtras().get(FindMatchActivity.OPPONENT_LOCATION);
+        logger.i("Player location is " + playerLocation.toString());
+        logger.i("Opponent location is " + opponentLocation.toString());
 
         WorldManager.getInstance().startLoop();
     }

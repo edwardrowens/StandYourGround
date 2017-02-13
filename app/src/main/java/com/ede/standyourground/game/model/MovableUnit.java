@@ -1,7 +1,6 @@
 package com.ede.standyourground.game.model;
 
 import com.ede.standyourground.app.service.RouteUtil;
-import com.ede.standyourground.framework.Logger;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
@@ -15,8 +14,6 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 
 public class MovableUnit extends Unit {
-
-    private static Logger logger = new Logger(MovableUnit.class);
 
     private double mph;
     private Path path;

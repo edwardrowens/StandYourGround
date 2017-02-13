@@ -10,9 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.service.FindMatchService;
+import com.ede.standyourground.app.service.RemoveFromMatchMakingService;
 import com.ede.standyourground.app.to.FindMatchRequestTO;
 import com.ede.standyourground.app.to.FindMatchResponseTO;
 import com.ede.standyourground.framework.Logger;
@@ -30,6 +33,7 @@ import java.util.UUID;
 public class FindMatchActivity extends AppCompatActivity implements Receiver, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     public static String FIND_MATCH_RESULT_RECEIVER = FindMatchActivity.class.getName() + ".findMatchResultReceiver";
+    public static String PLAYER_ID = FindMatchActivity.class.getName() + ".playerId";
     public static String OPPONENT_LOCATION = FindMatchActivity.class.getName() + ".opponent";
     public static String PLAYER_LOCATION = FindMatchActivity.class.getName() + ".location";
 
@@ -42,27 +46,36 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     private LocationRequest locationRequest;
     private Location currentLocation;
     private UUID playerId;
+    private boolean playerMatched = false;
 
-    private Button onSearchButton;
+    private Button onFindMatchButton;
+    private ProgressBar findingMatchProgressBar;
+    private TextView findingMatchText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find_match);
 
-        onSearchButton = (Button) findViewById(R.id.onSearchButton);
+        onFindMatchButton = (Button) findViewById(R.id.onFindMatchButton);
+        findingMatchProgressBar = (ProgressBar) findViewById(R.id.findingMatchProgressBar);
+        findingMatchText = (TextView) findViewById(R.id.findingMatchText);
 
         standYourGroundResultReceiver.setReceiver(this);
+
+        playerId = UUID.randomUUID();
         getLocation();
     }
 
-    public void onSearch(View view) {
+    public void onFindMatch(View view) {
         logger.i("Search button clicked!");
+
+        findingMatchText.setVisibility(View.VISIBLE);
+        findingMatchProgressBar.setVisibility(View.VISIBLE);
+        onFindMatchButton.setVisibility(View.INVISIBLE);
+
         Intent intent = new Intent(this, FindMatchService.class);
         intent.putExtra(FindMatchActivity.FIND_MATCH_RESULT_RECEIVER, standYourGroundResultReceiver);
-
-        if (playerId == null)
-            playerId = UUID.randomUUID();
 
         FindMatchRequestTO findMatchRequestTO = new FindMatchRequestTO();
         findMatchRequestTO.setId(playerId);
@@ -79,16 +92,21 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     public void onReceiveResult(int resultCode, Bundle resultData) {
         logger.i("Match found!");
 
-        // Don't need to see location anymore.
-        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-        Intent intent = new Intent(this, MapsActivity.class);
-
         FindMatchResponseTO findMatchResponseTO = (FindMatchResponseTO) resultData.get(FindMatchService.FIND_MATCH_RESPONSE);
-        LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
+        if (findMatchResponseTO != null) {
+            logger.i("Starting the game.");
+            playerMatched = true;
+            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
 
-        intent.putExtra(OPPONENT_LOCATION, opponentLocation);
-        intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
-        this.startActivity(intent);
+            LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
+
+            Intent intent = new Intent(this, MapsActivity.class);
+            intent.putExtra(OPPONENT_LOCATION, opponentLocation);
+            intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
+            this.startActivity(intent);
+        } else {
+            logger.w("Received null opponent player in response");
+        }
     }
 
     @Override
@@ -105,6 +123,19 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (!playerMatched) {
+            logger.d("Making call to remove player from match making");
+            FindMatchService.stopThread();
+            Intent intent = new Intent(this, RemoveFromMatchMakingService.class);
+            intent.putExtra(PLAYER_ID, playerId);
+            startService(intent);
+            logger.d("Call made to remove player from match making");
+        }
+    }
+
+    @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.i(MapsActivity.class.getName(), "Google API client connected");
         try {
@@ -118,7 +149,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     @Override
     public void onLocationChanged(Location location) {
         currentLocation = location;
-        onSearchButton.setEnabled(true);
+        onFindMatchButton.setEnabled(true);
     }
 
     private void getLocation() {

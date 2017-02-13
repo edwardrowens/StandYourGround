@@ -60,6 +60,9 @@
         <service
             android:name=".app.service.FindMatchService"
             android:exported="false" />
+        <service
+            android:name=".app.service.RemoveFromMatchMakingService"
+            android:exported="false"></service>
     </application>
 
 </manifest>

@@ -16,6 +16,7 @@ import com.ede.standyourground.app.to.FindMatchResponseTO;
 import com.ede.standyourground.framework.Logger;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -25,23 +26,28 @@ public class FindMatchService extends Service implements Runnable {
     public static final String FIND_MATCH_RESPONSE = FindMatchService.class.getName() + ".findMatchResponse";
     public static final String FIND_MATCH_REQUEST = FindMatchService.class.getName() + ".findMatchRequest";
 
-    private static Logger logger = new Logger(FindMatchService.class);
-
     private Handler handler;
+
+    private static Logger logger = new Logger(FindMatchService.class);
 
     private FindMatchRequestTO findMatchRequestTO;
     private ResultReceiver resultReceiver;
+    private static AtomicBoolean runThread = new AtomicBoolean(true);
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Bundle bundle = intent.getExtras();
+        Bundle bundle = null;
+        if (intent != null) {
+            bundle = intent.getExtras();
+        }
         if (bundle != null) {
             resultReceiver = bundle.getParcelable(FindMatchActivity.FIND_MATCH_RESULT_RECEIVER);
             findMatchRequestTO = bundle.getParcelable(FIND_MATCH_REQUEST);
         }
+        runThread.set(true);
         new Thread(this).start();
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -58,8 +64,7 @@ public class FindMatchService extends Service implements Runnable {
         try {
             response = findMatchCall.execute();
         } catch (IOException e) {
-            logger.e("Server could not be found");
-            logger.e(e.getMessage());
+            logger.e("Problem handling the request", e);
         }
 
         return response;
@@ -72,21 +77,38 @@ public class FindMatchService extends Service implements Runnable {
             handler.post(this);
             Looper.loop();
         }
-        Response<FindMatchResponseTO> response = findMatch(findMatchRequestTO);
-        if (response.code() == 200) {
-            logger.i("Found match!");
-            Bundle bundle = new Bundle();
-            bundle.putParcelable(FindMatchService.FIND_MATCH_RESPONSE, response.body());
-            resultReceiver.send(FindMatchRequestTO.REQUEST_CODE, bundle);
-        } else {
-            logger.i("Could not find match. Searching...");
-            handler.postDelayed(this, 1000);
+        if (runThread.get()) {
+            Response<FindMatchResponseTO> response = findMatch(findMatchRequestTO);
+            if (response.code() == 200) {
+                logger.i("Found match!");
+                Bundle bundle = new Bundle();
+                bundle.putParcelable(FindMatchService.FIND_MATCH_RESPONSE, response.body());
+                resultReceiver.send(FindMatchRequestTO.REQUEST_CODE, bundle);
+            } else {
+                if (runThread.get()) {
+                    logger.i("Could not find match. Searching...");
+                    handler.postDelayed(this, 10000);
+                }
+            }
         }
+    }
+
+    public static void stopThread() {
+        runThread.set(false);
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    @Override
+    public void onDestroy() {
+        logger.i("Stopping find game thread");
+        runThread.set(false);
+        if (handler != null) {
+            handler.removeCallbacks(this);
+        }
     }
 }
