@@ -10,10 +10,9 @@ import android.os.Parcelable;
 public class FindMatchResponseTO implements Parcelable {
 
     private Double lat;
-
     private Double lng;
-
     private String ip;
+    private Boolean isServer;
 
     public Double getLat() {
         return lat;
@@ -66,5 +65,13 @@ public class FindMatchResponseTO implements Parcelable {
         lat = in.readDouble();
         lng = in.readDouble();
         ip = in.readString();
+    }
+
+    public Boolean getIsServer() {
+        return isServer;
+    }
+
+    public void setIsServer(Boolean server) {
+        isServer = server;
     }
 }

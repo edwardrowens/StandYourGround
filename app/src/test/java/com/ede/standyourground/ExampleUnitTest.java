@@ -1,8 +1,5 @@
 package com.ede.standyourground;
 
-import com.ede.standyourground.app.to.FindMatchResponseTO;
-import com.google.gson.Gson;
-
 import org.junit.Test;
 
 /**
@@ -13,12 +10,6 @@ import org.junit.Test;
 public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() throws Exception {
-        String json = "{\n" +
-                "\"lat\": 34.15497,\n" +
-                "\"lng\": -118.2471346,\n" +
-                "\"ip\": \"::ffff:192.168.0.100\"\n" +
-                "}";
-        FindMatchResponseTO findMatchResponseTO = new Gson().fromJson(json, FindMatchResponseTO.class);
-        System.out.println(findMatchResponseTO.getLat());
+
     }
 }
