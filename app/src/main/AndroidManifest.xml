@@ -62,7 +62,7 @@
             android:exported="false" />
         <service
             android:name=".app.service.RemoveFromMatchMakingService"
-            android:exported="false"></service>
+            android:exported="false" />
     </application>
 
 </manifest>

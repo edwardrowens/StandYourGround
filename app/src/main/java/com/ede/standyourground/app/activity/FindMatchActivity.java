@@ -28,9 +28,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.UUID;
 
 public class FindMatchActivity extends AppCompatActivity implements Receiver, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -102,18 +99,6 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
 
             LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
-
-            if (findMatchResponseTO.getIsServer()) {
-                try {
-                    ServerSocket serverSocket = new ServerSocket(8008);
-                    while(true) {
-                        Socket client = serverSocket.accept();
-
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
 
             Intent intent = new Intent(this, MapsActivity.class);
             intent.putExtra(OPPONENT_LOCATION, opponentLocation);
