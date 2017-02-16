@@ -205,7 +205,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         MovableUnit unit = null;
                         switch (selectedUnit) {
                             case FOOT_SOLDIER:
-                                unit = new FootSoldier(100, polyline, playerLocation, circle);
+                                unit = new FootSoldier(polyline, playerLocation, circle);
                                 break;
                         }
                         if (unit != null) {

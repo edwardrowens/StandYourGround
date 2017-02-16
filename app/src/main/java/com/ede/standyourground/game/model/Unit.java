@@ -2,10 +2,9 @@ package com.ede.standyourground.game.model;
 
 import android.os.SystemClock;
 
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Polyline;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -16,15 +15,13 @@ import java.util.UUID;
 public class Unit {
     private final LatLng startingPosition;
     private final UUID id = UUID.randomUUID();
-    private final long createdTime;
-    private final Circle circle;
-    private final Polyline polyline;
+    private long createdTime;
+    private final List<LatLng> waypoints;
 
-    public Unit(LatLng startingPosition, Circle circle, Polyline polyline) {
+    public Unit(LatLng startingPosition, List<LatLng> waypoints) {
         this.startingPosition = startingPosition;
         this.createdTime = SystemClock.uptimeMillis();
-        this.circle = circle;
-        this.polyline = polyline;
+        this.waypoints = waypoints;
     }
 
     public LatLng getStartingPosition() {
@@ -39,11 +36,11 @@ public class Unit {
         return createdTime;
     }
 
-    public Polyline getPolyline() {
-        return polyline;
+    public void setCreatedTime(long createdTime) {
+        this.createdTime = createdTime;
     }
 
-    public Circle getCircle() {
-        return circle;
+    public List<LatLng> getWaypoints() {
+        return waypoints;
     }
 }
