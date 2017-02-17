@@ -3,17 +3,21 @@ package com.ede.standyourground.networking.framework;
 import android.os.Handler;
 import android.os.HandlerThread;
 
+import com.ede.standyourground.framework.Callback;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.networking.exchange.api.Exchange;
 import com.ede.standyourground.networking.exchange.request.api.Request;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
+import com.ede.standyourground.networking.exchange.response.impl.OkResponse;
 import com.ede.standyourground.networking.serialization.RuntimeTypeAdapterFactory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
@@ -28,11 +32,12 @@ public class NetworkingManager {
 
     private static final int PORT = 8008;
 
-    private final BlockingQueue<Exchange> exchanges = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Exchange> outgoingExchanges = new LinkedBlockingQueue<>();
 
 
     private final Gson GSON = new GsonBuilder().registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(Exchange.class)
-            .registerSubtype(CreateUnitRequest.class)).create();
+            .registerSubtype(CreateUnitRequest.class)
+            .registerSubtype(OkResponse.class)).create();
 
     private HandlerThread readerThread = new HandlerThread("ReaderThread");
     private HandlerThread writerThread = new HandlerThread("WriterThread");
@@ -41,7 +46,7 @@ public class NetworkingManager {
 
     private static NetworkingManager instance = new NetworkingManager();
 
-    private Socket socket;
+    private static Socket socket;
 
 
     private NetworkingManager() {
@@ -51,11 +56,11 @@ public class NetworkingManager {
         writeHandler = new Handler(writerThread.getLooper());
     }
 
-    public NetworkingManager getInstance() {
+    public static NetworkingManager getInstance() {
         return instance;
     }
 
-    public void connect(final boolean isServer, final String ip) {
+    public void connect(final boolean isServer, final String ip, final Callback callback) {
         readHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -65,12 +70,14 @@ public class NetworkingManager {
                     try {
                         serverSocket = new ServerSocket(PORT);
                     } catch (IOException e) {
+                        readHandler.post(this);
                         logger.e("Could not establish server socket.", e);
                     }
                     try {
                         socket = serverSocket.accept();
                     } catch (IOException e) {
                         logger.e("Could not accept client connection.", e);
+                        readHandler.post(this);
                     }
                     if (socket == null) {
                         readHandler.post(this);
@@ -83,25 +90,32 @@ public class NetworkingManager {
                         readHandler.post(this);
                     }
                 }
+
+                if (socket != null) {
+                    callback.onSuccess();
+                    readExchanges();
+                    writeExchanges();
+                }
             }
         });
     }
 
     public void sendRequest(final Request request) {
-        exchanges.add(request);
+        outgoingExchanges.add(request);
     }
 
     private void writeExchanges() {
         writeHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (exchanges.size() > 0) {
-                    String requestString = GSON.toJson(exchanges.peek());
+                if (outgoingExchanges.size() > 0) {
+                    String requestString = GSON.toJson(outgoingExchanges.peek());
                     try {
                         IOUtils.write(requestString, socket.getOutputStream());
                     } catch (IOException e) {
-                        logger.e("Problem in writing request to output stream", e);
+                        logger.e("Problem in writing exchange to output stream", e);
                     }
+                    outgoingExchanges.poll();
                 }
                 writeHandler.post(this);
             }
@@ -109,10 +123,19 @@ public class NetworkingManager {
     }
 
     private void readExchanges() {
-        // TODO
+        readHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    Exchange exchange = GSON.fromJson(bufferedReader, Exchange.class);
+                    ExchangeHandlerUtil.handleExchange(exchange);
+                } catch (IOException e) {
+                    logger.e("Problem in reading exchange from input stream", e);
+                }
+            }
+        });
     }
-
-    private void readRe
 
     public void closeConnection() {
         try {

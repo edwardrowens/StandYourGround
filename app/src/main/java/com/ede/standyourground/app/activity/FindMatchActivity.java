@@ -9,6 +9,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -18,9 +20,11 @@ import com.ede.standyourground.app.service.FindMatchService;
 import com.ede.standyourground.app.service.RemoveFromMatchMakingService;
 import com.ede.standyourground.app.to.FindMatchRequestTO;
 import com.ede.standyourground.app.to.FindMatchResponseTO;
+import com.ede.standyourground.framework.Callback;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.Receiver;
 import com.ede.standyourground.framework.StandYourGroundResultReceiver;
+import com.ede.standyourground.networking.framework.NetworkingManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -51,6 +55,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     private Button onFindMatchButton;
     private ProgressBar findingMatchProgressBar;
     private TextView findingMatchText;
+    private TextView opponentFoundText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +63,9 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         setContentView(R.layout.activity_find_match);
 
         onFindMatchButton = (Button) findViewById(R.id.onFindMatchButton);
-        findingMatchProgressBar = (ProgressBar) findViewById(R.id.findingMatchProgressBar);
+        findingMatchProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         findingMatchText = (TextView) findViewById(R.id.findingMatchText);
+        opponentFoundText = (TextView) findViewById(R.id.opponentFoundText);
 
         standYourGroundResultReceiver.setReceiver(this);
 
@@ -92,18 +98,32 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     public void onReceiveResult(int resultCode, Bundle resultData) {
         logger.i("Match found!");
 
-        FindMatchResponseTO findMatchResponseTO = (FindMatchResponseTO) resultData.get(FindMatchService.FIND_MATCH_RESPONSE);
+        final FindMatchResponseTO findMatchResponseTO = (FindMatchResponseTO) resultData.get(FindMatchService.FIND_MATCH_RESPONSE);
         if (findMatchResponseTO != null) {
             logger.i("Starting the game.");
+
+            animateMessage(getResources().getString(R.string.find_match_opponent_found));
+            findingMatchText.setText(R.string.find_match_connecting);
+
             playerMatched = true;
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
 
-            LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
+            NetworkingManager.getInstance().connect(findMatchResponseTO.getIsServer(), findMatchResponseTO.getIp(), new Callback() {
+                @Override
+                public void onSuccess() {
+                    LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
 
-            Intent intent = new Intent(this, MapsActivity.class);
-            intent.putExtra(OPPONENT_LOCATION, opponentLocation);
-            intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
-            this.startActivity(intent);
+                    Intent intent = new Intent(FindMatchActivity.this, MapsActivity.class);
+                    intent.putExtra(OPPONENT_LOCATION, opponentLocation);
+                    intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
+                    FindMatchActivity.this.startActivity(intent);
+                }
+
+                @Override
+                public void onFail() {
+                    animateMessage(getResources().getString(R.string.find_match_opponent_lost));
+                }
+            });
         } else {
             logger.w("Received null opponent player in response");
         }
@@ -172,5 +192,47 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    private void animateMessage(String message) {
+        opponentFoundText.setText(message);
+        final Animation in = new AlphaAnimation(0.0f, 1.0f);
+        in.setDuration(2000);
+
+        final Animation out = new AlphaAnimation(1.0f, 0.0f);
+        out.setDuration(2000);
+
+        in.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                opponentFoundText.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                opponentFoundText.startAnimation(out);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
+
+        out.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                opponentFoundText.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
+
+        opponentFoundText.startAnimation(in);
     }
 }

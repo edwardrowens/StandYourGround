@@ -4,4 +4,9 @@
     <string name="start_game_button">Play</string>
     <string name="title_activity_asdsad">Map</string>
     <string name="title_activity_find_match">FindMatchActivity</string>
+    <string name="find_match_searching">Searching...</string>
+    <string name="find_match_connecting">Connecting to opponent...</string>
+    <string name="find_match_opponent_found">Opponent found!</string>
+    <string name="find_match_opponent_lost">Could not connect to opponent</string>
+    <string name="find_match_button">Find Match</string>
 </resources>

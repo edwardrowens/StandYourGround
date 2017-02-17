@@ -19,7 +19,9 @@
         android:layout_centerVertical="true"
         android:enabled="false"
         android:onClick="onFindMatch"
-        android:text="Find Match" />
+        android:text="@string/find_match_button" />
+
+
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -29,19 +31,26 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/opponentFoundText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/find_match_opponent_found"
+            android:gravity="center"
+            android:layout_marginBottom="20dp"
+            android:visibility="invisible"/>
+
+        <TextView
             android:id="@+id/findingMatchText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Searching..."
+            android:text="@string/find_match_searching"
             android:gravity="center"
             android:visibility="invisible"/>
         <ProgressBar
-            android:id="@+id/findingMatchProgressBar"
+            android:id="@+id/progressBar"
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
             android:visibility="invisible"
             android:indeterminate="true"/>
 
