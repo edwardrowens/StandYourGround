@@ -23,7 +23,6 @@ public class RemoveFromMatchMakingService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        logger.i("received call");
         if (intent != null) {
             logger.i("Removing player from match making");
             UUID playerId = (UUID) intent.getExtras().get(FindMatchActivity.PLAYER_ID);

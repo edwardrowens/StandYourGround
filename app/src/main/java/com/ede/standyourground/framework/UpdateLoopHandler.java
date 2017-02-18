@@ -3,6 +3,7 @@ package com.ede.standyourground.framework;
 import android.os.Handler;
 import android.os.Message;
 
+import com.ede.standyourground.app.activity.MapsActivity;
 import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
 
@@ -20,7 +21,7 @@ public class UpdateLoopHandler extends Handler {
         for (Unit unit : updateLoopTask.getUpdatedUnits()) {
             if (unit instanceof MovableUnit) {
                 MovableUnit movableUnit = (MovableUnit) WorldManager.getInstance().getUnit(unit.getId());
-                movableUnit.getCircle().setCenter(movableUnit.getPosition());
+                MapsActivity.getRenderedUnits().get(movableUnit).setCenter(movableUnit.getPosition());
             }
         }
     }

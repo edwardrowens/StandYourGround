@@ -4,8 +4,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.ResultReceiver;
 import android.support.annotation.Nullable;
 
@@ -27,6 +27,7 @@ public class FindMatchService extends Service implements Runnable {
     public static final String FIND_MATCH_REQUEST = FindMatchService.class.getName() + ".findMatchRequest";
 
     private Handler handler;
+    private HandlerThread handlerThread = new HandlerThread("FindMatch");
 
     private static Logger logger = new Logger(FindMatchService.class);
 
@@ -46,7 +47,9 @@ public class FindMatchService extends Service implements Runnable {
             findMatchRequestTO = bundle.getParcelable(FIND_MATCH_REQUEST);
         }
         runThread.set(true);
-        new Thread(this).start();
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
+        handler.post(this);
         return START_NOT_STICKY;
     }
 
@@ -71,12 +74,6 @@ public class FindMatchService extends Service implements Runnable {
     }
 
     private void findMatch() {
-        if (handler == null) {
-            Looper.prepare();
-            handler = new Handler();
-            handler.post(this);
-            Looper.loop();
-        }
         if (runThread.get()) {
             Response<FindMatchResponseTO> response = findMatch(findMatchRequestTO);
             if (response.code() == 200) {
@@ -87,7 +84,7 @@ public class FindMatchService extends Service implements Runnable {
             } else {
                 if (runThread.get()) {
                     logger.i("Could not find match. Searching...");
-                    handler.postDelayed(this, 10000);
+                    handler.postDelayed(this, 1000);
                 }
             }
         }

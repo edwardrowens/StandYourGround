@@ -5,6 +5,7 @@ import com.ede.standyourground.networking.exchange.request.api.Request;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Eddie on 2/15/2017.
@@ -16,6 +17,7 @@ public class CreateUnitRequest implements Request {
     private Units unit;
     private List<LatLng> waypoints;
     private LatLng position;
+    private final UUID id = UUID.randomUUID();
 
     @Override
     public long getTimestamp() {
@@ -25,6 +27,11 @@ public class CreateUnitRequest implements Request {
     @Override
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public UUID getId() {
+        return id;
     }
 
     public Units getUnit() {

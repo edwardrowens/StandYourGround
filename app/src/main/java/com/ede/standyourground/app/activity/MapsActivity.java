@@ -21,6 +21,7 @@ import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.WorldManager;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.MovableUnit;
+import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -40,6 +41,8 @@ import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -61,6 +64,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Units selectedUnit;
     private LatLng playerLocation;
     private LatLng opponentLocation;
+    private static Map<Unit, Circle> renderedUnit = new ConcurrentHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,10 +209,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         MovableUnit unit = null;
                         switch (selectedUnit) {
                             case FOOT_SOLDIER:
-                                unit = new FootSoldier(polyline, playerLocation, circle);
+                                unit = new FootSoldier(polyline.getPoints(), playerLocation);
                                 break;
                         }
                         if (unit != null) {
+                            renderedUnit.put(unit, circle);
                             WorldManager.getInstance().addUnit(unit);
                         }
                     }
@@ -241,5 +246,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .color(Color.BLACK);
         logger.i("drawing route");
         return googleMap.addPolyline(polylineOptions);
+    }
+
+    public static Map<Unit, Circle> getRenderedUnits() {
+        return renderedUnit;
     }
 }

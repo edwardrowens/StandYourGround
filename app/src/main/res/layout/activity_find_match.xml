@@ -21,6 +21,14 @@
         android:onClick="onFindMatch"
         android:text="@string/find_match_button" />
 
+    <TextView
+        android:id="@+id/opponentFoundText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/find_match_opponent_found"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        android:visibility="invisible"/>
 
 
     <LinearLayout
@@ -29,15 +37,6 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/opponentFoundText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/find_match_opponent_found"
-            android:gravity="center"
-            android:layout_marginBottom="20dp"
-            android:visibility="invisible"/>
 
         <TextView
             android:id="@+id/findingMatchText"

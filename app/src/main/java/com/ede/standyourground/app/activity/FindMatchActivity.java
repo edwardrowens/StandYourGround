@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -104,6 +103,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
 
             animateMessage(getResources().getString(R.string.find_match_opponent_found));
             findingMatchText.setText(R.string.find_match_connecting);
+            logger.i("Picked as server: %b", findMatchResponseTO.getIsServer());
 
             playerMatched = true;
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
@@ -144,25 +144,24 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        FindMatchService.stopThread();
         if (!playerMatched) {
             logger.d("Making call to remove player from match making");
-            FindMatchService.stopThread();
             Intent intent = new Intent(this, RemoveFromMatchMakingService.class);
             intent.putExtra(PLAYER_ID, playerId);
             startService(intent);
             logger.d("Call made to remove player from match making");
         }
+        super.onDestroy();
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.i(MapsActivity.class.getName(), "Google API client connected");
+        logger.i("Google API client connected");
         try {
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
         } catch (SecurityException e) {
-            Log.i(MapsActivity.class.getName(), "Fine location permission not granted");
-            e.printStackTrace();
+            logger.e("Fine location permission not granted", e);
         }
     }
 
@@ -197,10 +196,11 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     private void animateMessage(String message) {
         opponentFoundText.setText(message);
         final Animation in = new AlphaAnimation(0.0f, 1.0f);
-        in.setDuration(2000);
+        in.setDuration(1000);
 
         final Animation out = new AlphaAnimation(1.0f, 0.0f);
-        out.setDuration(2000);
+        out.setDuration(1000);
+        out.setStartOffset(2000);
 
         in.setAnimationListener(new Animation.AnimationListener() {
             @Override

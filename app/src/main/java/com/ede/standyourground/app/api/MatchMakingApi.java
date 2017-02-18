@@ -17,9 +17,9 @@ import retrofit2.http.Path;
 
 public interface MatchMakingApi {
 
-    @POST("/findMatch")
+    @POST("/matchmaking")
     Call<FindMatchResponseTO> findMatch(@Body FindMatchRequestTO findMatchRequestTO);
 
-    @DELETE("/matchingPlayers/{playerId}")
+    @DELETE("/matchmaking/players/{playerId}")
     Call<Void> deleteMatchedPlayer(@Path(value="playerId") UUID playerId);
 }

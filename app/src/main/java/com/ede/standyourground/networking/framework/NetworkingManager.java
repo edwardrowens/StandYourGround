@@ -84,6 +84,7 @@ public class NetworkingManager {
                     }
                 } else if (!isServer) {
                     try {
+                        logger.i("Connecting to server on %s:%d", ip, PORT);
                         socket = new Socket(ip, PORT);
                     } catch (IOException e) {
                         logger.e("Could not connect to server.", e);
@@ -92,6 +93,7 @@ public class NetworkingManager {
                 }
 
                 if (socket != null) {
+                    logger.i("Connection created. Starting read and write threads.");
                     callback.onSuccess();
                     readExchanges();
                     writeExchanges();
@@ -110,12 +112,14 @@ public class NetworkingManager {
             public void run() {
                 if (outgoingExchanges.size() > 0) {
                     String requestString = GSON.toJson(outgoingExchanges.peek());
-                    try {
-                        IOUtils.write(requestString, socket.getOutputStream());
-                    } catch (IOException e) {
-                        logger.e("Problem in writing exchange to output stream", e);
+                    if (requestString != null) {
+                        try {
+                            IOUtils.write(requestString, socket.getOutputStream());
+                        } catch (IOException e) {
+                            logger.e("Problem in writing exchange to output stream", e);
+                        }
+                        outgoingExchanges.poll();
                     }
-                    outgoingExchanges.poll();
                 }
                 writeHandler.post(this);
             }
@@ -129,7 +133,10 @@ public class NetworkingManager {
                 try {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     Exchange exchange = GSON.fromJson(bufferedReader, Exchange.class);
-                    ExchangeHandlerUtil.handleExchange(exchange);
+                    if (exchange != null) {
+                        logger.i("Handling exchange %s", exchange.getId().toString());
+                        ExchangeHandlerUtil.handleExchange(exchange);
+                    }
                 } catch (IOException e) {
                     logger.e("Problem in reading exchange from input stream", e);
                 }
