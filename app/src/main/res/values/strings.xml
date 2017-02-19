@@ -9,4 +9,6 @@
     <string name="find_match_opponent_found">Opponent found!</string>
     <string name="find_match_opponent_lost">Could not connect to opponent</string>
     <string name="find_match_button">Find Match</string>
+    <string name="server_is_down">"Server is down. Please try again later."</string>
+    <string name="problem_connecting">There was a problem with connecting. please try again.</string>
 </resources>

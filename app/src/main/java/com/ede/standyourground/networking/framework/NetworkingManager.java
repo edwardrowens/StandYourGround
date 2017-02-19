@@ -18,6 +18,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
@@ -68,14 +69,18 @@ public class NetworkingManager {
                     logger.i("Starting server on port %d", PORT);
                     ServerSocket serverSocket = null;
                     try {
+                        logger.d("creating server socket");
                         serverSocket = new ServerSocket(PORT);
-                    } catch (IOException e) {
+                        logger.d("created server socket");
+                    } catch (Exception e) {
                         readHandler.post(this);
                         logger.e("Could not establish server socket.", e);
                     }
                     try {
+                        logger.d("accepting connections on %s:%d", serverSocket.getInetAddress().toString(), serverSocket.getLocalPort());
                         socket = serverSocket.accept();
-                    } catch (IOException e) {
+                        logger.d("accepted connection");
+                    } catch (Exception e) {
                         logger.e("Could not accept client connection.", e);
                         readHandler.post(this);
                     }
@@ -85,14 +90,16 @@ public class NetworkingManager {
                 } else if (!isServer) {
                     try {
                         logger.i("Connecting to server on %s:%d", ip, PORT);
-                        socket = new Socket(ip, PORT);
-                    } catch (IOException e) {
+                        socket = new Socket();
+                        socket.connect(new InetSocketAddress(ip, PORT), 10000);
+                        logger.i("connected?");
+                    } catch (Exception e) {
                         logger.e("Could not connect to server.", e);
                         readHandler.post(this);
                     }
                 }
 
-                if (socket != null) {
+                if (socket.isConnected()) {
                     logger.i("Connection created. Starting read and write threads.");
                     callback.onSuccess();
                     readExchanges();

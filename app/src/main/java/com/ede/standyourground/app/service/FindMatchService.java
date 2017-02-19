@@ -80,12 +80,19 @@ public class FindMatchService extends Service implements Runnable {
                 logger.i("Found match!");
                 Bundle bundle = new Bundle();
                 bundle.putParcelable(FindMatchService.FIND_MATCH_RESPONSE, response.body());
-                resultReceiver.send(FindMatchRequestTO.REQUEST_CODE, bundle);
-            } else {
+                resultReceiver.send(response.code(), bundle);
+            } else if (response.code() == 503) {
+                logger.i("Server is down");
+                resultReceiver.send(response.code(), null);
+            }
+            else if (response.code() == 204) {
                 if (runThread.get()) {
                     logger.i("Could not find match. Searching...");
                     handler.postDelayed(this, 1000);
                 }
+            } else {
+                logger.e("Problem in matchmaking request. Code %d", response.code());
+                resultReceiver.send(response.code(), null);
             }
         }
     }

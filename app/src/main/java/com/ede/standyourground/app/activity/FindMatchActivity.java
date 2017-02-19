@@ -95,37 +95,19 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
 
     @Override
     public void onReceiveResult(int resultCode, Bundle resultData) {
-        logger.i("Match found!");
+        logger.i("Received result from FindMatchService");
 
-        final FindMatchResponseTO findMatchResponseTO = (FindMatchResponseTO) resultData.get(FindMatchService.FIND_MATCH_RESPONSE);
-        if (findMatchResponseTO != null) {
-            logger.i("Starting the game.");
-
-            animateMessage(getResources().getString(R.string.find_match_opponent_found));
-            findingMatchText.setText(R.string.find_match_connecting);
-            logger.i("Picked as server: %b", findMatchResponseTO.getIsServer());
-
-            playerMatched = true;
-            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-
-            NetworkingManager.getInstance().connect(findMatchResponseTO.getIsServer(), findMatchResponseTO.getIp(), new Callback() {
-                @Override
-                public void onSuccess() {
-                    LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
-
-                    Intent intent = new Intent(FindMatchActivity.this, MapsActivity.class);
-                    intent.putExtra(OPPONENT_LOCATION, opponentLocation);
-                    intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
-                    FindMatchActivity.this.startActivity(intent);
-                }
-
-                @Override
-                public void onFail() {
-                    animateMessage(getResources().getString(R.string.find_match_opponent_lost));
-                }
-            });
-        } else {
-            logger.w("Received null opponent player in response");
+        switch(resultCode) {
+            case 503:
+                logger.e("Received a 503 when looking for opponent");
+                resetActivity(getResources().getString(R.string.server_is_down));
+                break;
+            case 200:
+                final FindMatchResponseTO findMatchResponseTO = (FindMatchResponseTO) resultData.get(FindMatchService.FIND_MATCH_RESPONSE);
+                connectToOpponent(findMatchResponseTO);
+                break;
+            default:
+                resetActivity(getResources().getString(R.string.problem_connecting));
         }
     }
 
@@ -234,5 +216,54 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         });
 
         opponentFoundText.startAnimation(in);
+    }
+
+    private void connectToOpponent(final FindMatchResponseTO findMatchResponseTO) {
+        if (findMatchResponseTO != null) {
+            logger.i("Connecting to opponent");
+
+            animateMessage(getResources().getString(R.string.find_match_opponent_found));
+            findingMatchText.setText(R.string.find_match_connecting);
+            logger.i("Picked as server: %b", findMatchResponseTO.getIsServer());
+
+            playerMatched = true;
+            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+
+            NetworkingManager.getInstance().connect(findMatchResponseTO.getIsServer(), findMatchResponseTO.getIp(), new Callback() {
+                @Override
+                public void onSuccess() {
+                    LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
+
+                    Intent intent = new Intent(FindMatchActivity.this, MapsActivity.class);
+                    intent.putExtra(OPPONENT_LOCATION, opponentLocation);
+                    intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
+                    FindMatchActivity.this.startActivity(intent);
+                }
+
+                @Override
+                public void onFail() {
+                    resetActivity(getResources().getString(R.string.find_match_opponent_lost));
+                }
+            });
+        } else {
+            logger.w("Received null opponent player in response");
+        }
+    }
+
+    private void resetActivity(String messageText) {
+        logger.e("Could not connect to opponent.");
+        animateMessage(messageText);
+        playerMatched = false;
+        FindMatchService.stopThread();
+        if (!playerMatched) {
+            logger.d("Making call to remove player from match making");
+            Intent intent = new Intent(FindMatchActivity.this, RemoveFromMatchMakingService.class);
+            intent.putExtra(PLAYER_ID, playerId);
+            startService(intent);
+        }
+
+        findingMatchText.setVisibility(View.INVISIBLE);
+        findingMatchProgressBar.setVisibility(View.INVISIBLE);
+        onFindMatchButton.setVisibility(View.VISIBLE);
     }
 }
