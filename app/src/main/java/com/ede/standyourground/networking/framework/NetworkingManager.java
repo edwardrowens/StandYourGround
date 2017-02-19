@@ -19,19 +19,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URI;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-/**
- * Created by Eddie on 2/13/2017.
- */
 
 public class NetworkingManager {
     private static Logger logger = new Logger(NetworkingManager.class);
 
-    private static final int PORT = 8008;
+    private static final int PORT = 80;
 
     private final BlockingQueue<Exchange> outgoingExchanges = new LinkedBlockingQueue<>();
 
@@ -61,42 +58,18 @@ public class NetworkingManager {
         return instance;
     }
 
-    public void connect(final boolean isServer, final String ip, final Callback callback) {
+    public void connect(final Callback callback) {
         readHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (isServer) {
-                    logger.i("Starting server on port %d", PORT);
-                    ServerSocket serverSocket = null;
-                    try {
-                        logger.d("creating server socket");
-                        serverSocket = new ServerSocket(PORT);
-                        logger.d("created server socket");
-                    } catch (Exception e) {
-                        readHandler.post(this);
-                        logger.e("Could not establish server socket.", e);
-                    }
-                    try {
-                        logger.d("accepting connections on %s:%d", serverSocket.getInetAddress().toString(), serverSocket.getLocalPort());
-                        socket = serverSocket.accept();
-                        logger.d("accepted connection");
-                    } catch (Exception e) {
-                        logger.e("Could not accept client connection.", e);
-                        readHandler.post(this);
-                    }
-                    if (socket == null) {
-                        readHandler.post(this);
-                    }
-                } else if (!isServer) {
-                    try {
-                        logger.i("Connecting to server on %s:%d", ip, PORT);
-                        socket = new Socket();
-                        socket.connect(new InetSocketAddress(ip, PORT), 10000);
-                        logger.i("connected?");
-                    } catch (Exception e) {
-                        logger.e("Could not connect to server.", e);
-                        readHandler.post(this);
-                    }
+                try {
+                    URI uri = new URI("https://standyourground.herokuapp.com/");
+                    logger.i("Connecting to player on %s:%d", uri.getHost(), PORT);
+                    socket = new Socket();
+                    socket.connect(new InetSocketAddress( uri.getHost(), PORT), 10000);
+                } catch (Exception e) {
+                    logger.e("Could not connect to player.", e);
+                    callback.onFail();
                 }
 
                 if (socket.isConnected()) {
@@ -106,6 +79,7 @@ public class NetworkingManager {
                     writeExchanges();
                 }
             }
+
         });
     }
 

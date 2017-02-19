@@ -39,6 +39,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     public static String PLAYER_ID = FindMatchActivity.class.getName() + ".playerId";
     public static String OPPONENT_LOCATION = FindMatchActivity.class.getName() + ".opponent";
     public static String PLAYER_LOCATION = FindMatchActivity.class.getName() + ".location";
+    public static String GAME_SESSION_ID = FindMatchActivity.class.getName() + ".gameSessionId";
 
     private static final long LOCATION_INTERVAL = 5000;
 
@@ -224,12 +225,11 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
 
             animateMessage(getResources().getString(R.string.find_match_opponent_found));
             findingMatchText.setText(R.string.find_match_connecting);
-            logger.i("Picked as server: %b", findMatchResponseTO.getIsServer());
 
             playerMatched = true;
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
 
-            NetworkingManager.getInstance().connect(findMatchResponseTO.getIsServer(), findMatchResponseTO.getIp(), new Callback() {
+            NetworkingManager.getInstance().connect(new Callback() {
                 @Override
                 public void onSuccess() {
                     LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
@@ -237,6 +237,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
                     Intent intent = new Intent(FindMatchActivity.this, MapsActivity.class);
                     intent.putExtra(OPPONENT_LOCATION, opponentLocation);
                     intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
+                    intent.putExtra(GAME_SESSION_ID, findMatchResponseTO.getGameSessionId());
                     FindMatchActivity.this.startActivity(intent);
                 }
 

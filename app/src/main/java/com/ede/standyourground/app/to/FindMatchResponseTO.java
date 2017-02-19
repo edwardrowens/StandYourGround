@@ -11,8 +11,7 @@ public class FindMatchResponseTO implements Parcelable {
 
     private Double lat;
     private Double lng;
-    private String ip;
-    private Boolean isServer;
+    private String gameSessionId;
 
     public Double getLat() {
         return lat;
@@ -30,12 +29,12 @@ public class FindMatchResponseTO implements Parcelable {
         this.lng = lng;
     }
 
-    public String getIp() {
-        return ip;
+    public String getGameSessionId() {
+        return gameSessionId;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setGameSessionId(String gameSessionId) {
+        this.gameSessionId = gameSessionId;
     }
 
     @Override
@@ -47,7 +46,7 @@ public class FindMatchResponseTO implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeDouble(lat);
         dest.writeDouble(lng);
-        dest.writeString(ip);
+        dest.writeString(gameSessionId);
     }
 
     public static final Parcelable.Creator<FindMatchResponseTO> CREATOR
@@ -64,14 +63,6 @@ public class FindMatchResponseTO implements Parcelable {
     private FindMatchResponseTO(Parcel in) {
         lat = in.readDouble();
         lng = in.readDouble();
-        ip = in.readString();
-    }
-
-    public Boolean getIsServer() {
-        return isServer;
-    }
-
-    public void setIsServer(Boolean server) {
-        isServer = server;
+        gameSessionId = in.readString();
     }
 }

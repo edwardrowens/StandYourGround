@@ -10,8 +10,6 @@ import java.util.UUID;
  */
 
 public class FindMatchRequestTO implements Parcelable {
-    public static final int REQUEST_CODE = 0;
-
     public FindMatchRequestTO(){}
     private double lat;
     private double lng;

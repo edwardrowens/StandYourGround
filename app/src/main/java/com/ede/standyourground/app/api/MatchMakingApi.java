@@ -11,9 +11,6 @@ import retrofit2.http.DELETE;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 
-/**
- * Created by Eddie on 2/9/2017.
- */
 
 public interface MatchMakingApi {
 

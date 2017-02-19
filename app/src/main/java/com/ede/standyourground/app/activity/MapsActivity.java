@@ -17,6 +17,7 @@ import com.ede.standyourground.app.model.Route;
 import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.service.GoogleDirectionsService;
 import com.ede.standyourground.app.service.MathUtils;
+import com.ede.standyourground.app.service.StopGameService;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.WorldManager;
 import com.ede.standyourground.game.model.FootSoldier;
@@ -42,6 +43,7 @@ import com.google.maps.android.PolyUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import retrofit2.Call;
@@ -65,6 +67,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng playerLocation;
     private LatLng opponentLocation;
     private static Map<Unit, Circle> renderedUnit = new ConcurrentHashMap<>();
+    public static UUID gameSessionId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +80,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         playerLocation = (LatLng) getIntent().getExtras().get(FindMatchActivity.PLAYER_LOCATION);
         opponentLocation = (LatLng) getIntent().getExtras().get(FindMatchActivity.OPPONENT_LOCATION);
+        gameSessionId = UUID.fromString((String) getIntent().getExtras().get(FindMatchActivity.GAME_SESSION_ID));
         logger.i("Player location is " + playerLocation.toString());
         logger.i("Opponent location is " + opponentLocation.toString());
 
@@ -101,6 +105,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             unbindService(serviceConnection);
             bound = false;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        logger.d("Ending game");
+        Intent intent = new Intent(this, StopGameService.class);
+        intent.putExtra(FindMatchActivity.GAME_SESSION_ID, gameSessionId);
+        startService(intent);
+        super.onDestroy();
     }
 
     /**
