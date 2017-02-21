@@ -13,6 +13,8 @@ public class FindMatchResponseTO implements Parcelable {
     private Double lng;
     private String gameSessionId;
 
+    public FindMatchResponseTO() {}
+
     public Double getLat() {
         return lat;
     }

@@ -4,13 +4,10 @@ import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-/**
- * Created by Eddie on 2/1/2017.
- */
-
 public class ServiceGenerator {
 
-    private static final String BASE_URL = "https://standyourground.herokuapp.com/";
+//    private static final String BASE_URL = "https://standyourground.herokuapp.com/";
+    private static final String BASE_URL = "http://192.168.0.102:8000/";
 
     private static Retrofit retrofit;
 

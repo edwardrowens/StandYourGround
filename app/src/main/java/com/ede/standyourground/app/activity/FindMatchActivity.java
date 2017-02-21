@@ -232,6 +232,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
             NetworkingManager.getInstance().connect(new Callback() {
                 @Override
                 public void onSuccess() {
+                    logger.i("Successful TCP connection. Starting game.");
                     LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
 
                     Intent intent = new Intent(FindMatchActivity.this, MapsActivity.class);
@@ -255,8 +256,8 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         logger.e("Could not connect to opponent.");
         animateMessage(messageText);
         playerMatched = false;
-        FindMatchService.stopThread();
         if (!playerMatched) {
+            FindMatchService.stopThread();
             logger.d("Making call to remove player from match making");
             Intent intent = new Intent(FindMatchActivity.this, RemoveFromMatchMakingService.class);
             intent.putExtra(PLAYER_ID, playerId);

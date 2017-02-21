@@ -18,6 +18,7 @@ import com.ede.standyourground.framework.Logger;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -27,7 +28,7 @@ public class FindMatchService extends Service implements Runnable {
     public static final String FIND_MATCH_REQUEST = FindMatchService.class.getName() + ".findMatchRequest";
 
     private Handler handler;
-    private HandlerThread handlerThread = new HandlerThread("FindMatch");
+    private static HandlerThread handlerThread;
 
     private static Logger logger = new Logger(FindMatchService.class);
 
@@ -38,6 +39,7 @@ public class FindMatchService extends Service implements Runnable {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        handlerThread = new HandlerThread("FindMatch");
         Bundle bundle = null;
         if (intent != null) {
             bundle = intent.getExtras();
@@ -68,37 +70,35 @@ public class FindMatchService extends Service implements Runnable {
             response = findMatchCall.execute();
         } catch (IOException e) {
             logger.e("Problem handling the request", e);
+            response = Response.error(503, ResponseBody.create(null, "error"));
         }
 
         return response;
     }
 
     private void findMatch() {
-        if (runThread.get()) {
-            Response<FindMatchResponseTO> response = findMatch(findMatchRequestTO);
-            if (response.code() == 200) {
-                logger.i("Found match!");
-                Bundle bundle = new Bundle();
-                bundle.putParcelable(FindMatchService.FIND_MATCH_RESPONSE, response.body());
-                resultReceiver.send(response.code(), bundle);
-            } else if (response.code() == 503) {
-                logger.i("Server is down");
-                resultReceiver.send(response.code(), null);
+        Response<FindMatchResponseTO> response = findMatch(findMatchRequestTO);
+        if (response.code() == 200) {
+            logger.i("Found match!");
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(FindMatchService.FIND_MATCH_RESPONSE, response.body());
+            resultReceiver.send(response.code(), bundle);
+        } else if (response.code() == 503) {
+            logger.i("Server is down");
+            resultReceiver.send(response.code(), null);
+        } else if (response.code() == 204) {
+            if (runThread.get()) {
+                logger.i("Could not find match. Searching...");
+                handler.postDelayed(this, 1000);
             }
-            else if (response.code() == 204) {
-                if (runThread.get()) {
-                    logger.i("Could not find match. Searching...");
-                    handler.postDelayed(this, 1000);
-                }
-            } else {
-                logger.e("Problem in matchmaking request. Code %d", response.code());
-                resultReceiver.send(response.code(), null);
-            }
+        } else {
+            logger.e("Problem in matchmaking request. Code %d", response.code());
+            resultReceiver.send(response.code(), null);
         }
     }
 
     public static void stopThread() {
-        runThread.set(false);
+        handlerThread.quit();
     }
 
     @Nullable
