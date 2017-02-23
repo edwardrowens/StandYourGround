@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -51,6 +52,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     private Location currentLocation;
     private UUID playerId;
     private boolean playerMatched = false;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     private Button onFindMatchButton;
     private ProgressBar findingMatchProgressBar;
@@ -229,22 +231,31 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
             playerMatched = true;
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
 
-            NetworkingManager.getInstance().connect(new Callback() {
+            NetworkingManager.getInstance().connect(findMatchResponseTO.getGameSessionId(), new Callback() {
                 @Override
                 public void onSuccess() {
-                    logger.i("Successful TCP connection. Starting game.");
-                    LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
 
-                    Intent intent = new Intent(FindMatchActivity.this, MapsActivity.class);
-                    intent.putExtra(OPPONENT_LOCATION, opponentLocation);
-                    intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
-                    intent.putExtra(GAME_SESSION_ID, findMatchResponseTO.getGameSessionId());
-                    FindMatchActivity.this.startActivity(intent);
+                            Intent intent = new Intent(FindMatchActivity.this, MapsActivity.class);
+                            intent.putExtra(OPPONENT_LOCATION, opponentLocation);
+                            intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
+                            intent.putExtra(GAME_SESSION_ID, findMatchResponseTO.getGameSessionId());
+                            FindMatchActivity.this.startActivity(intent);
+                        }
+                    });
                 }
 
                 @Override
                 public void onFail() {
-                    resetActivity(getResources().getString(R.string.find_match_opponent_lost));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            resetActivity(getResources().getString(R.string.find_match_opponent_lost));
+                        }
+                    });
                 }
             });
         } else {
@@ -255,7 +266,6 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     private void resetActivity(String messageText) {
         logger.e("Could not connect to opponent.");
         animateMessage(messageText);
-        playerMatched = false;
         if (!playerMatched) {
             FindMatchService.stopThread();
             logger.d("Making call to remove player from match making");

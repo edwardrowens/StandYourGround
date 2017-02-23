@@ -6,10 +6,6 @@ import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.networking.exchange.handler.api.ExchangeHandler;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
 
-/**
- * Created by Eddie on 2/15/2017.
- */
-
 public class CreateUnitRequestHandler implements ExchangeHandler {
     @Override
     public <T> void handle(T exchange) {

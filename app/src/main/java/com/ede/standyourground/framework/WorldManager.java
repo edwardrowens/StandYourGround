@@ -1,6 +1,8 @@
 package com.ede.standyourground.framework;
 
 import com.ede.standyourground.game.model.Unit;
+import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
+import com.ede.standyourground.networking.framework.NetworkingManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +38,10 @@ public class WorldManager {
 
     public void addUnit(Unit unit) {
         units.put(unit.getId(), unit);
+        CreateUnitRequest createUnitRequest = new CreateUnitRequest();
+        createUnitRequest.setPosition(unit.getStartingPosition());
+        createUnitRequest.setWaypoints(unit.getWaypoints());
+        NetworkingManager.getInstance().sendRequest(createUnitRequest);
         logger.i("Added unit. %d units managed", units.size());
     }
 

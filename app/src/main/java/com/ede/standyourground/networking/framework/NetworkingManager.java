@@ -14,8 +14,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.net.URI;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -25,18 +23,14 @@ import io.socket.emitter.Emitter;
 public class NetworkingManager {
     private static Logger logger = new Logger(NetworkingManager.class);
 
-    private static final int PORT = 80;
-
-    private final BlockingQueue<Exchange> outgoingExchanges = new LinkedBlockingQueue<>();
+    private static final int PORT = 8000;
 
     private final Gson GSON = new GsonBuilder().registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(Exchange.class)
             .registerSubtype(CreateUnitRequest.class)
             .registerSubtype(OkResponse.class)).create();
 
-    private HandlerThread readerThread = new HandlerThread("ReaderThread");
-    private HandlerThread writerThread = new HandlerThread("WriterThread");
-    private Handler readHandler;
-    private Handler writeHandler;
+    private final HandlerThread networkingThread = new HandlerThread("ReaderThread");
+    private final Handler networkingHandler;
 
     private static NetworkingManager instance = new NetworkingManager();
 
@@ -44,25 +38,24 @@ public class NetworkingManager {
 
 
     private NetworkingManager() {
-        readerThread.start();
-        writerThread.start();
-        readHandler = new Handler(readerThread.getLooper());
-        writeHandler = new Handler(writerThread.getLooper());
+        networkingThread.start();
+        networkingHandler = new Handler(networkingThread.getLooper());
     }
 
     public static NetworkingManager getInstance() {
         return instance;
     }
 
-    public void connect(final Callback callback) {
-        readHandler.post(new Runnable() {
+    public void connect(final String gameSessionId, final Callback callback) {
+        networkingHandler.post(new Runnable() {
             @Override
             public void run() {
                 try {
-//                    URI uri = new URI("https://standyourground.herokuapp.com/");
-                    URI uri = new URI("http://192.168.0.102:8080/");
+//                    URI uri = new URI("https://standyourground.herokuapp.com/:" + PORT);
+                    URI uri = new URI("http://192.168.0.102:8000/");
                     logger.i("Connecting to player on %s:%d", uri.getHost(), uri.getPort());
                     socket = IO.socket(uri);
+                    socket.connect();
                 } catch (Exception e) {
                     logger.e("Could not connect to player.", e);
                     callback.onFail();
@@ -70,63 +63,60 @@ public class NetworkingManager {
                 socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                     @Override
                     public void call(Object... args) {
-                        socket.send("hi");
+                        logger.i("Connected to server! Sending game session ID of %s", gameSessionId);
+                        socket.send(gameSessionId);
+                        socket.on("StartGame", new Emitter.Listener() {
+                            @Override
+                            public void call(Object... args) {
+                                logger.i("Game session is ready. Starting game.");
+                                callback.onSuccess();
+                            }
+                        });
                     }
                 });
-                callback.onSuccess();
-//                    readExchanges();
-//                    writeExchanges();
+
+                socket.on("error", new Emitter.Listener() {
+                    @Override
+                    public void call(Object... args) {
+                        callback.onFail();
+                    }
+                });
+
+                socket.on("message", new Emitter.Listener() {
+                    @Override
+                    public void call(final Object... args) {
+                        networkingHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Exchange exchange = GSON.fromJson((String) args[0], Exchange.class);
+                                if (exchange != null) {
+                                    logger.i("Handling exchange %s", exchange.getId().toString());
+                                    ExchangeHandlerUtil.handleExchange(exchange);
+                                }
+                            }
+                        });
+                    }
+                });
+
             }
         });
     }
 
     public void sendRequest(final Request request) {
-        outgoingExchanges.add(request);
+        networkingHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                String requestString = GSON.toJson(request);
+                if (requestString != null) {
+                    logger.i("Sending request %s", request.getId().toString());
+                    socket.send(requestString);
+                }
+            }
+        });
     }
 
-//    private void writeExchanges() {
-//        writeHandler.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (outgoingExchanges.size() > 0) {
-//                    String requestString = GSON.toJson(outgoingExchanges.peek());
-//                    if (requestString != null) {
-//                        try {
-//                            IOUtils.write(requestString, socket.getOutputStream());
-//                        } catch (IOException e) {
-//                            logger.e("Problem in writing exchange to output stream", e);
-//                        }
-//                        outgoingExchanges.poll();
-//                    }
-//                }
-//                writeHandler.post(this);
-//            }
-//        });
-//    }
-//
-//    private void readExchanges() {
-//        readHandler.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//                    Exchange exchange = GSON.fromJson(bufferedReader, Exchange.class);
-//                    if (exchange != null) {
-//                        logger.i("Handling exchange %s", exchange.getId().toString());
-//                        ExchangeHandlerUtil.handleExchange(exchange);
-//                    }
-//                } catch (IOException e) {
-//                    logger.e("Problem in reading exchange from input stream", e);
-//                }
-//            }
-//        });
-//    }
-//
-//    public void closeConnection() {
-//        try {
-//            socket.close();
-//        } catch (IOException e) {
-//            logger.e("Problem closing socket", e);
-//        }
-//    }
+    public void closeConnection() {
+        networkingThread.quit();
+        socket.close();
+    }
 }
