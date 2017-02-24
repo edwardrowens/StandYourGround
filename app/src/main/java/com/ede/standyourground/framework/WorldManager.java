@@ -1,6 +1,8 @@
 package com.ede.standyourground.framework;
 
+import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.Unit;
+import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
 import com.ede.standyourground.networking.framework.NetworkingManager;
 
@@ -9,10 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
-/**
- * Created by Eddie on 2/8/2017.
- */
 
 public class WorldManager {
 
@@ -36,12 +34,25 @@ public class WorldManager {
         updateLoop.startLoop();
     }
 
-    public void addUnit(Unit unit) {
-        units.put(unit.getId(), unit);
+    public void addUnit(Unit unit, UUID gameSessionId) {
         CreateUnitRequest createUnitRequest = new CreateUnitRequest();
         createUnitRequest.setPosition(unit.getStartingPosition());
+        createUnitRequest.setTimestamp(unit.getCreatedTime());
         createUnitRequest.setWaypoints(unit.getWaypoints());
-        NetworkingManager.getInstance().sendRequest(createUnitRequest);
+        createUnitRequest.setGameSessionId(gameSessionId);
+
+        if (unit instanceof FootSoldier) {
+            createUnitRequest.setUnit(Units.FOOT_SOLDIER);
+        } else {
+            createUnitRequest.setUnit(Units.FOOT_SOLDIER);
+        }
+
+        NetworkingManager.getInstance().sendExchange(createUnitRequest);
+        addUnit(unit);
+    }
+
+    public void addUnit(Unit unit) {
+        units.put(unit.getId(), unit);
         logger.i("Added unit. %d units managed", units.size());
     }
 

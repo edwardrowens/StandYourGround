@@ -4,14 +4,11 @@ import com.ede.standyourground.networking.exchange.response.api.Response;
 
 import java.util.UUID;
 
-/**
- * Created by Eddie on 2/16/2017.
- */
-
 public class OkResponse implements Response {
 
     private long timestamp;
     private final UUID id = UUID.randomUUID();
+    private UUID gameSessionId;
 
     public OkResponse() {
         this.timestamp = System.currentTimeMillis();
@@ -30,5 +27,15 @@ public class OkResponse implements Response {
     @Override
     public UUID getId() {
         return id;
+    }
+
+    @Override
+    public UUID getGameSessionId() {
+        return gameSessionId;
+    }
+
+    @Override
+    public void setGameSessionId(UUID gameSessionId) {
+        this.gameSessionId = gameSessionId;
     }
 }

@@ -7,10 +7,6 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Created by Eddie on 2/15/2017.
- */
-
 public class CreateUnitRequest implements Request {
 
     private long timestamp;
@@ -18,6 +14,7 @@ public class CreateUnitRequest implements Request {
     private List<LatLng> waypoints;
     private LatLng position;
     private final UUID id = UUID.randomUUID();
+    private UUID gameSessionId;
 
     @Override
     public long getTimestamp() {
@@ -32,6 +29,16 @@ public class CreateUnitRequest implements Request {
     @Override
     public UUID getId() {
         return id;
+    }
+
+    @Override
+    public UUID getGameSessionId() {
+        return gameSessionId;
+    }
+
+    @Override
+    public void setGameSessionId(UUID gameSessionId) {
+        this.gameSessionId = gameSessionId;
     }
 
     public Units getUnit() {

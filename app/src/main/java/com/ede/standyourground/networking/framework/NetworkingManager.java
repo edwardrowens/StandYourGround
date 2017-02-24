@@ -3,10 +3,10 @@ package com.ede.standyourground.networking.framework;
 import android.os.Handler;
 import android.os.HandlerThread;
 
+import com.ede.standyourground.app.service.ServiceGenerator;
 import com.ede.standyourground.framework.Callback;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.networking.exchange.api.Exchange;
-import com.ede.standyourground.networking.exchange.request.api.Request;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
 import com.ede.standyourground.networking.exchange.response.impl.OkResponse;
 import com.ede.standyourground.networking.serialization.RuntimeTypeAdapterFactory;
@@ -22,8 +22,6 @@ import io.socket.emitter.Emitter;
 
 public class NetworkingManager {
     private static Logger logger = new Logger(NetworkingManager.class);
-
-    private static final int PORT = 8000;
 
     private final Gson GSON = new GsonBuilder().registerTypeAdapterFactory(RuntimeTypeAdapterFactory.of(Exchange.class)
             .registerSubtype(CreateUnitRequest.class)
@@ -51,8 +49,7 @@ public class NetworkingManager {
             @Override
             public void run() {
                 try {
-//                    URI uri = new URI("https://standyourground.herokuapp.com/:" + PORT);
-                    URI uri = new URI("http://192.168.0.102:8000/");
+                    URI uri = new URI(ServiceGenerator.BASE_URL);
                     logger.i("Connecting to player on %s:%d", uri.getHost(), uri.getPort());
                     socket = IO.socket(uri);
                     socket.connect();
@@ -64,7 +61,7 @@ public class NetworkingManager {
                     @Override
                     public void call(Object... args) {
                         logger.i("Connected to server! Sending game session ID of %s", gameSessionId);
-                        socket.send(gameSessionId);
+                        socket.emit("handshake", gameSessionId);
                         socket.on("StartGame", new Emitter.Listener() {
                             @Override
                             public void call(Object... args) {
@@ -97,18 +94,17 @@ public class NetworkingManager {
                         });
                     }
                 });
-
             }
         });
     }
 
-    public void sendRequest(final Request request) {
+    public void sendExchange(final Exchange exchange) {
         networkingHandler.post(new Runnable() {
             @Override
             public void run() {
-                String requestString = GSON.toJson(request);
+                String requestString = GSON.toJson(exchange);
                 if (requestString != null) {
-                    logger.i("Sending request %s", request.getId().toString());
+                    logger.i("Sending exchange %s", exchange.getId().toString());
                     socket.send(requestString);
                 }
             }
