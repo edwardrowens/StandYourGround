@@ -1,41 +1,13 @@
 package com.ede.standyourground.networking.exchange.response.impl;
 
-import com.ede.standyourground.networking.exchange.response.api.Response;
+import com.ede.standyourground.networking.exchange.api.Exchange;
 
-import java.util.UUID;
+public class OkResponse extends Exchange {
 
-public class OkResponse implements Response {
-
-    private long timestamp;
-    private final UUID id = UUID.randomUUID();
-    private UUID gameSessionId;
-
-    public OkResponse() {
-        this.timestamp = System.currentTimeMillis();
-    }
+    private final String type = OkResponse.class.getSimpleName();
 
     @Override
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    @Override
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    @Override
-    public UUID getId() {
-        return id;
-    }
-
-    @Override
-    public UUID getGameSessionId() {
-        return gameSessionId;
-    }
-
-    @Override
-    public void setGameSessionId(UUID gameSessionId) {
-        this.gameSessionId = gameSessionId;
+    public String getType() {
+        return type;
     }
 }

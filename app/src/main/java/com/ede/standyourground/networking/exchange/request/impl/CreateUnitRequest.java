@@ -1,44 +1,21 @@
 package com.ede.standyourground.networking.exchange.request.impl;
 
 import com.ede.standyourground.game.model.Units;
-import com.ede.standyourground.networking.exchange.request.api.Request;
+import com.ede.standyourground.networking.exchange.api.Exchange;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
-import java.util.UUID;
 
-public class CreateUnitRequest implements Request {
+public class CreateUnitRequest extends Exchange {
 
-    private long timestamp;
     private Units unit;
     private List<LatLng> waypoints;
     private LatLng position;
-    private final UUID id = UUID.randomUUID();
-    private UUID gameSessionId;
+    private final String type = CreateUnitRequest.class.getSimpleName();
 
     @Override
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    @Override
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    @Override
-    public UUID getId() {
-        return id;
-    }
-
-    @Override
-    public UUID getGameSessionId() {
-        return gameSessionId;
-    }
-
-    @Override
-    public void setGameSessionId(UUID gameSessionId) {
-        this.gameSessionId = gameSessionId;
+    public String getType() {
+        return type;
     }
 
     public Units getUnit() {

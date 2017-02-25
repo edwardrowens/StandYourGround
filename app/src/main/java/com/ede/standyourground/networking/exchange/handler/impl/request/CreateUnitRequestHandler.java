@@ -16,7 +16,7 @@ public class CreateUnitRequestHandler implements ExchangeHandler {
             case FOOT_SOLDIER:
                 Unit unit = new FootSoldier(createUnitRequest.getWaypoints(), createUnitRequest.getPosition());
                 unit.setCreatedTime(createUnitRequest.getTimestamp());
-                WorldManager.getInstance().addUnit(unit, createUnitRequest.getGameSessionId());
+                WorldManager.getInstance().addUnit(unit);
         }
 
         OkResponse okResponse = new OkResponse();

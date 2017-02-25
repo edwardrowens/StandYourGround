@@ -227,7 +227,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                         if (unit != null) {
                             renderedUnit.put(unit, circle);
-                            WorldManager.getInstance().addUnit(unit);
+                            WorldManager.getInstance().addUnit(unit, gameSessionId);
                         }
                     }
 
