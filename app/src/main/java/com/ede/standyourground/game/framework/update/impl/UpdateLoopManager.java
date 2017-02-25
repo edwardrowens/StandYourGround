@@ -1,11 +1,10 @@
-package com.ede.standyourground.framework;
+package com.ede.standyourground.game.framework.update.impl;
 
 import android.os.Handler;
 import android.os.Message;
 
-/**
- * Created by Eddie on 2/4/2017.
- */
+import com.ede.standyourground.framework.Logger;
+
 
 public class UpdateLoopManager {
 

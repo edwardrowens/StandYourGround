@@ -4,9 +4,9 @@ import java.util.UUID;
 
 public abstract class Exchange {
 
-    private long timestamp;
-    private UUID id;
-    private UUID gameSessionId;
+    protected long timestamp;
+    protected UUID id;
+    protected UUID gameSessionId;
 
     public abstract String getType();
 

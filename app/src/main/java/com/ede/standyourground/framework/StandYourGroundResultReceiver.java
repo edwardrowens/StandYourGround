@@ -4,10 +4,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 
-/**
- * Created by Eddie on 2/11/2017.
- */
-
 public class StandYourGroundResultReceiver extends ResultReceiver {
     private Receiver mReceiver;
 

@@ -1,49 +1,40 @@
-package com.ede.standyourground.framework;
+package com.ede.standyourground.game.framework.update.impl;
 
 import android.os.Handler;
-import android.os.Looper;
+import android.os.HandlerThread;
 import android.os.SystemClock;
 
 import com.ede.standyourground.app.service.MathUtils;
 import com.ede.standyourground.app.service.RouteUtil;
+import com.ede.standyourground.framework.Logger;
+import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.framework.render.api.Renderer;
 import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Created by Eddie on 2/4/2017.
- */
 
 public class UpdateLoop implements Runnable {
 
-    private final Logger logger = new Logger(UpdateLoop.class);
+    private static final Logger logger = new Logger(UpdateLoop.class);
     private static final long LOOP_DELAY = 16;
 
-    private static Handler handler;
+    private final HandlerThread loopThread = new HandlerThread("UpdateLoop");
+    private Handler handler;
+    private Renderer renderer;
 
-    private boolean stateChange = false;
+    public void startLoop(Renderer renderer) {
+        this.renderer = renderer;
 
-    public void startLoop() {
         logger.i("Starting update thread");
-        new Thread(this).start();
+        loopThread.start();
+        handler = new Handler(loopThread.getLooper());
+        handler.post(this);
     }
-
 
     @Override
     public void run() {
-        if (handler == null) {
-            Looper.prepare();
-            handler = new Handler();
-            handler.postDelayed(this, LOOP_DELAY);
-            logger.i("Update thread started");
-            Looper.loop();
-        }
-        List<Unit> updatedUnits = new ArrayList<>();
-        stateChange = false;
         for (Unit unit : WorldManager.getInstance().getUnits()) {
             if (unit instanceof  MovableUnit) {
                 MovableUnit movableUnit = (MovableUnit) unit;
@@ -63,19 +54,10 @@ public class UpdateLoop implements Runnable {
 
                 if (proportionToNextPoint >= 1) {
                     movableUnit.incrementTarget();
-                    if (movableUnit.getCurrentTarget() >= movableUnit.getPath().getDistances().size()) {
-                        movableUnit.setReachedEnemy(true);
-                    }
                 }
 
-                stateChange = true;
-                updatedUnits.add(movableUnit);
             }
-        }
-        if (stateChange) {
-            UpdateLoopTask updateLoopTask = new UpdateLoopTask();
-            updateLoopTask.setUpdatedUnits(updatedUnits);
-            updateLoopTask.send();
+            renderer.render(unit);
         }
 
         handler.postDelayed(this, LOOP_DELAY);

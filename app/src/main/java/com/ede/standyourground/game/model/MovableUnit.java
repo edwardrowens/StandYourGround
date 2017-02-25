@@ -4,20 +4,14 @@ import com.ede.standyourground.app.service.RouteUtil;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-/**
- * Created by Eddie on 2/3/2017.
- */
-
-public class MovableUnit extends Unit {
+public abstract class MovableUnit extends Unit {
 
     private double mph;
     private Path path;
     private long arrivalTime;
-    private AtomicBoolean reachedEnemy;
     private int totalDistance;
     private int currentTarget;
     private AtomicReference<LatLng> position;
@@ -28,7 +22,6 @@ public class MovableUnit extends Unit {
         this.mph = mph;
         this.totalDistance = RouteUtil.calculateTotalDistance(path);
         arrivalTime = RouteUtil.timeToDestination(RouteUtil.valueToMiles(totalDistance), mph);
-        reachedEnemy = new AtomicBoolean(false);
         currentTarget = 0;
         this.position = new AtomicReference<>(this.getStartingPosition());
     }
@@ -51,14 +44,6 @@ public class MovableUnit extends Unit {
 
     public long getArrivalTime() {
         return arrivalTime;
-    }
-
-    public boolean getReachedEnemy() {
-        return reachedEnemy.get();
-    }
-
-    public void setReachedEnemy(boolean reachedEnemy) {
-        this.reachedEnemy.set(reachedEnemy);
     }
 
     public int getTotalDistance() {

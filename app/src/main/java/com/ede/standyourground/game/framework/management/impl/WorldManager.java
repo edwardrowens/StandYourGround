@@ -1,10 +1,18 @@
-package com.ede.standyourground.framework;
+package com.ede.standyourground.game.framework.management.impl;
 
+import com.ede.standyourground.framework.Logger;
+import com.ede.standyourground.game.framework.render.api.Renderer;
+import com.ede.standyourground.game.framework.render.impl.RendererImpl;
+import com.ede.standyourground.game.framework.update.impl.UpdateLoop;
+import com.ede.standyourground.game.framework.update.impl.UpdateLoopHandler;
+import com.ede.standyourground.game.framework.update.impl.UpdateLoopManager;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
 import com.ede.standyourground.networking.framework.NetworkingManager;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +25,14 @@ public class WorldManager {
     private static Logger logger = new Logger(WorldManager.class);
     private static final WorldManager instance = new WorldManager();
 
+    private Renderer renderer;
+    private UnitCreator unitCreator;
+
     private UpdateLoop updateLoop = new UpdateLoop();
     private UpdateLoopHandler updateLoopHandler = new UpdateLoopHandler();
-    private static Map<UUID, Unit> units = new ConcurrentHashMap<>();
+
+    private Map<UUID, Unit> units = new ConcurrentHashMap<>();
+    private UUID gameSessionId;
 
     private WorldManager() {
         UpdateLoopManager.setHandler(updateLoopHandler);
@@ -30,8 +43,19 @@ public class WorldManager {
         return instance;
     }
 
-    public void startLoop() {
-        updateLoop.startLoop();
+    public void start(GoogleMap googleMap, UUID gameSessionId) {
+        this.gameSessionId = gameSessionId;
+        unitCreator = new UnitCreator(googleMap);
+        this.renderer = new RendererImpl();
+        updateLoop.startLoop(renderer);
+    }
+
+    public void createUnit(List<LatLng> route, LatLng position, Units units, boolean notifyOpponent) {
+        if (notifyOpponent) {
+            unitCreator.createUnit(route, position, units, gameSessionId);
+        } else {
+            unitCreator.createUnit(route, position, units);
+        }
     }
 
     public void addUnit(Unit unit, UUID gameSessionId) {

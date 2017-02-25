@@ -19,10 +19,7 @@ import com.ede.standyourground.app.service.GoogleDirectionsService;
 import com.ede.standyourground.app.service.MathUtils;
 import com.ede.standyourground.app.service.StopGameService;
 import com.ede.standyourground.framework.Logger;
-import com.ede.standyourground.framework.WorldManager;
-import com.ede.standyourground.game.model.FootSoldier;
-import com.ede.standyourground.game.model.MovableUnit;
-import com.ede.standyourground.game.model.Unit;
+import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.model.Units;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -30,8 +27,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -42,9 +37,7 @@ import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -66,7 +59,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Units selectedUnit;
     private LatLng playerLocation;
     private LatLng opponentLocation;
-    private static Map<Unit, Circle> renderedUnit = new ConcurrentHashMap<>();
     public static UUID gameSessionId;
 
     @Override
@@ -84,7 +76,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         logger.i("Player location is " + playerLocation.toString());
         logger.i("Opponent location is " + opponentLocation.toString());
 
-        WorldManager.getInstance().startLoop();
+        WorldManager.getInstance().start(googleMap, gameSessionId);
     }
 
 
@@ -218,17 +210,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onResponse(Call<Routes> call, Response<Routes> response) {
                         logger.i("response with routes received");
                         Polyline polyline = drawRoute(response.body().getRoutes().get(0));
-                        Circle circle = googleMap.addCircle(new CircleOptions().center(playerLocation).clickable(false).radius(50).fillColor(Color.BLUE).strokeColor(Color.BLUE).zIndex(1.0f));
-                        MovableUnit unit = null;
-                        switch (selectedUnit) {
-                            case FOOT_SOLDIER:
-                                unit = new FootSoldier(polyline.getPoints(), playerLocation);
-                                break;
-                        }
-                        if (unit != null) {
-                            renderedUnit.put(unit, circle);
-                            WorldManager.getInstance().addUnit(unit, gameSessionId);
-                        }
+
+                        WorldManager.getInstance().createUnit(polyline.getPoints(), playerLocation, selectedUnit, true);
                     }
 
                     @Override
@@ -259,9 +242,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .color(Color.BLACK);
         logger.i("drawing route");
         return googleMap.addPolyline(polylineOptions);
-    }
-
-    public static Map<Unit, Circle> getRenderedUnits() {
-        return renderedUnit;
     }
 }

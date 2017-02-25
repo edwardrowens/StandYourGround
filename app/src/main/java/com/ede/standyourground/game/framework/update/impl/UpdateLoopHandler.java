@@ -1,15 +1,10 @@
-package com.ede.standyourground.framework;
+package com.ede.standyourground.game.framework.update.impl;
 
 import android.os.Handler;
 import android.os.Message;
 
-import com.ede.standyourground.app.activity.MapsActivity;
 import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
-
-/**
- * Created by Eddie on 2/7/2017.
- */
 
 public class UpdateLoopHandler extends Handler {
 
@@ -20,8 +15,6 @@ public class UpdateLoopHandler extends Handler {
         UpdateLoopTask updateLoopTask = (UpdateLoopTask) message.obj;
         for (Unit unit : updateLoopTask.getUpdatedUnits()) {
             if (unit instanceof MovableUnit) {
-                MovableUnit movableUnit = (MovableUnit) WorldManager.getInstance().getUnit(unit.getId());
-                MapsActivity.getRenderedUnits().get(movableUnit).setCenter(movableUnit.getPosition());
             }
         }
     }

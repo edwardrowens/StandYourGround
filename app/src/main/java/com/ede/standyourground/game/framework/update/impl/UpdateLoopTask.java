@@ -1,13 +1,10 @@
-package com.ede.standyourground.framework;
+package com.ede.standyourground.game.framework.update.impl;
 
 import com.ede.standyourground.game.model.Unit;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Eddie on 2/4/2017.
- */
 
 public class UpdateLoopTask {
 

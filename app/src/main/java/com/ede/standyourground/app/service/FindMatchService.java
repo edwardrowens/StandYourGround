@@ -98,7 +98,9 @@ public class FindMatchService extends Service implements Runnable {
     }
 
     public static void stopThread() {
-        handlerThread.quit();
+        if (handlerThread != null && handlerThread.isAlive()) {
+            handlerThread.quit();
+        }
     }
 
     @Nullable

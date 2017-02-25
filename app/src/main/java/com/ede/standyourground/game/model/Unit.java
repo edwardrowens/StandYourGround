@@ -2,25 +2,22 @@ package com.ede.standyourground.game.model;
 
 import android.os.SystemClock;
 
+import com.ede.standyourground.game.framework.render.api.Renderable;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
-/**
- *
- * Created by Eddie on 2/3/2017.
- */
-
-public class Unit {
+public abstract class Unit implements Renderable {
     private final LatLng startingPosition;
     private final UUID id = UUID.randomUUID();
-    private long createdTime;
+    private AtomicLong createdTime;
     private final List<LatLng> waypoints;
 
     public Unit(LatLng startingPosition, List<LatLng> waypoints) {
         this.startingPosition = startingPosition;
-        this.createdTime = SystemClock.uptimeMillis();
+        this.createdTime = new AtomicLong(SystemClock.uptimeMillis());
         this.waypoints = waypoints;
     }
 
@@ -33,11 +30,11 @@ public class Unit {
     }
 
     public long getCreatedTime() {
-        return createdTime;
+        return createdTime.get();
     }
 
     public void setCreatedTime(long createdTime) {
-        this.createdTime = createdTime;
+        this.createdTime.set(createdTime);
     }
 
     public List<LatLng> getWaypoints() {
