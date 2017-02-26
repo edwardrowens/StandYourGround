@@ -6,13 +6,28 @@ import com.ede.standyourground.networking.exchange.request.impl.CreateUnitReques
 import com.ede.standyourground.networking.exchange.response.impl.OkResponse;
 import com.ede.standyourground.networking.framework.NetworkingManager;
 
+import javax.inject.Inject;
+
+import dagger.Lazy;
+
 public class CreateUnitRequestHandler implements ExchangeHandler {
+
+    private final Lazy<WorldManager> worldManager;
+    private final Lazy<NetworkingManager> networkingManager;
+
+    @Inject
+    CreateUnitRequestHandler(Lazy<WorldManager> worldManager,
+                             Lazy<NetworkingManager> networkingManager) {
+        this.worldManager = worldManager;
+        this.networkingManager = networkingManager;
+    }
+
     @Override
     public <T> void handle(T exchange) {
         CreateUnitRequest createUnitRequest = (CreateUnitRequest) exchange;
-        WorldManager.getInstance().createUnit(createUnitRequest.getWaypoints(), createUnitRequest.getPosition(), createUnitRequest.getUnit(), false);
+        worldManager.get().createEnemyUnit(createUnitRequest.getWaypoints(), createUnitRequest.getPosition(), createUnitRequest.getUnit());
 
         OkResponse okResponse = new OkResponse(createUnitRequest);
-        NetworkingManager.getInstance().sendExchange(okResponse);
+        networkingManager.get().sendExchange(okResponse);
     }
 }

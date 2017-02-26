@@ -11,24 +11,26 @@ import com.google.gson.Gson;
 
 import java.net.URI;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import dagger.Lazy;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
-
+@Singleton
 public class NetworkingManager {
     private static Logger logger = new Logger(NetworkingManager.class);
 
-    private static NetworkingManager instance = new NetworkingManager();
+    private final Lazy<CreateUnitRequestHandler> createUnitRequestHandler;
+
+    @Inject
+    public NetworkingManager(Lazy<CreateUnitRequestHandler> createUnitRequestHandler) {
+        this.createUnitRequestHandler = createUnitRequestHandler;
+    }
 
     private static Socket socket;
-
-    private NetworkingManager() {
-    }
-
-    public static NetworkingManager getInstance() {
-        return instance;
-    }
 
     public void connect(final String gameSessionId, final Callback callback) {
         try {
@@ -68,7 +70,7 @@ public class NetworkingManager {
                 CreateUnitRequest createUnitRequest = new Gson().fromJson((String) args[0], CreateUnitRequest.class);
                 if (createUnitRequest != null) {
                     logger.i("Handling createUnitRequest %s", createUnitRequest.getId().toString());
-                    new CreateUnitRequestHandler().handle(createUnitRequest);
+                    createUnitRequestHandler.get().handle(createUnitRequest);
                 }
             }
         });

@@ -6,8 +6,14 @@ import android.os.Looper;
 import com.ede.standyourground.game.framework.render.api.Renderable;
 import com.ede.standyourground.game.framework.render.api.Renderer;
 
+import javax.inject.Inject;
+
 public class RendererImpl implements Renderer {
 
+    @Inject
+    RendererImpl() {
+
+    }
 
     private Handler renderingHandler = new Handler(Looper.getMainLooper());
 

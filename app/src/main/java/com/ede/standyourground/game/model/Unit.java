@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Unit implements Renderable {
@@ -14,11 +15,18 @@ public abstract class Unit implements Renderable {
     private final UUID id = UUID.randomUUID();
     private AtomicLong createdTime;
     private final List<LatLng> waypoints;
+    private final boolean isEnemy;
 
-    public Unit(LatLng startingPosition, List<LatLng> waypoints) {
+    private AtomicBoolean isVisible;
+    protected double visionRadius;
+
+    public Unit(LatLng startingPosition, List<LatLng> waypoints, boolean isEnemy) {
         this.startingPosition = startingPosition;
         this.createdTime = new AtomicLong(SystemClock.uptimeMillis());
         this.waypoints = waypoints;
+        this.isEnemy = isEnemy;
+        this.visionRadius = 0;
+        this.isVisible = new AtomicBoolean(!isEnemy);
     }
 
     public LatLng getStartingPosition() {
@@ -39,5 +47,21 @@ public abstract class Unit implements Renderable {
 
     public List<LatLng> getWaypoints() {
         return waypoints;
+    }
+
+    public boolean isEnemy() {
+        return isEnemy;
+    }
+
+    public double getVisionRadius() {
+        return visionRadius;
+    }
+
+    public boolean isVisible() {
+        return isVisible.get();
+    }
+
+    public void setIsVisible(boolean isVisible) {
+        this.isVisible.set(isVisible);
     }
 }

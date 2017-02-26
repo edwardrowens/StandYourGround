@@ -9,9 +9,12 @@ import android.support.annotation.Nullable;
 import com.ede.standyourground.app.api.DirectionsApi;
 import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.to.RoutesRequestTO;
+import com.ede.standyourground.framework.api.RouteService;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -20,6 +23,8 @@ import retrofit2.Response;
 public class GoogleDirectionsService extends Service {
 
     private final IBinder iBinder = new LocalBinder();
+
+    @Inject RouteService routeService;
 
 
     @Nullable
@@ -51,7 +56,7 @@ public class GoogleDirectionsService extends Service {
         routesCall.enqueue(new Callback<Routes>() {
             @Override
             public void onResponse(Call<Routes> call, Response<Routes> response) {
-                response.body().setTotalDistance(RouteUtil.getTotalDistance(response.body()));
+                response.body().setTotalDistance(routeService.getTotalDistance(response.body()));
                 callback.onResponse(call, response);
             }
 

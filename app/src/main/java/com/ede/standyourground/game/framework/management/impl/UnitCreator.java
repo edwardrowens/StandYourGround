@@ -5,49 +5,56 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.ede.standyourground.framework.providers.GoogleMapProvider;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
-import java.util.UUID;
+
+import javax.inject.Inject;
+
+import dagger.Lazy;
 
 public class UnitCreator {
 
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
-    private final GoogleMap googleMap;
+    private final Lazy<WorldManager> worldManager;
+    private final GoogleMapProvider googleMapProvider;
 
-    public UnitCreator(GoogleMap googleMap) {
-        this.googleMap = googleMap;
+    @Inject
+    UnitCreator(GoogleMapProvider googleMapProvider,
+                Lazy<WorldManager> worldManager) {
+        this.googleMapProvider = googleMapProvider;
+        this.worldManager = worldManager;
     }
 
-    public void createUnit(final List<LatLng> route, final LatLng position, Units units) {
+    public void createPlayerUnit(final List<LatLng> route, final LatLng position, Units units) {
         switch (units) {
             case FOOT_SOLDIER:
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Circle circle = googleMap.addCircle(new CircleOptions().center(position).clickable(false).radius(50).fillColor(Color.BLUE).strokeColor(Color.BLUE).zIndex(1.0f));
-                        Unit unit = new FootSoldier(route, position, circle);
-                        WorldManager.getInstance().addUnit(unit);
+                        Circle circle = googleMapProvider.getGoogleMap().addCircle(new CircleOptions().center(position).clickable(false).radius(50).fillColor(Color.BLUE).strokeColor(Color.BLACK).zIndex(1.0f));
+                        Unit unit = new FootSoldier(route, position, false, circle);
+                        worldManager.get().addPlayerUnit(unit);
                     }
                 });
         }
     }
 
-    public void createUnit(final List<LatLng> route, final LatLng position, Units units, final UUID gameSessionId) {
+    public void createEnemyUnit(final List<LatLng> route, final LatLng position, Units units) {
         switch (units) {
             case FOOT_SOLDIER:
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Circle circle = googleMap.addCircle(new CircleOptions().center(position).clickable(false).radius(50).fillColor(Color.BLUE).strokeColor(Color.BLUE).zIndex(1.0f));
-                        Unit unit = new FootSoldier(route, position, circle);
-                        WorldManager.getInstance().addUnit(unit, gameSessionId);
+                        Circle circle = googleMapProvider.getGoogleMap().addCircle(new CircleOptions().center(position).clickable(false).radius(50).fillColor(Color.RED).strokeColor(Color.BLACK).zIndex(1.0f));
+                        Unit unit = new FootSoldier(route, position, true, circle);
+                        worldManager.get().addEnemyUnit(unit);
                     }
                 });
         }

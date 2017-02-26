@@ -24,6 +24,7 @@ import com.ede.standyourground.framework.Callback;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.Receiver;
 import com.ede.standyourground.framework.StandYourGroundResultReceiver;
+import com.ede.standyourground.framework.api.MathService;
 import com.ede.standyourground.networking.framework.NetworkingManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -32,7 +33,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
+import javax.inject.Inject;
 
 public class FindMatchActivity extends AppCompatActivity implements Receiver, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -59,6 +64,9 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     private TextView findingMatchText;
     private TextView opponentFoundText;
 
+    @Inject MathService mathService;
+    @Inject NetworkingManager networkingManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +78,11 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         opponentFoundText = (TextView) findViewById(R.id.opponentFoundText);
 
         standYourGroundResultReceiver.setReceiver(this);
-
+        List<Integer> ints = new ArrayList<>();
+        ints.add(1);
+        ints.add(5);
+        ints.add(4);
+        logger.d("%d", mathService.sumTo(ints, 3));
         playerId = UUID.randomUUID();
         getLocation();
     }
@@ -231,7 +243,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
             playerMatched = true;
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
 
-            NetworkingManager.getInstance().connect(findMatchResponseTO.getGameSessionId(), new Callback() {
+            networkingManager.connect(findMatchResponseTO.getGameSessionId(), new Callback() {
                 @Override
                 public void onSuccess() {
                     handler.post(new Runnable() {

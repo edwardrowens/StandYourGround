@@ -2,16 +2,12 @@ package com.ede.standyourground.game.framework.management.impl;
 
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.framework.render.api.Renderer;
-import com.ede.standyourground.game.framework.render.impl.RendererImpl;
 import com.ede.standyourground.game.framework.update.impl.UpdateLoop;
-import com.ede.standyourground.game.framework.update.impl.UpdateLoopHandler;
-import com.ede.standyourground.game.framework.update.impl.UpdateLoopManager;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
 import com.ede.standyourground.networking.framework.NetworkingManager;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -20,45 +16,49 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import dagger.Lazy;
+
+@Singleton
 public class WorldManager {
 
     private static Logger logger = new Logger(WorldManager.class);
-    private static final WorldManager instance = new WorldManager();
-
-    private Renderer renderer;
-    private UnitCreator unitCreator;
-
-    private UpdateLoop updateLoop = new UpdateLoop();
-    private UpdateLoopHandler updateLoopHandler = new UpdateLoopHandler();
 
     private Map<UUID, Unit> units = new ConcurrentHashMap<>();
     private UUID gameSessionId;
+    private final Lazy<UpdateLoop> updateLoop;
+    private final Lazy<UnitCreator> unitCreator;
+    private final Lazy<Renderer> renderer;
+    private final Lazy<NetworkingManager> networkingManager;
 
-    private WorldManager() {
-        UpdateLoopManager.setHandler(updateLoopHandler);
-        UpdateLoopManager.getInstance();
+    @Inject
+    WorldManager(Lazy<UpdateLoop> updateLoop,
+                 Lazy<UnitCreator> unitCreator,
+                 Lazy<Renderer> renderer,
+                 Lazy<NetworkingManager> networkingManager) {
+        this.updateLoop = updateLoop;
+        this.unitCreator = unitCreator;
+        this.renderer = renderer;
+        this.networkingManager = networkingManager;
     }
 
-    public static WorldManager getInstance() {
-        return instance;
-    }
 
-    public void start(GoogleMap googleMap, UUID gameSessionId) {
+    public void start(UUID gameSessionId) {
         this.gameSessionId = gameSessionId;
-        unitCreator = new UnitCreator(googleMap);
-        this.renderer = new RendererImpl();
-        updateLoop.startLoop(renderer);
+        updateLoop.get().startLoop();
     }
 
-    public void createUnit(List<LatLng> route, LatLng position, Units units, boolean notifyOpponent) {
-        if (notifyOpponent) {
-            unitCreator.createUnit(route, position, units, gameSessionId);
-        } else {
-            unitCreator.createUnit(route, position, units);
-        }
+    public void createEnemyUnit(List<LatLng> route, LatLng position, Units units) {
+        unitCreator.get().createEnemyUnit(route, position, units);
     }
 
-    public void addUnit(Unit unit, UUID gameSessionId) {
+    public void createPlayerUnit(List<LatLng> route, LatLng position, Units units) {
+        unitCreator.get().createPlayerUnit(route, position, units);
+    }
+
+    public void addPlayerUnit(Unit unit) {
         CreateUnitRequest createUnitRequest = new CreateUnitRequest();
         createUnitRequest.setPosition(unit.getStartingPosition());
         createUnitRequest.setTimestamp(unit.getCreatedTime());
@@ -71,11 +71,15 @@ public class WorldManager {
             createUnitRequest.setUnit(Units.FOOT_SOLDIER);
         }
 
-        NetworkingManager.getInstance().sendExchange(createUnitRequest);
+        networkingManager.get().sendExchange(createUnitRequest);
         addUnit(unit);
     }
 
-    public void addUnit(Unit unit) {
+    public void addEnemyUnit(Unit unit) {
+        addUnit(unit);
+    }
+
+    private void addUnit(Unit unit) {
         units.put(unit.getId(), unit);
         logger.i("Added unit. %d units managed", units.size());
     }

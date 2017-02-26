@@ -1,25 +1,31 @@
-package com.ede.standyourground.app.service;
+package com.ede.standyourground.framework.impl;
 
 import android.location.Location;
 
 import com.ede.standyourground.app.model.Leg;
 import com.ede.standyourground.app.model.Route;
 import com.ede.standyourground.app.model.Routes;
+import com.ede.standyourground.framework.api.RouteService;
 import com.ede.standyourground.game.model.Path;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Eddie on 2/6/2017.
- */
+import javax.inject.Inject;
 
-public class RouteUtil {
+public class RouteServiceImpl implements RouteService {
 
     private static final double FEET_PER_VALUE = 3.28084;
     private static final int FEET_PER_MILE = 5280;
-    public static int getTotalDistance(Routes routes) {
+
+    @Inject
+    RouteServiceImpl() {
+
+    }
+
+    @Override
+    public int getTotalDistance(Routes routes) {
         int distance = 0;
         for (Route route : routes.getRoutes()) {
             for (Leg leg : route.getLegs()) {
@@ -29,7 +35,8 @@ public class RouteUtil {
         return distance;
     }
 
-    public static List<Integer> getDistanceOfSteps(List<LatLng> points, LatLng currentPosition) {
+    @Override
+    public List<Integer> getDistanceOfSteps(List<LatLng> points, LatLng currentPosition) {
         List<Integer> distances = new ArrayList<>();
         if (points.size() == 0)
             return distances;
@@ -46,19 +53,23 @@ public class RouteUtil {
         return distances;
     }
 
-    public static double valueToMiles(int value) {
+    @Override
+    public double valueToMiles(int value) {
         return value * FEET_PER_VALUE / FEET_PER_MILE;
     }
 
-    public static int milesToValue(double miles) {
+    @Override
+    public int milesToValue(double miles) {
         return (int)Math.round(miles * FEET_PER_MILE / FEET_PER_VALUE);
     }
 
-    public static int timeToDestination(double distance, double mph) {
+    @Override
+    public int timeToDestination(double distance, double mph) {
         return (int)Math.round(distance/mph * 60 * 60 * 1000);
     }
 
-    public static int calculateTotalDistance(Path path) {
+    @Override
+    public int calculateTotalDistance(Path path) {
         int total = 0;
         for (int d : path.getDistances())
             total += d;

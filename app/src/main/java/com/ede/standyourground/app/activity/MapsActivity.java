@@ -16,9 +16,10 @@ import com.ede.standyourground.R;
 import com.ede.standyourground.app.model.Route;
 import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.service.GoogleDirectionsService;
-import com.ede.standyourground.app.service.MathUtils;
 import com.ede.standyourground.app.service.StopGameService;
 import com.ede.standyourground.framework.Logger;
+import com.ede.standyourground.framework.api.MathService;
+import com.ede.standyourground.framework.providers.GoogleMapProvider;
 import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.model.Units;
 import com.google.android.gms.maps.CameraUpdate;
@@ -38,6 +39,8 @@ import com.google.maps.android.PolyUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import javax.inject.Inject;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -61,6 +64,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng opponentLocation;
     public static UUID gameSessionId;
 
+    @Inject WorldManager worldManager;
+    @Inject MathService mathService;
+    @Inject
+    GoogleMapProvider googleMapProvider;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,8 +83,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         gameSessionId = UUID.fromString((String) getIntent().getExtras().get(FindMatchActivity.GAME_SESSION_ID));
         logger.i("Player location is " + playerLocation.toString());
         logger.i("Opponent location is " + opponentLocation.toString());
-
-        WorldManager.getInstance().start(googleMap, gameSessionId);
     }
 
 
@@ -121,6 +127,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(final GoogleMap googleMap) {
         logger.i("Starting map");
         this.googleMap = googleMap;
+        googleMapProvider.setGoogleMap(googleMap);
+
+        worldManager.start(gameSessionId);
 
         // Updating google map settings
         googleMap.getUiSettings().setMapToolbarEnabled(false);
@@ -138,8 +147,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onFinish() {
                 float zoom = googleMap.getCameraPosition().zoom;
                 CameraPosition cameraPosition = CameraPosition.builder()
-                        .target(MathUtils.midpoint(playerLocation, opponentLocation))
-                        .bearing(MathUtils.bearing(playerLocation, opponentLocation))
+                        .target(mathService.midpoint(playerLocation, opponentLocation))
+                        .bearing(mathService.bearing(playerLocation, opponentLocation))
                         .zoom(zoom)
                         .build();
                 googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), new GoogleMap.CancelableCallback() {
@@ -211,7 +220,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         logger.i("response with routes received");
                         Polyline polyline = drawRoute(response.body().getRoutes().get(0));
 
-                        WorldManager.getInstance().createUnit(polyline.getPoints(), playerLocation, selectedUnit, true);
+                        worldManager.createPlayerUnit(polyline.getPoints(), playerLocation, selectedUnit);
                     }
 
                     @Override
