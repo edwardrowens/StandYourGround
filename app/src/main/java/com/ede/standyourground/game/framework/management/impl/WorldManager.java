@@ -1,7 +1,8 @@
 package com.ede.standyourground.game.framework.management.impl;
 
 import com.ede.standyourground.framework.Logger;
-import com.ede.standyourground.game.framework.render.api.Renderer;
+import com.ede.standyourground.framework.dagger.providers.GameSessionIdProvider;
+import com.ede.standyourground.game.framework.render.impl.RenderLoop;
 import com.ede.standyourground.game.framework.update.impl.UpdateLoop;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.Unit;
@@ -10,7 +11,6 @@ import com.ede.standyourground.networking.exchange.request.impl.CreateUnitReques
 import com.ede.standyourground.networking.framework.NetworkingManager;
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,27 +27,29 @@ public class WorldManager {
     private static Logger logger = new Logger(WorldManager.class);
 
     private Map<UUID, Unit> units = new ConcurrentHashMap<>();
-    private UUID gameSessionId;
     private final Lazy<UpdateLoop> updateLoop;
+    private final Lazy<RenderLoop> renderLoop;
     private final Lazy<UnitCreator> unitCreator;
-    private final Lazy<Renderer> renderer;
     private final Lazy<NetworkingManager> networkingManager;
+    private final Lazy<GameSessionIdProvider> gameSessionIdProvider;
 
     @Inject
     WorldManager(Lazy<UpdateLoop> updateLoop,
                  Lazy<UnitCreator> unitCreator,
-                 Lazy<Renderer> renderer,
-                 Lazy<NetworkingManager> networkingManager) {
+                 Lazy<NetworkingManager> networkingManager,
+                 Lazy<GameSessionIdProvider> gameSessionIdProvider,
+                 Lazy<RenderLoop> renderLoop) {
         this.updateLoop = updateLoop;
         this.unitCreator = unitCreator;
-        this.renderer = renderer;
         this.networkingManager = networkingManager;
+        this.gameSessionIdProvider = gameSessionIdProvider;
+        this.renderLoop = renderLoop;
     }
 
 
-    public void start(UUID gameSessionId) {
-        this.gameSessionId = gameSessionId;
+    public void start() {
         updateLoop.get().startLoop();
+        renderLoop.get().startLoop();
     }
 
     public void createEnemyUnit(List<LatLng> route, LatLng position, Units units) {
@@ -63,7 +65,7 @@ public class WorldManager {
         createUnitRequest.setPosition(unit.getStartingPosition());
         createUnitRequest.setTimestamp(unit.getCreatedTime());
         createUnitRequest.setWaypoints(unit.getWaypoints());
-        createUnitRequest.setGameSessionId(gameSessionId);
+        createUnitRequest.setGameSessionId(gameSessionIdProvider.get().getGameSessionId());
 
         if (unit instanceof FootSoldier) {
             createUnitRequest.setUnit(Units.FOOT_SOLDIER);
@@ -84,8 +86,8 @@ public class WorldManager {
         logger.i("Added unit. %d units managed", units.size());
     }
 
-    public List<Unit> getUnits() {
-        return new ArrayList<>(units.values());
+    public Map<UUID, Unit> getUnits() {
+        return units;
     }
 
     public Unit getUnit(UUID id) {

@@ -5,10 +5,6 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Eddie on 2/6/2017.
- */
-
 public class Path {
     private List<LatLng> points = new ArrayList<>();
     private List<Integer> distances = new ArrayList<>();

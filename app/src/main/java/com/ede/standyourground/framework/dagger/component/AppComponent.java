@@ -1,9 +1,10 @@
-package com.ede.standyourground.framework.component;
+package com.ede.standyourground.framework.dagger.component;
 
 import com.ede.standyourground.app.activity.FindMatchActivity;
 import com.ede.standyourground.app.activity.MapsActivity;
-import com.ede.standyourground.framework.modules.AppModule;
-import com.ede.standyourground.framework.modules.ServiceModule;
+import com.ede.standyourground.app.service.GoogleDirectionsService;
+import com.ede.standyourground.framework.dagger.module.AppModule;
+import com.ede.standyourground.framework.dagger.module.ServiceModule;
 
 import javax.inject.Singleton;
 
@@ -14,4 +15,5 @@ import dagger.Component;
 public interface AppComponent {
     void inject(FindMatchActivity findMatchActivity);
     void inject(MapsActivity mapsActivity);
+    void inject(GoogleDirectionsService googleDirectionsService);
 }

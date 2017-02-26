@@ -12,11 +12,12 @@ public class FootSoldier extends MovableUnit {
     public FootSoldier(List<LatLng> waypoints, LatLng position, boolean isEnemy, Circle circle) {
         super(50, waypoints, position, isEnemy);
         this.circle = circle;
-        this.visionRadius = 1;
+        this.visionRadius = .1;
     }
 
     @Override
     public void render() {
-        circle.setCenter(getPosition());
+        circle.setCenter(getCurrentPosition());
+        circle.setVisible(isVisible());
     }
 }

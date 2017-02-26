@@ -1,4 +1,4 @@
-package com.ede.standyourground.framework.providers;
+package com.ede.standyourground.framework.dagger.providers;
 
 import com.google.android.gms.maps.GoogleMap;
 

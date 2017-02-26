@@ -10,6 +10,7 @@ import com.ede.standyourground.app.api.DirectionsApi;
 import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.to.RoutesRequestTO;
 import com.ede.standyourground.framework.api.RouteService;
+import com.ede.standyourground.framework.dagger.application.MyApp;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -26,6 +27,10 @@ public class GoogleDirectionsService extends Service {
 
     @Inject RouteService routeService;
 
+    @Override
+    public void onCreate() {
+        ((MyApp) getApplication()).getAppComponent().inject(this);
+    }
 
     @Nullable
     @Override

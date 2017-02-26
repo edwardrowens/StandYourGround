@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Unit implements Renderable {
     private final LatLng startingPosition;
@@ -16,6 +17,7 @@ public abstract class Unit implements Renderable {
     private AtomicLong createdTime;
     private final List<LatLng> waypoints;
     private final boolean isEnemy;
+    private final AtomicReference<LatLng> currentPosition;
 
     private AtomicBoolean isVisible;
     protected double visionRadius;
@@ -27,6 +29,7 @@ public abstract class Unit implements Renderable {
         this.isEnemy = isEnemy;
         this.visionRadius = 0;
         this.isVisible = new AtomicBoolean(!isEnemy);
+        this.currentPosition = new AtomicReference<>(startingPosition);
     }
 
     public LatLng getStartingPosition() {
@@ -63,5 +66,13 @@ public abstract class Unit implements Renderable {
 
     public void setIsVisible(boolean isVisible) {
         this.isVisible.set(isVisible);
+    }
+
+    public void setCurrentPosition(LatLng position) {
+        currentPosition.set(position);
+    }
+
+    public LatLng getCurrentPosition() {
+        return currentPosition.get();
     }
 }

@@ -5,7 +5,6 @@ import android.os.HandlerThread;
 
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.framework.management.impl.WorldManager;
-import com.ede.standyourground.game.framework.render.api.Renderer;
 import com.ede.standyourground.game.framework.update.service.api.UpdateService;
 import com.ede.standyourground.game.model.Unit;
 
@@ -25,15 +24,12 @@ public class UpdateLoop implements Runnable {
 
     private final Lazy<UpdateService> updateService;
     private final Lazy<WorldManager> worldManager;
-    private final Lazy<Renderer> renderer;
 
     @Inject
     UpdateLoop(Lazy<UpdateService> updateService,
-               Lazy<WorldManager> worldManager,
-               Lazy<Renderer> renderer) {
+               Lazy<WorldManager> worldManager) {
         this.updateService = updateService;
         this.worldManager = worldManager;
-        this.renderer = renderer;
     }
 
     public void startLoop() {
@@ -45,10 +41,9 @@ public class UpdateLoop implements Runnable {
 
     @Override
     public void run() {
-        for (Unit unit : worldManager.get().getUnits()) {
+        for (Unit unit : worldManager.get().getUnits().values()) {
             updateService.get().determinePosition(unit);
-            updateService.get().determineVisibility(worldManager.get().getUnits());
-            renderer.get().render(unit);
+            updateService.get().determineVisibility(unit);
         }
 
         handler.postDelayed(this, LOOP_DELAY);

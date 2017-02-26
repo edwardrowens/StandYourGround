@@ -5,7 +5,7 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.ede.standyourground.framework.providers.GoogleMapProvider;
+import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
@@ -23,10 +23,10 @@ public class UnitCreator {
 
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
     private final Lazy<WorldManager> worldManager;
-    private final GoogleMapProvider googleMapProvider;
+    private final Lazy<GoogleMapProvider> googleMapProvider;
 
     @Inject
-    UnitCreator(GoogleMapProvider googleMapProvider,
+    UnitCreator(Lazy<GoogleMapProvider> googleMapProvider,
                 Lazy<WorldManager> worldManager) {
         this.googleMapProvider = googleMapProvider;
         this.worldManager = worldManager;
@@ -38,7 +38,7 @@ public class UnitCreator {
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Circle circle = googleMapProvider.getGoogleMap().addCircle(new CircleOptions().center(position).clickable(false).radius(50).fillColor(Color.BLUE).strokeColor(Color.BLACK).zIndex(1.0f));
+                        Circle circle = googleMapProvider.get().getGoogleMap().addCircle(new CircleOptions().center(position).clickable(false).radius(50).fillColor(Color.BLUE).strokeColor(Color.BLACK).zIndex(1.0f));
                         Unit unit = new FootSoldier(route, position, false, circle);
                         worldManager.get().addPlayerUnit(unit);
                     }
@@ -52,7 +52,7 @@ public class UnitCreator {
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Circle circle = googleMapProvider.getGoogleMap().addCircle(new CircleOptions().center(position).clickable(false).radius(50).fillColor(Color.RED).strokeColor(Color.BLACK).zIndex(1.0f));
+                        Circle circle = googleMapProvider.get().getGoogleMap().addCircle(new CircleOptions().center(position).clickable(false).radius(50).fillColor(Color.RED).strokeColor(Color.BLACK).zIndex(1.0f));
                         Unit unit = new FootSoldier(route, position, true, circle);
                         worldManager.get().addEnemyUnit(unit);
                     }

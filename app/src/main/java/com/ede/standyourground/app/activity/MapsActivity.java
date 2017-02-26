@@ -19,7 +19,9 @@ import com.ede.standyourground.app.service.GoogleDirectionsService;
 import com.ede.standyourground.app.service.StopGameService;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.api.MathService;
-import com.ede.standyourground.framework.providers.GoogleMapProvider;
+import com.ede.standyourground.framework.dagger.application.MyApp;
+import com.ede.standyourground.framework.dagger.providers.GameSessionIdProvider;
+import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.model.Units;
 import com.google.android.gms.maps.CameraUpdate;
@@ -62,16 +64,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Units selectedUnit;
     private LatLng playerLocation;
     private LatLng opponentLocation;
-    public static UUID gameSessionId;
 
     @Inject WorldManager worldManager;
     @Inject MathService mathService;
-    @Inject
-    GoogleMapProvider googleMapProvider;
+    @Inject GoogleMapProvider googleMapProvider;
+    @Inject GameSessionIdProvider gameSessionIdProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ((MyApp) getApplication()).getAppComponent().inject(this);
+
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -80,7 +83,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         playerLocation = (LatLng) getIntent().getExtras().get(FindMatchActivity.PLAYER_LOCATION);
         opponentLocation = (LatLng) getIntent().getExtras().get(FindMatchActivity.OPPONENT_LOCATION);
-        gameSessionId = UUID.fromString((String) getIntent().getExtras().get(FindMatchActivity.GAME_SESSION_ID));
+        gameSessionIdProvider.setGameSessionId(UUID.fromString((String) getIntent().getExtras().get(FindMatchActivity.GAME_SESSION_ID)));
+
         logger.i("Player location is " + playerLocation.toString());
         logger.i("Opponent location is " + opponentLocation.toString());
     }
@@ -109,7 +113,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onDestroy() {
         logger.d("Ending game");
         Intent intent = new Intent(this, StopGameService.class);
-        intent.putExtra(FindMatchActivity.GAME_SESSION_ID, gameSessionId);
+        intent.putExtra(FindMatchActivity.GAME_SESSION_ID, gameSessionIdProvider.getGameSessionId());
         startService(intent);
         super.onDestroy();
     }
@@ -129,7 +133,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         this.googleMap = googleMap;
         googleMapProvider.setGoogleMap(googleMap);
 
-        worldManager.start(gameSessionId);
+        worldManager.start();
 
         // Updating google map settings
         googleMap.getUiSettings().setMapToolbarEnabled(false);

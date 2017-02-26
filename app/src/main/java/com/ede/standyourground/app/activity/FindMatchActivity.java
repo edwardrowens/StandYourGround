@@ -25,6 +25,7 @@ import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.Receiver;
 import com.ede.standyourground.framework.StandYourGroundResultReceiver;
 import com.ede.standyourground.framework.api.MathService;
+import com.ede.standyourground.framework.dagger.application.MyApp;
 import com.ede.standyourground.networking.framework.NetworkingManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -70,6 +71,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ((MyApp) getApplication()).getAppComponent().inject(this);
         setContentView(R.layout.activity_find_match);
 
         onFindMatchButton = (Button) findViewById(R.id.onFindMatchButton);
