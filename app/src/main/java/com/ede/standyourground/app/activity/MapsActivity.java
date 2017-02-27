@@ -65,10 +65,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng playerLocation;
     private LatLng opponentLocation;
 
-    @Inject WorldManager worldManager;
-    @Inject MathService mathService;
-    @Inject GoogleMapProvider googleMapProvider;
-    @Inject GameSessionIdProvider gameSessionIdProvider;
+    @Inject
+    WorldManager worldManager;
+    @Inject
+    MathService mathService;
+    @Inject
+    GoogleMapProvider googleMapProvider;
+    @Inject
+    GameSessionIdProvider gameSessionIdProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,11 +184,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         logger.i("On route clicked");
         drawRoutesForUnit();
 
+        // TODO DELETE
+        logger.i("Creating enemy foot soldier.");
+        googleDirectionsService.getRoutes(opponentLocation, playerLocation, new ArrayList<LatLng>(),
+                new Callback<Routes>() {
+                    @Override
+                    public void onResponse(Call<Routes> call, Response<Routes> response) {
+                        logger.i("Successfully created enemy foot soldier.");
+                        Polyline polyline = drawRoute(response.body().getRoutes().get(0));
+                        worldManager.createEnemyUnit(polyline.getPoints(), opponentLocation, selectedUnit);
+                    }
+
+                    @Override
+                    public void onFailure(Call<Routes> call, Throwable t) {
+                        logger.e("Failure in routing enemy foot soldier", t);
+                    }
+                });
+        // TODO END OF DELETE
+
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
             }
         });
+
         for (Marker marker : waypoints)
             marker.remove();
         waypoints.clear();
@@ -198,7 +221,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         switch (view.getId()) {
             case R.id.footSoldier:
                 selectedUnit = Units.FOOT_SOLDIER;
-                logger.i("Selected foot soldier");
                 break;
         }
 

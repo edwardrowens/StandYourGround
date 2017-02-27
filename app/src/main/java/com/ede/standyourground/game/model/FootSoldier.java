@@ -9,8 +9,8 @@ public class FootSoldier extends MovableUnit {
 
     private Circle circle;
 
-    public FootSoldier(List<LatLng> waypoints, LatLng position, boolean isEnemy, Circle circle) {
-        super(50, waypoints, position, isEnemy);
+    public FootSoldier(List<LatLng> waypoints, LatLng position, Path path, boolean isEnemy, Circle circle) {
+        super(50, waypoints, position, path, isEnemy);
         this.circle = circle;
         this.visionRadius = .1;
     }

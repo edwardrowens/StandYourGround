@@ -25,10 +25,10 @@
         android:id="@+id/opponentFoundText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/find_match_opponent_found"
-        android:gravity="center"
         android:layout_marginTop="20dp"
-        android:visibility="invisible"/>
+        android:gravity="center"
+        android:text="@string/find_match_opponent_found"
+        android:visibility="invisible" />
 
 
     <LinearLayout
@@ -42,16 +42,27 @@
             android:id="@+id/findingMatchText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/find_match_searching"
             android:gravity="center"
-            android:visibility="invisible"/>
+            android:text="@string/find_match_searching"
+            android:visibility="invisible" />
+
         <ProgressBar
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="invisible"
-            android:indeterminate="true"/>
+            android:indeterminate="true"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/faceAiButton"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:onClick="onFaceAi"
+            android:text="@string/face_ai_button"
+            android:visibility="invisible"/>
 
     </LinearLayout>
 

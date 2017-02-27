@@ -16,8 +16,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.ede.standyourground.R;
+import com.ede.standyourground.app.api.MatchMakingApi;
 import com.ede.standyourground.app.service.FindMatchService;
 import com.ede.standyourground.app.service.RemoveFromMatchMakingService;
+import com.ede.standyourground.app.service.ServiceGenerator;
 import com.ede.standyourground.app.to.FindMatchRequestTO;
 import com.ede.standyourground.app.to.FindMatchResponseTO;
 import com.ede.standyourground.framework.Callback;
@@ -26,7 +28,7 @@ import com.ede.standyourground.framework.Receiver;
 import com.ede.standyourground.framework.StandYourGroundResultReceiver;
 import com.ede.standyourground.framework.api.MathService;
 import com.ede.standyourground.framework.dagger.application.MyApp;
-import com.ede.standyourground.networking.framework.NetworkingManager;
+import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -39,6 +41,9 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 public class FindMatchActivity extends AppCompatActivity implements Receiver, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -64,6 +69,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     private ProgressBar findingMatchProgressBar;
     private TextView findingMatchText;
     private TextView opponentFoundText;
+    private Button faceAiButton;
 
     @Inject MathService mathService;
     @Inject NetworkingManager networkingManager;
@@ -78,6 +84,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         findingMatchProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         findingMatchText = (TextView) findViewById(R.id.findingMatchText);
         opponentFoundText = (TextView) findViewById(R.id.opponentFoundText);
+        faceAiButton = (Button) findViewById(R.id.faceAiButton);
 
         standYourGroundResultReceiver.setReceiver(this);
         List<Integer> ints = new ArrayList<>();
@@ -94,6 +101,8 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
 
         findingMatchText.setVisibility(View.VISIBLE);
         findingMatchProgressBar.setVisibility(View.VISIBLE);
+        faceAiButton.setVisibility(View.VISIBLE);
+        faceAiButton.setEnabled(true);
         onFindMatchButton.setVisibility(View.INVISIBLE);
 
         Intent intent = new Intent(this, FindMatchService.class);
@@ -275,6 +284,31 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         } else {
             logger.w("Received null opponent player in response");
         }
+    }
+
+    public void onFaceAi(View view) {
+        MatchMakingApi matchMakingApi = ServiceGenerator.createService(MatchMakingApi.class);
+
+        FindMatchRequestTO findMatchRequestTO = new FindMatchRequestTO();
+        findMatchRequestTO.setId(UUID.randomUUID());
+        findMatchRequestTO.setRadius(5);
+        findMatchRequestTO.setLng(-118.229919);
+        findMatchRequestTO.setLat(34.170805);
+
+        Call<FindMatchResponseTO> findMatchCall = matchMakingApi.findMatch(findMatchRequestTO);
+
+        findMatchCall.enqueue(new retrofit2.Callback<FindMatchResponseTO>() {
+            @Override
+            public void onResponse(Call<FindMatchResponseTO> call, Response<FindMatchResponseTO> response) {
+                logger.i("Received response %d for AI", response.code());
+            }
+
+            @Override
+            public void onFailure(Call<FindMatchResponseTO> call, Throwable t) {
+                logger.e("Call to add AI to matchmaking failed", t);
+            }
+        });
+
     }
 
     private void resetActivity(String messageText) {

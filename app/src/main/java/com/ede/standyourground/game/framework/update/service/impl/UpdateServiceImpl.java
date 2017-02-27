@@ -2,12 +2,12 @@ package com.ede.standyourground.game.framework.update.service.impl;
 
 import android.os.SystemClock;
 
+import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.api.MathService;
 import com.ede.standyourground.framework.api.RouteService;
 import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.framework.update.service.api.UpdateService;
 import com.ede.standyourground.game.model.MovableUnit;
-import com.ede.standyourground.game.model.Path;
 import com.ede.standyourground.game.model.Unit;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
@@ -18,6 +18,8 @@ import dagger.Lazy;
 
 
 public class UpdateServiceImpl implements UpdateService {
+
+    private static final Logger logger = new Logger(UpdateServiceImpl.class);
 
     private final Lazy<RouteService> routeService;
     private final Lazy<MathService> mathService;
@@ -51,13 +53,12 @@ public class UpdateServiceImpl implements UpdateService {
             long elapsed = SystemClock.uptimeMillis() - unit.getCreatedTime();
             int valuesTraveled = (int) Math.round((routeService.get().milesToValue(movableUnit.getMph()) / 60d / 60 / 1000) * elapsed);
 
-            Path unitPath = new Path(unit.getWaypoints(), routeService.get().getDistanceOfSteps(unit.getWaypoints(), unit.getCurrentPosition()));
-            int sumOfPreviousTargets = mathService.get().sumTo(unitPath.getDistances(), movableUnit.getCurrentTarget());
+            int sumOfPreviousTargets = mathService.get().sumTo(movableUnit.getPath().getDistances(), movableUnit.getCurrentTarget());
             int distanceTraveledToTarget = valuesTraveled - sumOfPreviousTargets;
-            double proportionToNextPoint = distanceTraveledToTarget / (double) unitPath.getDistances().get(movableUnit.getCurrentTarget());
+            double proportionToNextPoint = distanceTraveledToTarget / (double) movableUnit.getPath().getDistances().get(movableUnit.getCurrentTarget());
 
-            LatLng currentPosition = movableUnit.getCurrentTarget() == 0 ? unit.getStartingPosition() : unitPath.getPoints().get(movableUnit.getCurrentTarget() - 1);
-            LatLng currentTarget = unitPath.getPoints().get(movableUnit.getCurrentTarget());
+            LatLng currentPosition = movableUnit.getCurrentTarget() == 0 ? unit.getStartingPosition() : movableUnit.getPath().getPoints().get(movableUnit.getCurrentTarget() - 1);
+            LatLng currentTarget = movableUnit.getPath().getPoints().get(movableUnit.getCurrentTarget());
 
             LatLng intermediatePosition = SphericalUtil.interpolate(currentPosition, currentTarget, proportionToNextPoint);
 

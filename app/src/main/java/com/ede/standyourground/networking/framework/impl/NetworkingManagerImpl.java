@@ -1,4 +1,4 @@
-package com.ede.standyourground.networking.framework;
+package com.ede.standyourground.networking.framework.impl;
 
 import com.ede.standyourground.app.service.ServiceGenerator;
 import com.ede.standyourground.framework.Callback;
@@ -7,6 +7,7 @@ import com.ede.standyourground.networking.exchange.api.Exchange;
 import com.ede.standyourground.networking.exchange.handler.impl.request.CreateUnitRequestHandler;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
 import com.ede.standyourground.networking.exchange.response.impl.OkResponse;
+import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.gson.Gson;
 
 import java.net.URI;
@@ -20,13 +21,13 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 @Singleton
-public class NetworkingManager {
-    private static Logger logger = new Logger(NetworkingManager.class);
+public class NetworkingManagerImpl implements NetworkingManager {
+    private static Logger logger = new Logger(NetworkingManagerImpl.class);
 
     private final Lazy<CreateUnitRequestHandler> createUnitRequestHandler;
 
     @Inject
-    public NetworkingManager(Lazy<CreateUnitRequestHandler> createUnitRequestHandler) {
+    public NetworkingManagerImpl(Lazy<CreateUnitRequestHandler> createUnitRequestHandler) {
         this.createUnitRequestHandler = createUnitRequestHandler;
     }
 

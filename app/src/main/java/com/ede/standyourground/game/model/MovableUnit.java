@@ -3,21 +3,28 @@ package com.ede.standyourground.game.model;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public abstract class MovableUnit extends Unit {
 
-    private double mph;
+    private final AtomicReference<Double> mph;
     private int currentTarget;
+    private final Path path;
 
-    public MovableUnit(double mph, List<LatLng> waypoints, LatLng position, boolean isEnemy) {
+    public MovableUnit(double mph, List<LatLng> waypoints, LatLng position, Path path, boolean isEnemy) {
         super(position, waypoints, isEnemy);
-        this.mph = mph;
+        this.path = path;
+        this.mph = new AtomicReference<>(mph);
         currentTarget = 0;
     }
 
     public double getMph() {
-        return mph;
+        return mph.get();
+    }
+
+    public void setMph(double mph) {
+        this.mph.set(mph);
     }
 
     public void incrementTarget() {
@@ -27,5 +34,9 @@ public abstract class MovableUnit extends Unit {
 
     public int getCurrentTarget() {
         return currentTarget;
+    }
+
+    public Path getPath() {
+        return path;
     }
 }

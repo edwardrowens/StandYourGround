@@ -8,7 +8,7 @@ import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
-import com.ede.standyourground.networking.framework.NetworkingManager;
+import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;

@@ -4,7 +4,7 @@ import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.networking.exchange.handler.api.ExchangeHandler;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
 import com.ede.standyourground.networking.exchange.response.impl.OkResponse;
-import com.ede.standyourground.networking.framework.NetworkingManager;
+import com.ede.standyourground.networking.framework.api.NetworkingManager;
 
 import javax.inject.Inject;
 

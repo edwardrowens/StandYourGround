@@ -5,10 +5,6 @@ import android.os.Parcelable;
 
 import java.util.UUID;
 
-/**
- * Created by Eddie on 2/9/2017.
- */
-
 public class FindMatchRequestTO implements Parcelable {
     public FindMatchRequestTO(){}
     private double lat;
