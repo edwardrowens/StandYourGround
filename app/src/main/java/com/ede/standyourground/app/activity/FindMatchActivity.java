@@ -26,7 +26,7 @@ import com.ede.standyourground.framework.Callback;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.Receiver;
 import com.ede.standyourground.framework.StandYourGroundResultReceiver;
-import com.ede.standyourground.framework.api.MathService;
+import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.dagger.application.MyApp;
 import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.android.gms.common.ConnectionResult;
@@ -71,7 +71,8 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     private TextView opponentFoundText;
     private Button faceAiButton;
 
-    @Inject MathService mathService;
+    @Inject
+    LatLngService latLngService;
     @Inject NetworkingManager networkingManager;
 
     @Override
@@ -91,7 +92,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         ints.add(1);
         ints.add(5);
         ints.add(4);
-        logger.d("%d", mathService.sumTo(ints, 3));
+        logger.d("%d", latLngService.sumTo(ints, 3));
         playerId = UUID.randomUUID();
         getLocation();
     }

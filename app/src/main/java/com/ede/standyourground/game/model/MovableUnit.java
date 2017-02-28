@@ -3,6 +3,7 @@ package com.ede.standyourground.game.model;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -11,12 +12,20 @@ public abstract class MovableUnit extends Unit {
     private final AtomicReference<Double> mph;
     private int currentTarget;
     private final Path path;
+    private final AtomicLong lastUpdated;
+    private final AtomicReference<Double> distanceTraveled;
+    private final boolean reachedEnemyBase;
+    private final List<LatLng> waypoints;
 
     public MovableUnit(double mph, List<LatLng> waypoints, LatLng position, Path path, boolean isEnemy) {
-        super(position, waypoints, isEnemy);
+        super(position, isEnemy);
         this.path = path;
         this.mph = new AtomicReference<>(mph);
         currentTarget = 0;
+        this.lastUpdated = new AtomicLong(getCreatedTime());
+        this.distanceTraveled = new AtomicReference<>(0d);
+        this.reachedEnemyBase = false;
+        this.waypoints = waypoints;
     }
 
     public double getMph() {
@@ -38,5 +47,29 @@ public abstract class MovableUnit extends Unit {
 
     public Path getPath() {
         return path;
+    }
+
+    public long getLastUpdated() {
+        return lastUpdated.get();
+    }
+
+    public void setLastUpdated(long lastUpdated) {
+        this.lastUpdated.set(lastUpdated);
+    }
+
+    public void setDistanceTraveled(double distanceTraveled) {
+        this.distanceTraveled.set(distanceTraveled);
+    }
+
+    public double getDistanceTraveled() {
+        return distanceTraveled.get();
+    }
+
+    public boolean getReachedEnemyBase() {
+        return reachedEnemyBase;
+    }
+
+    public List<LatLng> getWaypoints() {
+        return waypoints;
     }
 }

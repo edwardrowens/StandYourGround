@@ -5,7 +5,6 @@ import android.os.SystemClock;
 import com.ede.standyourground.game.framework.render.api.Renderable;
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,17 +14,15 @@ public abstract class Unit implements Renderable {
     private final LatLng startingPosition;
     private final UUID id = UUID.randomUUID();
     private AtomicLong createdTime;
-    private final List<LatLng> waypoints;
     private final boolean isEnemy;
     private final AtomicReference<LatLng> currentPosition;
 
     private AtomicBoolean isVisible;
     protected double visionRadius;
 
-    public Unit(LatLng startingPosition, List<LatLng> waypoints, boolean isEnemy) {
+    public Unit(LatLng startingPosition, boolean isEnemy) {
         this.startingPosition = startingPosition;
         this.createdTime = new AtomicLong(SystemClock.uptimeMillis());
-        this.waypoints = waypoints;
         this.isEnemy = isEnemy;
         this.visionRadius = 0;
         this.isVisible = new AtomicBoolean(!isEnemy);
@@ -46,10 +43,6 @@ public abstract class Unit implements Renderable {
 
     public void setCreatedTime(long createdTime) {
         this.createdTime.set(createdTime);
-    }
-
-    public List<LatLng> getWaypoints() {
-        return waypoints;
     }
 
     public boolean isEnemy() {

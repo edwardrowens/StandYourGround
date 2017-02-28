@@ -5,7 +5,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
-public interface MathService {
+public interface LatLngService {
 
     float bearing(LatLng to, LatLng from);
 
@@ -14,4 +14,6 @@ public interface MathService {
     int sumTo(List<Integer> list, int index);
 
     boolean withinDistance(LatLng position1, LatLng position2, double distance);
+
+    double calculateDistance(LatLng p1, LatLng p2);
 }

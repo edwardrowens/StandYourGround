@@ -4,7 +4,9 @@ import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.game.framework.render.impl.RenderLoop;
 import com.ede.standyourground.game.framework.update.impl.UpdateLoop;
+import com.ede.standyourground.game.model.Base;
 import com.ede.standyourground.game.model.FootSoldier;
+import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
@@ -64,13 +66,15 @@ public class WorldManager {
         CreateUnitRequest createUnitRequest = new CreateUnitRequest();
         createUnitRequest.setPosition(unit.getStartingPosition());
         createUnitRequest.setTimestamp(unit.getCreatedTime());
-        createUnitRequest.setWaypoints(unit.getWaypoints());
+        if (unit instanceof MovableUnit) {
+            createUnitRequest.setWaypoints(((MovableUnit)unit).getWaypoints());
+        }
         createUnitRequest.setGameSessionId(gameSessionIdProvider.get().getGameSessionId());
 
         if (unit instanceof FootSoldier) {
             createUnitRequest.setUnit(Units.FOOT_SOLDIER);
-        } else {
-            createUnitRequest.setUnit(Units.FOOT_SOLDIER);
+        } else if (unit instanceof Base) {
+            createUnitRequest.setUnit(Units.BASE);
         }
 
         networkingManager.get().sendExchange(createUnitRequest);

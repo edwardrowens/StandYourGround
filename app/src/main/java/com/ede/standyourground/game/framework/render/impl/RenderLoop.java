@@ -25,9 +25,9 @@ public class RenderLoop {
             @Override
             public void run() {
                 for (Unit unit : worldManager.get().getUnits().values()) {
-                    unit.render();
-                    renderingHandler.postDelayed(this, 16);
+                    unit.onRender();
                 }
+                renderingHandler.postDelayed(this, 16);
             }
         });
     }

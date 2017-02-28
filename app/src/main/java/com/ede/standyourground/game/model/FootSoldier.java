@@ -7,7 +7,7 @@ import java.util.List;
 
 public class FootSoldier extends MovableUnit {
 
-    private Circle circle;
+    private final Circle circle;
 
     public FootSoldier(List<LatLng> waypoints, LatLng position, Path path, boolean isEnemy, Circle circle) {
         super(50, waypoints, position, path, isEnemy);
@@ -16,7 +16,7 @@ public class FootSoldier extends MovableUnit {
     }
 
     @Override
-    public void render() {
+    public void onRender() {
         circle.setCenter(getCurrentPosition());
         circle.setVisible(isVisible());
     }

@@ -18,7 +18,7 @@ import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.service.GoogleDirectionsService;
 import com.ede.standyourground.app.service.StopGameService;
 import com.ede.standyourground.framework.Logger;
-import com.ede.standyourground.framework.api.MathService;
+import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.dagger.application.MyApp;
 import com.ede.standyourground.framework.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
@@ -68,7 +68,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Inject
     WorldManager worldManager;
     @Inject
-    MathService mathService;
+    LatLngService latLngService;
     @Inject
     GoogleMapProvider googleMapProvider;
     @Inject
@@ -155,14 +155,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onFinish() {
                 float zoom = googleMap.getCameraPosition().zoom;
                 CameraPosition cameraPosition = CameraPosition.builder()
-                        .target(mathService.midpoint(playerLocation, opponentLocation))
-                        .bearing(mathService.bearing(playerLocation, opponentLocation))
+                        .target(latLngService.midpoint(playerLocation, opponentLocation))
+                        .bearing(latLngService.bearing(playerLocation, opponentLocation))
                         .zoom(zoom)
                         .build();
                 googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), new GoogleMap.CancelableCallback() {
                     @Override
                     public void onFinish() {
                         googleMap.getUiSettings().setRotateGesturesEnabled(false);
+                        worldManager.createPlayerUnit(null, playerLocation, Units.BASE);
+
+                        // TODO DELETE
+                        worldManager.createEnemyUnit(null, opponentLocation, Units.BASE);
+                        // TODO END OF DELETE
                     }
 
                     @Override

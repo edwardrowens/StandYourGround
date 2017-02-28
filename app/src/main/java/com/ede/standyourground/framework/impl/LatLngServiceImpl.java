@@ -1,6 +1,6 @@
 package com.ede.standyourground.framework.impl;
 
-import com.ede.standyourground.framework.api.MathService;
+import com.ede.standyourground.framework.api.LatLngService;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -8,12 +8,12 @@ import java.util.List;
 import javax.inject.Inject;
 
 
-public class MathServiceImpl implements MathService {
+public class LatLngServiceImpl implements LatLngService {
 
     private static final int EARTH_RADIUS = 3959;
 
     @Inject
-    public MathServiceImpl() {
+    public LatLngServiceImpl() {
 
     }
 
@@ -64,6 +64,15 @@ public class MathServiceImpl implements MathService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double d = EARTH_RADIUS * c;
         return d <= distance;
+    }
+
+    @Override
+    public double calculateDistance(LatLng p1, LatLng p2) {
+        double dLat = deg2Rad(p2.latitude - p1.latitude);
+        double dLon = deg2Rad(p2.longitude - p1.longitude);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2Rad(p1.latitude)) * Math.cos(deg2Rad(p2.latitude)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS * c;
     }
 
     private double deg2Rad(double degrees) {

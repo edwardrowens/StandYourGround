@@ -6,8 +6,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ServiceGenerator {
 
-//    private static final String BASE_URL = "https://standyourground.herokuapp.com/";
-    public static final String BASE_URL = "http://192.168.0.102:8000/";
+    public static final String BASE_URL = "https://standyourground.herokuapp.com/";
+//    public static final String BASE_URL = "http://192.168.0.102:8000/";
 
     private static Retrofit retrofit;
 
