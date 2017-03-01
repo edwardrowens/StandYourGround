@@ -1,5 +1,6 @@
 package com.ede.standyourground.game.model;
 
+import com.ede.standyourground.game.model.api.Attacker;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-public abstract class MovableUnit extends Unit {
+public abstract class MovableUnit extends Unit implements Attacker {
 
     private final AtomicReference<Double> mph;
     private int currentTarget;
@@ -17,8 +18,8 @@ public abstract class MovableUnit extends Unit {
     private final boolean reachedEnemyBase;
     private final List<LatLng> waypoints;
 
-    public MovableUnit(double mph, List<LatLng> waypoints, LatLng position, Path path, boolean isEnemy) {
-        super(position, isEnemy);
+    public MovableUnit(double mph, List<LatLng> waypoints, LatLng position, Path path, int health, double radius, boolean isEnemy) {
+        super(position, health, radius, isEnemy);
         this.path = path;
         this.mph = new AtomicReference<>(mph);
         currentTarget = 0;

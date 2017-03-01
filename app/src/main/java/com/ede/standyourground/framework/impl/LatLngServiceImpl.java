@@ -10,7 +10,8 @@ import javax.inject.Inject;
 
 public class LatLngServiceImpl implements LatLngService {
 
-    private static final int EARTH_RADIUS = 3959;
+    private static final int EARTH_RADIUS_MILES = 3959;
+    private static final int EARTH_RADIUS_METERS = 6371000;
 
     @Inject
     public LatLngServiceImpl() {
@@ -62,7 +63,7 @@ public class LatLngServiceImpl implements LatLngService {
         double dLon = deg2Rad(position2.longitude - position1.longitude);
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2Rad(position1.latitude)) * Math.cos(deg2Rad(position2.latitude)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double d = EARTH_RADIUS * c;
+        double d = EARTH_RADIUS_MILES * c;
         return d <= distance;
     }
 
@@ -72,7 +73,7 @@ public class LatLngServiceImpl implements LatLngService {
         double dLon = deg2Rad(p2.longitude - p1.longitude);
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2Rad(p1.latitude)) * Math.cos(deg2Rad(p2.latitude)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return EARTH_RADIUS * c;
+        return EARTH_RADIUS_METERS * c;
     }
 
     private double deg2Rad(double degrees) {

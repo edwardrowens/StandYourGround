@@ -1,5 +1,7 @@
 package com.ede.standyourground.game.framework.update.service.impl;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 
 import com.ede.standyourground.framework.Logger;
@@ -9,6 +11,7 @@ import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.framework.update.service.api.UpdateService;
 import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
+import com.ede.standyourground.game.model.api.Attacker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
@@ -24,15 +27,15 @@ public class UpdateServiceImpl implements UpdateService {
     private static final Logger logger = new Logger(UpdateServiceImpl.class);
 
     private final Lazy<RouteService> routeService;
-    private final Lazy<LatLngService> mathService;
+    private final Lazy<LatLngService> latLngService;
     private final Lazy<WorldManager> worldManager;
 
     @Inject
     UpdateServiceImpl(Lazy<RouteService> routeService,
-                      Lazy<LatLngService> mathService,
+                      Lazy<LatLngService> latLngService,
                       Lazy<WorldManager> worldManager) {
         this.routeService = routeService;
-        this.mathService = mathService;
+        this.latLngService = latLngService;
         this.worldManager = worldManager;
     }
 
@@ -41,7 +44,7 @@ public class UpdateServiceImpl implements UpdateService {
         if (!unit.isEnemy()) {
             for (Unit target : worldManager.get().getUnits().values()) {
                 if (target.isEnemy()) {
-                    boolean isVisible = mathService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), unit.getVisionRadius());
+                    boolean isVisible = latLngService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), unit.getVisionRadius());
                     worldManager.get().getUnit(target.getId()).setIsVisible(isVisible);
                 }
             }
@@ -58,7 +61,7 @@ public class UpdateServiceImpl implements UpdateService {
             double distanceTraveled = (routeService.get().milesToValue(movableUnit.getMph()) / 60d / 60 / 1000) * elapsed;
             movableUnit.setDistanceTraveled(movableUnit.getDistanceTraveled() + distanceTraveled);
 
-            int sumOfPreviousTargets = mathService.get().sumTo(movableUnit.getPath().getDistances(), movableUnit.getCurrentTarget());
+            int sumOfPreviousTargets = latLngService.get().sumTo(movableUnit.getPath().getDistances(), movableUnit.getCurrentTarget());
             double distanceToNextTargetWaypoint = movableUnit.getDistanceTraveled() - sumOfPreviousTargets;
             double proportionToNextPoint = distanceToNextTargetWaypoint / movableUnit.getPath().getDistances().get(movableUnit.getCurrentTarget());
 
@@ -78,8 +81,27 @@ public class UpdateServiceImpl implements UpdateService {
 
     @Override
     public void processCombat(Collection<Unit> units) {
-        for (Unit unit : units) {
-            for (Unit target : units) {
+        for (final Unit unit : units) {
+            for (final Unit target : units) {
+
+                double distance = latLngService.get().calculateDistance(unit.getCurrentPosition(), target.getCurrentPosition());
+                if (target.isEnemy() && unit instanceof Attacker && distance <= ((Attacker) unit).getAttackRange()) {
+                    logger.i("Processing combat between %s and %s", unit.getId(), target.getId());
+                    if (unit instanceof MovableUnit) {
+                        ((MovableUnit) unit).setMph(0d);
+                    }
+                    ((Attacker) unit).onAttack(target);
+                    if (target.getHealth() <= 0) {
+                        // This must be posted to the main looper because a unit may be manipulating
+                        // a google maps object (which can't be manipulated by a foreign thread).
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                target.onDeath();
+                            }
+                        });
+                    }
+                }
             }
         }
     }

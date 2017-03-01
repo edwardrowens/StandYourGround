@@ -23,7 +23,10 @@ import com.ede.standyourground.framework.dagger.application.MyApp;
 import com.ede.standyourground.framework.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.model.Base;
+import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
+import com.ede.standyourground.game.model.api.DeathListener;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -137,6 +140,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         this.googleMap = googleMap;
         googleMapProvider.setGoogleMap(googleMap);
 
+        worldManager.registerDeathListener(new DeathListener() {
+            @Override
+            public void onDeath(Unit mortal) {
+                if (mortal instanceof Base) {
+                    Base base = (Base) mortal;
+                    if (base.getCurrentPosition().equals(playerLocation)) {
+                        logger.i("YOU LOSE");
+                    } else {
+                        logger.i("YOU WIN");
+                    }
+                    finish();
+                }
+            }
+        });
         worldManager.start();
 
         // Updating google map settings

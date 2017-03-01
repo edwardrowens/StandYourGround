@@ -9,6 +9,7 @@ import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
+import com.ede.standyourground.game.model.api.DeathListener;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
 import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.android.gms.maps.model.LatLng;
@@ -34,6 +35,7 @@ public class WorldManager {
     private final Lazy<UnitCreator> unitCreator;
     private final Lazy<NetworkingManager> networkingManager;
     private final Lazy<GameSessionIdProvider> gameSessionIdProvider;
+    private DeathListener deathListener;
 
     @Inject
     WorldManager(Lazy<UpdateLoop> updateLoop,
@@ -62,7 +64,40 @@ public class WorldManager {
         unitCreator.get().createPlayerUnit(route, position, units);
     }
 
-    public void addPlayerUnit(Unit unit) {
+    public void addPlayerUnit(final Unit unit) {
+        sendCreateUnitRequest(unit);
+        addUnit(unit);
+    }
+
+    public void addEnemyUnit(Unit unit) {
+        addUnit(unit);
+    }
+
+    public void registerDeathListener(DeathListener deathListener) {
+        this.deathListener = deathListener;
+    }
+
+    private void addUnit(final Unit unit) {
+        unit.registerDeathListener(new DeathListener() {
+            @Override
+            public void onDeath(Unit mortal) {
+                units.remove(mortal.getId());
+                deathListener.onDeath(unit);
+            }
+        });
+        units.put(unit.getId(), unit);
+        logger.i("Added unit. %d units managed", units.size());
+    }
+
+    public Map<UUID, Unit> getUnits() {
+        return units;
+    }
+
+    public Unit getUnit(UUID id) {
+        return units.get(id);
+    }
+
+    private void sendCreateUnitRequest(Unit unit) {
         CreateUnitRequest createUnitRequest = new CreateUnitRequest();
         createUnitRequest.setPosition(unit.getStartingPosition());
         createUnitRequest.setTimestamp(unit.getCreatedTime());
@@ -76,25 +111,6 @@ public class WorldManager {
         } else if (unit instanceof Base) {
             createUnitRequest.setUnit(Units.BASE);
         }
-
         networkingManager.get().sendExchange(createUnitRequest);
-        addUnit(unit);
-    }
-
-    public void addEnemyUnit(Unit unit) {
-        addUnit(unit);
-    }
-
-    private void addUnit(Unit unit) {
-        units.put(unit.getId(), unit);
-        logger.i("Added unit. %d units managed", units.size());
-    }
-
-    public Map<UUID, Unit> getUnits() {
-        return units;
-    }
-
-    public Unit getUnit(UUID id) {
-        return units.get(id);
     }
 }

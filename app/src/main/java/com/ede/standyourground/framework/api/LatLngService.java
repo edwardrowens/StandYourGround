@@ -15,5 +15,12 @@ public interface LatLngService {
 
     boolean withinDistance(LatLng position1, LatLng position2, double distance);
 
+    /**
+     * Calculates the linear distance between two points on a map in meters.
+     *
+     * @param p1
+     * @param p2
+     * @return
+     */
     double calculateDistance(LatLng p1, LatLng p2);
 }
