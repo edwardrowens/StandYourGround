@@ -2,9 +2,9 @@ package com.ede.standyourground.game.model;
 
 import android.os.SystemClock;
 
+import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.model.api.Attackable;
 import com.ede.standyourground.game.model.api.DeathListener;
-import com.ede.standyourground.game.model.api.Mortal;
 import com.ede.standyourground.game.model.api.Renderable;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -14,7 +14,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class Unit implements Renderable, Attackable, Mortal {
+public abstract class Unit implements Renderable, Attackable {
+
+    private static final Logger logger = new Logger(Unit.class);
+
     private final LatLng startingPosition;
     private final UUID id = UUID.randomUUID();
     private final AtomicLong createdTime;
@@ -67,6 +70,9 @@ public abstract class Unit implements Renderable, Attackable, Mortal {
     }
 
     public void setIsVisible(boolean isVisible) {
+        if (this.isVisible() || isVisible) {
+            logger.d("Visibility switching from %b to %b for %s", this.isVisible.get(), isVisible, id);
+        }
         this.isVisible.set(isVisible);
     }
 

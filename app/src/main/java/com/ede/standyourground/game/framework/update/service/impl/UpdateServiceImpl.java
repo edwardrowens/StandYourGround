@@ -1,7 +1,5 @@
 package com.ede.standyourground.game.framework.update.service.impl;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.os.SystemClock;
 
 import com.ede.standyourground.framework.Logger;
@@ -11,6 +9,7 @@ import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.framework.update.service.api.UpdateService;
 import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
+import com.ede.standyourground.game.model.api.Attackable;
 import com.ede.standyourground.game.model.api.Attacker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
@@ -41,11 +40,12 @@ public class UpdateServiceImpl implements UpdateService {
 
     @Override
     public void determineVisibility(Unit unit) {
-        if (!unit.isEnemy()) {
+        if (unit.isEnemy()) {
             for (Unit target : worldManager.get().getUnits().values()) {
-                if (target.isEnemy()) {
-                    boolean isVisible = latLngService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), unit.getVisionRadius());
-                    worldManager.get().getUnit(target.getId()).setIsVisible(isVisible);
+                if (!target.isEnemy()) {
+                    boolean isVisible = latLngService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), target.getVisionRadius());
+                    logger.d("distance: %.5f, vision radius: %.5f", latLngService.get().calculateDistance(unit.getCurrentPosition(), target.getCurrentPosition()), target.getVisionRadius());
+                    worldManager.get().getUnit(unit.getId()).setIsVisible(isVisible);
                 }
             }
         }
@@ -83,24 +83,9 @@ public class UpdateServiceImpl implements UpdateService {
     public void processCombat(Collection<Unit> units) {
         for (final Unit unit : units) {
             for (final Unit target : units) {
-
                 double distance = latLngService.get().calculateDistance(unit.getCurrentPosition(), target.getCurrentPosition());
-                if (target.isEnemy() && unit instanceof Attacker && distance <= ((Attacker) unit).getAttackRange()) {
-                    logger.i("Processing combat between %s and %s", unit.getId(), target.getId());
-                    if (unit instanceof MovableUnit) {
-                        ((MovableUnit) unit).setMph(0d);
-                    }
-                    ((Attacker) unit).onAttack(target);
-                    if (target.getHealth() <= 0) {
-                        // This must be posted to the main looper because a unit may be manipulating
-                        // a google maps object (which can't be manipulated by a foreign thread).
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                target.onDeath();
-                            }
-                        });
-                    }
+                if (unit instanceof Attacker && target instanceof Attackable) {
+                    ((Attacker) unit).onAttack(target, distance);
                 }
             }
         }
