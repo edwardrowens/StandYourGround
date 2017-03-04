@@ -9,6 +9,7 @@ import com.ede.standyourground.framework.api.RouteService;
 import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.game.model.Base;
 import com.ede.standyourground.game.model.FootSoldier;
+import com.ede.standyourground.game.model.Marauder;
 import com.ede.standyourground.game.model.Path;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
@@ -23,6 +24,14 @@ import javax.inject.Inject;
 import dagger.Lazy;
 
 public class UnitCreator {
+
+    private static final CircleOptions DEFAULT_CIRCLE = new CircleOptions()
+            .clickable(false)
+            .radius(50)
+            .fillColor(Color.BLUE)
+            .strokeColor(Color.BLACK)
+            .zIndex(1.0f)
+            .strokeWidth(5);
 
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
     private final Lazy<WorldManager> worldManager;
@@ -45,13 +54,7 @@ public class UnitCreator {
                     @Override
                     public void run() {
                         Path path = new Path(route, routeService.get().getDistanceOfSteps(route, position));
-                        Circle circle = googleMapProvider.get().getGoogleMap().addCircle(new CircleOptions().center(position)
-                                                                                                            .clickable(false)
-                                                                                                            .radius(50)
-                                                                                                            .fillColor(Color.BLUE)
-                                                                                                            .strokeColor(Color.BLACK)
-                                                                                                            .zIndex(1.0f)
-                                                                                                            .strokeWidth(5));
+                        Circle circle = googleMapProvider.get().getGoogleMap().addCircle(DEFAULT_CIRCLE.center(position));
                         Unit unit = new FootSoldier(route, position, path, false, circle);
                         worldManager.get().addPlayerUnit(unit);
                     }
@@ -65,6 +68,17 @@ public class UnitCreator {
                         worldManager.get().addPlayerUnit(unit);
                     }
                 });
+                break;
+            case MARAUDER:
+                mainThreadHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Path path = new Path(route, routeService.get().getDistanceOfSteps(route, position));
+                        Circle circle = googleMapProvider.get().getGoogleMap().addCircle(DEFAULT_CIRCLE.center(position));
+                        Unit unit = new Marauder(route, position, path, circle, false);
+                        worldManager.get().addPlayerUnit(unit);
+                    }
+                });
         }
     }
 
@@ -75,13 +89,7 @@ public class UnitCreator {
                     @Override
                     public void run() {
                         Path path = new Path(route, routeService.get().getDistanceOfSteps(route, position));
-                        Circle circle = googleMapProvider.get().getGoogleMap().addCircle(new CircleOptions().center(position)
-                                                                                                            .clickable(false)
-                                                                                                            .radius(50)
-                                                                                                            .fillColor(Color.RED)
-                                                                                                            .strokeColor(Color.BLACK)
-                                                                                                            .zIndex(1.0f)
-                                                                                                            .strokeWidth(5));
+                        Circle circle = googleMapProvider.get().getGoogleMap().addCircle(DEFAULT_CIRCLE.center(position).fillColor(Color.RED));
                         Unit unit = new FootSoldier(route, position, path, true, circle);
                         worldManager.get().addEnemyUnit(unit);
                     }
@@ -92,6 +100,17 @@ public class UnitCreator {
                     @Override
                     public void run() {
                         Unit unit = new Base(position, true);
+                        worldManager.get().addEnemyUnit(unit);
+                    }
+                });
+                break;
+            case MARAUDER:
+                mainThreadHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Path path = new Path(route, routeService.get().getDistanceOfSteps(route, position));
+                        Circle circle = googleMapProvider.get().getGoogleMap().addCircle(DEFAULT_CIRCLE.center(position).fillColor(Color.RED));
+                        Unit unit = new Marauder(route, position, path, circle, true);
                         worldManager.get().addEnemyUnit(unit);
                     }
                 });

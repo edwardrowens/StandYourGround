@@ -2,7 +2,6 @@ package com.ede.standyourground.game.model;
 
 import android.os.SystemClock;
 
-import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.model.api.Attackable;
 import com.ede.standyourground.game.model.api.DeathListener;
 import com.ede.standyourground.game.model.api.Renderable;
@@ -16,28 +15,26 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Unit implements Renderable, Attackable {
 
-    private static final Logger logger = new Logger(Unit.class);
-
     private final LatLng startingPosition;
     private final UUID id = UUID.randomUUID();
     private final AtomicLong createdTime;
     private final boolean isEnemy;
     private final AtomicReference<LatLng> currentPosition;
-    protected double visionRadius;
-    private final AtomicInteger health;
     private final AtomicBoolean isVisible;
     private final double radius;
+    private final AtomicInteger health = new AtomicInteger(startingHealth());
 
     protected DeathListener deathListener;
 
-    public Unit(LatLng startingPosition, int health, double radius, boolean isEnemy) {
+    protected abstract int startingHealth();
+    public abstract double getVisionRadius();
+
+    public Unit(LatLng startingPosition, double radius, boolean isEnemy) {
         this.startingPosition = startingPosition;
         this.createdTime = new AtomicLong(SystemClock.uptimeMillis());
         this.isEnemy = isEnemy;
-        this.visionRadius = 0;
         this.isVisible = new AtomicBoolean(!isEnemy);
         this.currentPosition = new AtomicReference<>(startingPosition);
-        this.health = new AtomicInteger(health);
         this.radius = radius;
     }
 
@@ -61,18 +58,11 @@ public abstract class Unit implements Renderable, Attackable {
         return isEnemy;
     }
 
-    public double getVisionRadius() {
-        return visionRadius;
-    }
-
     public boolean isVisible() {
         return isVisible.get();
     }
 
     public void setIsVisible(boolean isVisible) {
-        if (this.isVisible() || isVisible) {
-            logger.d("Visibility switching from %b to %b for %s", this.isVisible.get(), isVisible, id);
-        }
         this.isVisible.set(isVisible);
     }
 
@@ -84,14 +74,6 @@ public abstract class Unit implements Renderable, Attackable {
         return currentPosition.get();
     }
 
-    public void deductHealth(int toDeduct) {
-        health.getAndSet(health.get() - toDeduct);
-    }
-
-    public int getHealth() {
-        return health.get();
-    }
-
     @Override
     public void registerDeathListener(DeathListener deathListener) {
         this.deathListener = deathListener;
@@ -99,5 +81,13 @@ public abstract class Unit implements Renderable, Attackable {
 
     public double getRadius() {
         return radius;
+    }
+
+    public int getHealth() {
+        return health.get();
+    }
+
+    public void deductHealth(int toDeduct) {
+        health.getAndSet(health.get() - toDeduct);
     }
 }

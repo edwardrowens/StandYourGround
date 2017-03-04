@@ -10,31 +10,25 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class MovableUnit extends Unit implements Attacker {
 
-    private final AtomicReference<Double> mph;
     private int currentTarget;
+
     private final Path path;
     private final AtomicLong lastUpdated;
     private final AtomicReference<Double> distanceTraveled;
     private final boolean reachedEnemyBase;
     private final List<LatLng> waypoints;
+    private final AtomicReference<Double> mph = new AtomicReference<>(startingMph());
 
-    public MovableUnit(double mph, List<LatLng> waypoints, LatLng position, Path path, int health, double radius, boolean isEnemy) {
-        super(position, health, radius, isEnemy);
+    protected abstract double startingMph();
+
+    public MovableUnit(List<LatLng> waypoints, LatLng position, Path path, double radius, boolean isEnemy) {
+        super(position, radius, isEnemy);
         this.path = path;
-        this.mph = new AtomicReference<>(mph);
         currentTarget = 0;
         this.lastUpdated = new AtomicLong(getCreatedTime());
         this.distanceTraveled = new AtomicReference<>(0d);
         this.reachedEnemyBase = false;
         this.waypoints = waypoints;
-    }
-
-    public double getMph() {
-        return mph.get();
-    }
-
-    public void setMph(double mph) {
-        this.mph.set(mph);
     }
 
     public void incrementTarget() {
@@ -66,11 +60,15 @@ public abstract class MovableUnit extends Unit implements Attacker {
         return distanceTraveled.get();
     }
 
-    public boolean getReachedEnemyBase() {
-        return reachedEnemyBase;
-    }
-
     public List<LatLng> getWaypoints() {
         return waypoints;
+    }
+
+    public double getMph() {
+        return mph.get();
+    }
+
+    public void setMph(double mph) {
+        this.mph.set(mph);
     }
 }

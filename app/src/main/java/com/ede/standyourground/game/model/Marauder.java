@@ -1,5 +1,6 @@
 package com.ede.standyourground.game.model;
 
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -10,28 +11,26 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
-public class FootSoldier extends MovableUnit {
+public class Marauder extends MovableUnit {
+    private static final double STARTING_MPH = 150;
+    private static final int STARTING_HEALTH = 150;
+    private static final double ATTACK_SPEED = 1d;
 
-    private static final double DEFAULT_MPH = 150;
-    private static final int DEFAULT_HEALTH = 10;
-    private static final double ATTACK_SPEED = .5;
-
-    private final Circle circle;
     private final double attackRange;
 
     private long lastAttackTime;
 
-    public FootSoldier(List<LatLng> waypoints, LatLng position, Path path, boolean isEnemy, Circle circle) {
-        super(waypoints, position, path, circle.getRadius(), isEnemy);
-        this.circle = circle;
-        this.lastAttackTime = 0;
-        this.attackRange = circle.getRadius() * 2;
-    }
+    private final Circle circle;
 
-    @Override
-    public void onRender() {
-        circle.setCenter(getCurrentPosition());
-        circle.setVisible(isVisible());
+    public Marauder(List<LatLng> waypoints, LatLng position, Path path, Circle circle, boolean isEnemy) {
+        super(waypoints, position, path, circle.getRadius(), isEnemy);
+        this.lastAttackTime = 0;
+        this.circle = circle;
+        this.circle.setRadius(60);
+        if (!isEnemy) {
+            this.circle.setFillColor(Color.CYAN);
+        }
+        this.attackRange = circle.getRadius() * 2;
     }
 
     @Override
@@ -48,7 +47,7 @@ public class FootSoldier extends MovableUnit {
         }
 
         if (attackable.getHealth() <= 0) {
-            setMph(DEFAULT_MPH);
+            setMph(STARTING_MPH);
             // This must be posted to the main looper because a unit may be manipulating
             // a google maps object (which can't be manipulated by a foreign thread) on death.
             new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -62,7 +61,7 @@ public class FootSoldier extends MovableUnit {
 
     @Override
     public int getDamage() {
-        return 3;
+        return 5;
     }
 
     @Override
@@ -89,17 +88,23 @@ public class FootSoldier extends MovableUnit {
     }
 
     @Override
-    protected double startingMph() {
-        return DEFAULT_MPH;
+    public void onRender() {
+        circle.setCenter(getCurrentPosition());
+        circle.setVisible(isVisible());
     }
 
     @Override
     protected int startingHealth() {
-        return DEFAULT_HEALTH;
+        return STARTING_HEALTH;
     }
 
     @Override
     public double getVisionRadius() {
-        return .1;
+        return .2;
+    }
+
+    @Override
+    protected double startingMph() {
+        return STARTING_MPH;
     }
 }

@@ -12,4 +12,6 @@
     <string name="face_ai_button">Face AI</string>
     <string name="server_is_down">"Server is down. Please try again later."</string>
     <string name="problem_connecting">There was a problem with connecting. please try again.</string>
+    <string name="footSoldier">Foot Soldier</string>
+    <string name="marauder">Marauder</string>
 </resources>

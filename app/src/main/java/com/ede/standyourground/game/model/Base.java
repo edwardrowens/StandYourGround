@@ -9,7 +9,7 @@ public class Base extends Unit {
     private static final double RADIUS = 10d;
 
     public Base(LatLng position, boolean isEnemy) {
-        super(position, HEALTH, RADIUS, isEnemy);
+        super(position, RADIUS, isEnemy);
     }
 
     @Override
@@ -25,5 +25,15 @@ public class Base extends Unit {
     @Override
     public void onDeath() {
         deathListener.onDeath(this);
+    }
+
+    @Override
+    protected int startingHealth() {
+        return HEALTH;
+    }
+
+    @Override
+    public double getVisionRadius() {
+        return .1;
     }
 }

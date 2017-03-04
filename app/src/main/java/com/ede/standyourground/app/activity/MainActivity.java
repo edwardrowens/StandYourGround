@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.ede.standyourground.R;
+import com.ede.standyourground.framework.dagger.application.MyApp;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ((MyApp) getApplication()).getAppComponent().inject(this);
         setContentView(R.layout.activity_main);
         requestPermissions();
     }

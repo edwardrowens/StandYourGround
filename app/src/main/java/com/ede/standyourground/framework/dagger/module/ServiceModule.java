@@ -4,6 +4,8 @@ import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.api.RouteService;
 import com.ede.standyourground.framework.impl.LatLngServiceImpl;
 import com.ede.standyourground.framework.impl.RouteServiceImpl;
+import com.ede.standyourground.game.framework.render.api.RenderService;
+import com.ede.standyourground.game.framework.render.impl.RenderServiceImpl;
 import com.ede.standyourground.game.framework.update.service.api.UpdateService;
 import com.ede.standyourground.game.framework.update.service.impl.UpdateServiceImpl;
 import com.ede.standyourground.networking.framework.api.NetworkingManager;
@@ -21,5 +23,7 @@ public abstract class ServiceModule {
 
     @Binds public abstract LatLngService bindMathService(LatLngServiceImpl latLngServiceImpl);
 
-    @Binds abstract NetworkingManager bindNetworkingManager(MockNetworkingManager networkingManager);
+    @Binds public abstract NetworkingManager bindNetworkingManager(MockNetworkingManager networkingManager);
+
+    @Binds public abstract RenderService bindRenderService(RenderServiceImpl renderService);
 }

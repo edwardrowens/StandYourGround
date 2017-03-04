@@ -19,8 +19,6 @@
             android:id="@+id/confirmRouteButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
             android:text="Confirm Route"
             android:visibility="gone"
             android:onClick="onRoute"/>
@@ -32,7 +30,7 @@
             android:paddingBottom="16dp">
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:orientation="horizontal">
@@ -41,9 +39,14 @@
                     android:id="@+id/footSoldier"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_centerVertical="true"
-                    android:layout_centerHorizontal="true"
-                    android:text="Foot Soldier"
+                    android:text="@string/footSoldier"
+                    android:onClick="onSelectUnit"/>
+
+                <Button
+                    android:id="@+id/marauder"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/marauder"
                     android:onClick="onSelectUnit"/>
             </LinearLayout>
         </HorizontalScrollView>

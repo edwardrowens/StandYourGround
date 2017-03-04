@@ -2,7 +2,6 @@ package com.ede.standyourground.game.framework.update.service.impl;
 
 import android.os.SystemClock;
 
-import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.api.RouteService;
 import com.ede.standyourground.game.framework.management.impl.WorldManager;
@@ -15,6 +14,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.inject.Inject;
 
@@ -22,8 +22,6 @@ import dagger.Lazy;
 
 
 public class UpdateServiceImpl implements UpdateService {
-
-    private static final Logger logger = new Logger(UpdateServiceImpl.class);
 
     private final Lazy<RouteService> routeService;
     private final Lazy<LatLngService> latLngService;
@@ -41,13 +39,16 @@ public class UpdateServiceImpl implements UpdateService {
     @Override
     public void determineVisibility(Unit unit) {
         if (unit.isEnemy()) {
-            for (Unit target : worldManager.get().getUnits().values()) {
+            Iterator<Unit> iter = worldManager.get().getUnits().values().iterator();
+            Unit target = iter.next();
+            boolean visible = false;
+            while (iter.hasNext() && !visible) {
                 if (!target.isEnemy()) {
-                    boolean isVisible = latLngService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), target.getVisionRadius());
-                    logger.d("distance: %.5f, vision radius: %.5f", latLngService.get().calculateDistance(unit.getCurrentPosition(), target.getCurrentPosition()), target.getVisionRadius());
-                    worldManager.get().getUnit(unit.getId()).setIsVisible(isVisible);
+                    visible = latLngService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), target.getVisionRadius());
                 }
+                target = iter.next();
             }
+            worldManager.get().getUnit(unit.getId()).setIsVisible(visible);
         }
     }
 

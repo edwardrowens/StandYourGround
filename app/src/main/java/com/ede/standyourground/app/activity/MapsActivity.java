@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
+import android.widget.Toast;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.model.Route;
@@ -35,6 +36,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -68,14 +70,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng playerLocation;
     private LatLng opponentLocation;
 
-    @Inject
-    WorldManager worldManager;
-    @Inject
-    LatLngService latLngService;
-    @Inject
-    GoogleMapProvider googleMapProvider;
-    @Inject
-    GameSessionIdProvider gameSessionIdProvider;
+    @Inject WorldManager worldManager;
+    @Inject LatLngService latLngService;
+    @Inject GoogleMapProvider googleMapProvider;
+    @Inject GameSessionIdProvider gameSessionIdProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +136,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(final GoogleMap googleMap) {
         logger.i("Starting map");
         this.googleMap = googleMap;
+
         googleMapProvider.setGoogleMap(googleMap);
 
         worldManager.registerDeathListener(new DeathListener() {
@@ -146,11 +145,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (mortal instanceof Base) {
                     Base base = (Base) mortal;
                     if (base.getCurrentPosition().equals(playerLocation)) {
-                        logger.i("YOU LOSE");
+                        Toast.makeText(MapsActivity.this, "You Lose", Toast.LENGTH_SHORT).show();
                     } else {
-                        logger.i("YOU WIN");
+                        Toast.makeText(MapsActivity.this, "You Win", Toast.LENGTH_SHORT).show();
                     }
-                    finish();
+                    Intent intent = new Intent(MapsActivity.this, MainActivity.class);
+                    startActivity(intent);
                 }
             }
         });
@@ -159,6 +159,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Updating google map settings
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setCompassEnabled(false);
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
 
         // Add markers representing the opponent's and the player's location
         this.googleMap.addMarker(new MarkerOptions().position(opponentLocation));
@@ -214,7 +215,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onResponse(Call<Routes> call, Response<Routes> response) {
                         logger.i("Successfully created enemy foot soldier.");
                         Polyline polyline = drawRoute(response.body().getRoutes().get(0));
-                        worldManager.createEnemyUnit(polyline.getPoints(), opponentLocation, selectedUnit);
+                        worldManager.createEnemyUnit(polyline.getPoints(), opponentLocation, Units.FOOT_SOLDIER);
                     }
 
                     @Override
@@ -243,6 +244,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         switch (view.getId()) {
             case R.id.footSoldier:
                 selectedUnit = Units.FOOT_SOLDIER;
+                break;
+            case R.id.marauder:
+                selectedUnit = Units.MARAUDER;
                 break;
         }
 
