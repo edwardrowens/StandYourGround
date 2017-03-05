@@ -1,4 +1,4 @@
-package com.ede.standyourground.app.service;
+package com.ede.standyourground.app.service.android;
 
 import android.app.Service;
 import android.content.Intent;

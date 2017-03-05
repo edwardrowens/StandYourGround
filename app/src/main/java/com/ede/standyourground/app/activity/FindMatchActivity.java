@@ -17,9 +17,9 @@ import android.widget.TextView;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.api.MatchMakingApi;
-import com.ede.standyourground.app.service.FindMatchService;
-import com.ede.standyourground.app.service.RemoveFromMatchMakingService;
-import com.ede.standyourground.app.service.ServiceGenerator;
+import com.ede.standyourground.app.service.android.FindMatchService;
+import com.ede.standyourground.app.service.android.RemoveFromMatchMakingService;
+import com.ede.standyourground.app.service.android.ServiceGenerator;
 import com.ede.standyourground.app.to.FindMatchRequestTO;
 import com.ede.standyourground.app.to.FindMatchResponseTO;
 import com.ede.standyourground.framework.Callback;
@@ -293,8 +293,8 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         FindMatchRequestTO findMatchRequestTO = new FindMatchRequestTO();
         findMatchRequestTO.setId(UUID.randomUUID());
         findMatchRequestTO.setRadius(5);
-        findMatchRequestTO.setLng(-118.229919);
         findMatchRequestTO.setLat(34.170805);
+        findMatchRequestTO.setLng(-118.229919);
 
         Call<FindMatchResponseTO> findMatchCall = matchMakingApi.findMatch(findMatchRequestTO);
 

@@ -1,4 +1,4 @@
-package com.ede.standyourground.app.service;
+package com.ede.standyourground.app.service.android;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;

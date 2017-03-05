@@ -1,6 +1,6 @@
 package com.ede.standyourground.networking.framework.impl;
 
-import com.ede.standyourground.app.service.ServiceGenerator;
+import com.ede.standyourground.app.service.android.ServiceGenerator;
 import com.ede.standyourground.framework.Callback;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.networking.exchange.api.Exchange;

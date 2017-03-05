@@ -50,7 +50,7 @@
             android:label="@string/title_activity_maps" />
 
         <service
-            android:name=".app.service.GoogleDirectionsService"
+            android:name=".app.service.android.GoogleDirectionsService"
             android:exported="false" />
 
         <activity
@@ -59,13 +59,13 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service
-            android:name=".app.service.FindMatchService"
+            android:name=".app.service.android.FindMatchService"
             android:exported="false" />
         <service
-            android:name=".app.service.RemoveFromMatchMakingService"
+            android:name=".app.service.android.RemoveFromMatchMakingService"
             android:exported="false" />
         <service
-            android:name=".app.service.StopGameService"
+            android:name=".app.service.android.StopGameService"
             android:exported="false"></service>
     </application>
 

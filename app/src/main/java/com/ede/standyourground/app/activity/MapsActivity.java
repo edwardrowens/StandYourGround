@@ -16,8 +16,11 @@ import android.widget.Toast;
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.model.Route;
 import com.ede.standyourground.app.model.Routes;
-import com.ede.standyourground.app.service.GoogleDirectionsService;
-import com.ede.standyourground.app.service.StopGameService;
+import com.ede.standyourground.app.service.android.GoogleDirectionsService;
+import com.ede.standyourground.app.service.android.StopGameService;
+import com.ede.standyourground.app.service.api.OnMapReadyService;
+import com.ede.standyourground.app.ui.Component;
+import com.ede.standyourground.app.ui.HealthBarComponent;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.dagger.application.MyApp;
@@ -28,14 +31,10 @@ import com.ede.standyourground.game.model.Base;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.game.model.api.DeathListener;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -45,7 +44,9 @@ import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
@@ -56,7 +57,6 @@ import retrofit2.Response;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private final Logger logger = new Logger(MapsActivity.class);
-    private static final int CAMERA_PADDING = 200;
 
     // VIEWS
     private HorizontalScrollView unitChoicesScrollView;
@@ -69,16 +69,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Units selectedUnit;
     private LatLng playerLocation;
     private LatLng opponentLocation;
+    private static Map<Class<? extends Component>, Component> componentMap = new ConcurrentHashMap<>();
 
     @Inject WorldManager worldManager;
     @Inject LatLngService latLngService;
     @Inject GoogleMapProvider googleMapProvider;
     @Inject GameSessionIdProvider gameSessionIdProvider;
+    @Inject OnMapReadyService onMapReadyService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ((MyApp) getApplication()).getAppComponent().inject(this);
+
+        HealthBarComponent healthBarComponent = new HealthBarComponent(this);
+        componentMap.put(HealthBarComponent.class, healthBarComponent);
 
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -138,10 +143,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         this.googleMap = googleMap;
 
         googleMapProvider.setGoogleMap(googleMap);
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
 
         worldManager.registerDeathListener(new DeathListener() {
             @Override
             public void onDeath(Unit mortal) {
+                MapsActivity.getComponent(HealthBarComponent.class).removeComponentElement(mortal.getId());
                 if (mortal instanceof Base) {
                     Base base = (Base) mortal;
                     if (base.getCurrentPosition().equals(playerLocation)) {
@@ -154,50 +161,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
-        worldManager.start();
 
-        // Updating google map settings
-        googleMap.getUiSettings().setMapToolbarEnabled(false);
-        googleMap.getUiSettings().setCompassEnabled(false);
-        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
-
-        // Add markers representing the opponent's and the player's location
-        this.googleMap.addMarker(new MarkerOptions().position(opponentLocation));
-        this.googleMap.addMarker(new MarkerOptions().position(playerLocation));
-
-        // Set up the camera's initial position
-        LatLngBounds latLngBounds = LatLngBounds.builder().include(opponentLocation).include(playerLocation).build();
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, CAMERA_PADDING);
-        googleMap.animateCamera(cameraUpdate, new GoogleMap.CancelableCallback() {
-            @Override
-            public void onFinish() {
-                float zoom = googleMap.getCameraPosition().zoom;
-                CameraPosition cameraPosition = CameraPosition.builder()
-                        .target(latLngService.midpoint(playerLocation, opponentLocation))
-                        .bearing(latLngService.bearing(playerLocation, opponentLocation))
-                        .zoom(zoom)
-                        .build();
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), new GoogleMap.CancelableCallback() {
-                    @Override
-                    public void onFinish() {
-                        googleMap.getUiSettings().setRotateGesturesEnabled(false);
-                        worldManager.createPlayerUnit(null, playerLocation, Units.BASE);
-
-                        // TODO DELETE
-                        worldManager.createEnemyUnit(null, opponentLocation, Units.BASE);
-                        // TODO END OF DELETE
-                    }
-
-                    @Override
-                    public void onCancel() {
-                    }
-                });
-            }
-
-            @Override
-            public void onCancel() {
-            }
-        });
+        onMapReadyService.onMapReady(googleMap, opponentLocation, playerLocation);
 
         confirmRouteButton = (Button) findViewById(R.id.confirmRouteButton);
         unitChoicesScrollView = (HorizontalScrollView) findViewById(R.id.unitChoicesScrollView);
@@ -303,5 +268,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .color(Color.BLACK);
         logger.i("drawing route");
         return googleMap.addPolyline(polylineOptions);
+    }
+
+    public static Component getComponent(Class<? extends Component> componentClass) {
+        return componentMap.get(componentClass);
     }
 }

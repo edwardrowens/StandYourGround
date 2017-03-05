@@ -1,5 +1,7 @@
 package com.ede.standyourground.framework.dagger.module;
 
+import com.ede.standyourground.app.service.api.OnMapReadyService;
+import com.ede.standyourground.app.service.impl.OnMapReadyServiceImpl;
 import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.api.RouteService;
 import com.ede.standyourground.framework.impl.LatLngServiceImpl;
@@ -26,4 +28,6 @@ public abstract class ServiceModule {
     @Binds public abstract NetworkingManager bindNetworkingManager(MockNetworkingManager networkingManager);
 
     @Binds public abstract RenderService bindRenderService(RenderServiceImpl renderService);
+
+    @Binds public abstract OnMapReadyService bindOnMapReadyService(OnMapReadyServiceImpl onMapReadyService);
 }

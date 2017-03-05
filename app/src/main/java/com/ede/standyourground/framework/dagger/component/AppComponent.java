@@ -1,9 +1,8 @@
 package com.ede.standyourground.framework.dagger.component;
 
 import com.ede.standyourground.app.activity.FindMatchActivity;
-import com.ede.standyourground.app.activity.MainActivity;
 import com.ede.standyourground.app.activity.MapsActivity;
-import com.ede.standyourground.app.service.GoogleDirectionsService;
+import com.ede.standyourground.app.service.android.GoogleDirectionsService;
 import com.ede.standyourground.framework.dagger.module.AppModule;
 import com.ede.standyourground.framework.dagger.module.ServiceModule;
 
@@ -17,5 +16,4 @@ public interface AppComponent {
     void inject(FindMatchActivity findMatchActivity);
     void inject(MapsActivity mapsActivity);
     void inject(GoogleDirectionsService googleDirectionsService);
-    void inject(MainActivity mainActivity);
 }
