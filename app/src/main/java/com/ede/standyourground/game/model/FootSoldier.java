@@ -13,7 +13,7 @@ import java.util.List;
 public class FootSoldier extends MovableUnit {
 
     private static final double DEFAULT_MPH = 150;
-    private static final int DEFAULT_HEALTH = 10;
+    private static final int DEFAULT_HEALTH = 50;
     private static final double ATTACK_SPEED = .5;
 
     private final Circle circle;
@@ -78,7 +78,7 @@ public class FootSoldier extends MovableUnit {
     @Override
     public boolean canAttack(Attackable attackable, double distance) {
         return (System.currentTimeMillis() - lastAttackTime) > (1000 / getAttackSpeed())
-                && distance <= getAttackRange()
+                && (distance <= getAttackRange() + attackable.getRadius())
                 && ((isEnemy() && !attackable.isEnemy()) || (!isEnemy() && attackable.isEnemy()));
     }
 
@@ -94,12 +94,12 @@ public class FootSoldier extends MovableUnit {
     }
 
     @Override
-    protected int startingHealth() {
+    public int getMaxHealth() {
         return DEFAULT_HEALTH;
     }
 
     @Override
     public double getVisionRadius() {
-        return .1;
+        return 160.934; //.1 miles
     }
 }

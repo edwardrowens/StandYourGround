@@ -21,14 +21,14 @@ public class HealthBarComponent implements Component {
     @Override
     public void addComponentElement(ComponentElement componentElement) {
         healthBars.put(componentElement.getComponentElementId(), componentElement);
-        RelativeLayout relativeLayout = (RelativeLayout) activity.findViewById(R.id.mapActivityContainer);
-        relativeLayout.addView(componentElement);
+        RelativeLayout linearLayout = (RelativeLayout) activity.findViewById(R.id.mapContainer);
+        linearLayout.addView(componentElement);
     }
 
     @Override
     public void removeComponentElement(UUID componentElementId) {
-        RelativeLayout relativeLayout = (RelativeLayout) activity.findViewById(R.id.mapActivityContainer);
-        relativeLayout.removeView(healthBars.get(componentElementId));
+        RelativeLayout linearLayout = (RelativeLayout) activity.findViewById(R.id.mapContainer);
+        linearLayout.removeView(healthBars.get(componentElementId));
         healthBars.remove(componentElementId);
     }
 

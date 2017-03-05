@@ -2,14 +2,18 @@ package com.ede.standyourground.game.model;
 
 
 import com.ede.standyourground.game.model.api.Attacker;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 
 public class Base extends Unit {
     private static final int HEALTH = 100;
-    private static final double RADIUS = 10d;
 
-    public Base(LatLng position, boolean isEnemy) {
-        super(position, RADIUS, isEnemy);
+    private final Circle circle;
+
+    public Base(LatLng position, Circle circle, boolean isEnemy) {
+        super(position, 100, isEnemy);
+        this.circle = circle;
+        circle.setRadius(100);
     }
 
     @Override
@@ -28,12 +32,17 @@ public class Base extends Unit {
     }
 
     @Override
-    protected int startingHealth() {
+    public int getMaxHealth() {
         return HEALTH;
     }
 
     @Override
     public double getVisionRadius() {
-        return .1;
+        return 160.934; //.1 miles
+    }
+
+    @Override
+    public boolean isVisible() {
+        return true;
     }
 }

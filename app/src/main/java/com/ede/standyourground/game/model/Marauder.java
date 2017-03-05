@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.model.api.Attackable;
 import com.ede.standyourground.game.model.api.Attacker;
 import com.google.android.gms.maps.model.Circle;
@@ -12,9 +13,11 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.List;
 
 public class Marauder extends MovableUnit {
+    private static final Logger logger = new Logger(Marauder.class);
+
     private static final double STARTING_MPH = 150;
     private static final int STARTING_HEALTH = 150;
-    private static final double ATTACK_SPEED = 1d;
+    private static final double ATTACK_SPEED = .5;
 
     private final double attackRange;
 
@@ -23,7 +26,7 @@ public class Marauder extends MovableUnit {
     private final Circle circle;
 
     public Marauder(List<LatLng> waypoints, LatLng position, Path path, Circle circle, boolean isEnemy) {
-        super(waypoints, position, path, circle.getRadius(), isEnemy);
+        super(waypoints, position, path, 60, isEnemy);
         this.lastAttackTime = 0;
         this.circle = circle;
         this.circle.setRadius(60);
@@ -77,7 +80,7 @@ public class Marauder extends MovableUnit {
     @Override
     public boolean canAttack(Attackable attackable, double distance) {
         return (System.currentTimeMillis() - lastAttackTime) > (1000 / getAttackSpeed())
-                && distance <= getAttackRange()
+                && (distance <= getAttackRange() + attackable.getRadius())
                 && ((isEnemy() && !attackable.isEnemy()) || (!isEnemy() && attackable.isEnemy()));
     }
 
@@ -94,13 +97,13 @@ public class Marauder extends MovableUnit {
     }
 
     @Override
-    protected int startingHealth() {
+    public int getMaxHealth() {
         return STARTING_HEALTH;
     }
 
     @Override
     public double getVisionRadius() {
-        return .2;
+        return 321.869; // .2 miles
     }
 
     @Override

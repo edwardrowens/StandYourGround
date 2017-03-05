@@ -162,7 +162,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        onMapReadyService.onMapReady(googleMap, opponentLocation, playerLocation);
+        onMapReadyService.onMapReady(opponentLocation, playerLocation);
 
         confirmRouteButton = (Button) findViewById(R.id.confirmRouteButton);
         unitChoicesScrollView = (HorizontalScrollView) findViewById(R.id.unitChoicesScrollView);
@@ -196,8 +196,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        for (Marker marker : waypoints)
+        for (Marker marker : waypoints) {
             marker.remove();
+        }
         waypoints.clear();
         confirmRouteButton.setVisibility(View.GONE);
         unitChoicesScrollView.setVisibility(View.VISIBLE);
@@ -227,8 +228,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void drawRoutesForUnit() {
         ArrayList<LatLng> waypointsLatLng = new ArrayList<>();
-        for (Marker marker : waypoints)
+        for (Marker marker : waypoints) {
             waypointsLatLng.add(marker.getPosition());
+        }
 
         googleDirectionsService.getRoutes(playerLocation, opponentLocation, waypointsLatLng,
                 new Callback<Routes>() {

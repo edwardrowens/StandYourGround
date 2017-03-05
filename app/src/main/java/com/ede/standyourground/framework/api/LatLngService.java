@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface LatLngService {
 
-    float bearing(LatLng to, LatLng from);
+    double bearing(LatLng to, LatLng from);
 
     LatLng midpoint(LatLng l1, LatLng l2);
 

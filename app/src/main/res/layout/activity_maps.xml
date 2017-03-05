@@ -1,66 +1,62 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mapActivityContainer"
-    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".app.activity.MapsActivity">
+    android:layout_width="match_parent"
+    android:orientation="vertical">
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <RelativeLayout
+        android:id="@+id/mapContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".app.activity.MapsActivity">
+        android:layout_above="@+id/bottomLayout">
 
+        <fragment
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".app.activity.MapsActivity">
+        </fragment>
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/bottomLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
 
-        <LinearLayout
-            android:id="@+id/bottomLayout"
+        <Button
+            android:id="@+id/confirmRouteButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
+            android:onClick="onRoute"
+            android:text="Confirm Route"
+            android:visibility="gone" />
 
-            <Button
-                android:id="@+id/confirmRouteButton"
-                android:layout_width="match_parent"
+        <HorizontalScrollView
+            android:id="@+id/unitChoicesScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="onRoute"
-                android:text="Confirm Route"
-                android:visibility="gone" />
+                android:orientation="horizontal">
 
-            <HorizontalScrollView
-                android:id="@+id/unitChoicesScrollView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingBottom="16dp">
+                <Button
+                    android:id="@+id/footSoldier"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:onClick="onSelectUnit"
+                    android:text="@string/footSoldier" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/footSoldier"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:onClick="onSelectUnit"
-                        android:text="@string/footSoldier" />
-
-                    <Button
-                        android:id="@+id/marauder"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:onClick="onSelectUnit"
-                        android:text="@string/marauder" />
-                </LinearLayout>
-            </HorizontalScrollView>
-        </LinearLayout>
-    </fragment>
+                <Button
+                    android:id="@+id/marauder"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:onClick="onSelectUnit"
+                    android:text="@string/marauder" />
+            </LinearLayout>
+        </HorizontalScrollView>
+    </RelativeLayout>
 </RelativeLayout>

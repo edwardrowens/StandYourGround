@@ -44,7 +44,7 @@ public class UpdateServiceImpl implements UpdateService {
             boolean visible = false;
             while (iter.hasNext() && !visible) {
                 if (!target.isEnemy()) {
-                    visible = latLngService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), target.getVisionRadius());
+                    visible = latLngService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), target.getVisionRadius() + unit.getRadius());
                 }
                 target = iter.next();
             }

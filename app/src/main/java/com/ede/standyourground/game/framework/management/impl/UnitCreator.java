@@ -64,7 +64,8 @@ public class UnitCreator {
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Unit unit = new Base(position, false);
+                        Circle circle = googleMapProvider.get().getGoogleMap().addCircle(DEFAULT_CIRCLE.center(position));
+                        Unit unit = new Base(position, circle, false);
                         worldManager.get().addPlayerUnit(unit);
                     }
                 });
@@ -99,7 +100,8 @@ public class UnitCreator {
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Unit unit = new Base(position, true);
+                        Circle circle = googleMapProvider.get().getGoogleMap().addCircle(DEFAULT_CIRCLE.center(position).fillColor(Color.RED));
+                        Unit unit = new Base(position, circle, true);
                         worldManager.get().addEnemyUnit(unit);
                     }
                 });

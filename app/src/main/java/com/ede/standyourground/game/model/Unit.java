@@ -22,11 +22,11 @@ public abstract class Unit implements Renderable, Attackable {
     private final AtomicReference<LatLng> currentPosition;
     private final AtomicBoolean isVisible;
     private final double radius;
-    private final AtomicInteger health = new AtomicInteger(startingHealth());
+    private final AtomicInteger health = new AtomicInteger(getMaxHealth());
 
     protected DeathListener deathListener;
 
-    protected abstract int startingHealth();
+    public abstract int getMaxHealth();
     public abstract double getVisionRadius();
 
     public Unit(LatLng startingPosition, double radius, boolean isEnemy) {

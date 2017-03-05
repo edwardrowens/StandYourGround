@@ -5,4 +5,5 @@ public interface Attackable extends Mortal {
     void onAttacked(Attacker attacker);
     int getHealth();
     boolean isEnemy();
+    double getRadius();
 }
