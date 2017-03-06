@@ -35,10 +35,15 @@ public class UpdateLoop implements Runnable {
     }
 
     public void startLoop() {
-        logger.i("Starting update thread");
+        logger.i("Starting update loop");
         loopThread.start();
         handler = new Handler(loopThread.getLooper());
         handler.post(this);
+    }
+
+    public void stopLoop() {
+        logger.i("Stopping update loop");
+        loopThread.quit();
     }
 
     @Override

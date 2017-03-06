@@ -48,7 +48,6 @@ public class RenderServiceImpl implements RenderService {
             }
         }
 
-
         healthBarComponent.drawComponentElements();
     }
 

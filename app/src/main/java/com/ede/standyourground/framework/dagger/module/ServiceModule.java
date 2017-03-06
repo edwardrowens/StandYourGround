@@ -1,6 +1,12 @@
 package com.ede.standyourground.framework.dagger.module;
 
+import com.ede.standyourground.app.service.api.DirectionsService;
+import com.ede.standyourground.app.service.api.DrawRouteService;
+import com.ede.standyourground.app.service.api.GameEndService;
 import com.ede.standyourground.app.service.api.OnMapReadyService;
+import com.ede.standyourground.app.service.impl.DirectionsServiceImpl;
+import com.ede.standyourground.app.service.impl.DrawRouteServiceImpl;
+import com.ede.standyourground.app.service.impl.GameEndServiceImpl;
 import com.ede.standyourground.app.service.impl.OnMapReadyServiceImpl;
 import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.api.MathService;
@@ -34,4 +40,10 @@ public abstract class ServiceModule {
     @Binds public abstract OnMapReadyService bindOnMapReadyService(OnMapReadyServiceImpl onMapReadyService);
 
     @Binds public abstract MathService bindMathService(MathServiceImpl mathService);
+
+    @Binds public abstract GameEndService bindGameEndService(GameEndServiceImpl gameEndService);
+
+    @Binds public abstract DirectionsService bindDirectionsService(DirectionsServiceImpl directionsService);
+
+    @Binds public abstract DrawRouteService bindDrawRouteService(DrawRouteServiceImpl drawRouteService);
 }

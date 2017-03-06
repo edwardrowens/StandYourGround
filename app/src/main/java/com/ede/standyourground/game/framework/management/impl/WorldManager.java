@@ -56,6 +56,12 @@ public class WorldManager {
         renderLoop.get().startLoop();
     }
 
+    public void stop() {
+        logger.i("Ending game");
+        updateLoop.get().stopLoop();
+        renderLoop.get().stopLoop();
+    }
+
     public void createEnemyUnit(List<LatLng> route, LatLng position, Units units) {
         unitCreator.get().createEnemyUnit(route, position, units);
     }

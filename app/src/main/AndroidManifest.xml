@@ -49,10 +49,6 @@
             android:name=".app.activity.MapsActivity"
             android:label="@string/title_activity_maps" />
 
-        <service
-            android:name=".app.service.android.GoogleDirectionsService"
-            android:exported="false" />
-
         <activity
             android:name=".app.activity.FindMatchActivity"
             android:label="@string/title_activity_find_match"

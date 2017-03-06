@@ -1,52 +1,34 @@
-package com.ede.standyourground.app.service.android;
-
-import android.app.Service;
-import android.content.Intent;
-import android.os.Binder;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
+package com.ede.standyourground.app.service.impl;
 
 import com.ede.standyourground.app.api.DirectionsApi;
 import com.ede.standyourground.app.model.Routes;
+import com.ede.standyourground.app.service.android.ServiceGenerator;
+import com.ede.standyourground.app.service.api.DirectionsService;
 import com.ede.standyourground.app.to.RoutesRequestTO;
 import com.ede.standyourground.framework.api.RouteService;
-import com.ede.standyourground.framework.dagger.application.MyApp;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
+import dagger.Lazy;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class GoogleDirectionsService extends Service {
 
-    private final IBinder iBinder = new LocalBinder();
+public class DirectionsServiceImpl implements DirectionsService {
 
-    @Inject RouteService routeService;
+    private final Lazy<RouteService> routeService;
+
+    @Inject
+    DirectionsServiceImpl(Lazy<RouteService> routeService) {
+        this.routeService = routeService;
+    }
 
     @Override
-    public void onCreate() {
-        ((MyApp) getApplication()).getAppComponent().inject(this);
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return iBinder;
-    }
-
-
-    public class LocalBinder extends Binder {
-        public GoogleDirectionsService getService() {
-            return GoogleDirectionsService.this;
-        }
-    }
-
-
-    public void getRoutes(LatLng origin, LatLng destination, List<LatLng> waypoints, final Callback<Routes> callback) {
+    public void getRoutes(final LatLng origin, final LatLng destination, final List<LatLng> waypoints, final Callback<Routes> callback) {
         DirectionsApi directionsApi = ServiceGenerator.createService(DirectionsApi.class);
 
         RoutesRequestTO routesRequestTO = new RoutesRequestTO();
@@ -61,7 +43,7 @@ public class GoogleDirectionsService extends Service {
         routesCall.enqueue(new Callback<Routes>() {
             @Override
             public void onResponse(Call<Routes> call, Response<Routes> response) {
-                response.body().setTotalDistance(routeService.getTotalDistance(response.body()));
+                response.body().setTotalDistance(routeService.get().getTotalDistance(response.body()));
                 callback.onResponse(call, response);
             }
 
