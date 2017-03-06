@@ -1,15 +1,18 @@
 package com.ede.standyourground.game.framework.render.impl;
 
 import android.graphics.Point;
+import android.graphics.PointF;
 
 import com.ede.standyourground.app.activity.MapsActivity;
 import com.ede.standyourground.app.ui.Component;
 import com.ede.standyourground.app.ui.HealthBar;
 import com.ede.standyourground.app.ui.HealthBarComponent;
+import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.api.MathService;
 import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.game.framework.render.api.RenderService;
 import com.ede.standyourground.game.model.Unit;
+import com.google.android.gms.maps.Projection;
 import com.google.maps.android.SphericalUtil;
 
 import javax.inject.Inject;
@@ -17,6 +20,8 @@ import javax.inject.Inject;
 import dagger.Lazy;
 
 public class RenderServiceImpl implements RenderService {
+
+    private static final Logger logger = new Logger(RenderServiceImpl.class);
 
     private final Lazy<GoogleMapProvider> googleMapProvider;
     private final Lazy<MathService> mathService;
@@ -52,19 +57,21 @@ public class RenderServiceImpl implements RenderService {
     }
 
     private void setHealthBarPosition(Unit unit, HealthBar healthBar) {
-        Point center = googleMapProvider.get().getGoogleMap().getProjection().toScreenLocation(unit.getCurrentPosition());
-        Point edge = googleMapProvider.get().getGoogleMap().getProjection().toScreenLocation(SphericalUtil.computeOffset(unit.getCurrentPosition(), unit.getRadius(), 0d));
+        Projection projection = googleMapProvider.get().getGoogleMap().getProjection();
+        Point center = projection.toScreenLocation(unit.getCurrentPosition());
+        Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(unit.getCurrentPosition(), unit.getRadius(), 0d));
         double lineDistance = mathService.get().calculateLinearDistance(center, edge);
 
-        int healthBarHeight = (int)(lineDistance * .75);
-        int healthBarWidth = (int)(lineDistance * 2);
-        int padding = (int)(lineDistance * .2);
+        float healthBarHeight = (float)lineDistance * .75f;
+        float healthBarWidth = (float)lineDistance * 2;
+        float padding = (float)lineDistance * .2f;
 
         healthBar.setWidth(healthBarWidth);
         healthBar.setHeight(healthBarHeight);
-        center.x -= lineDistance;
-        center.y -= (lineDistance + healthBarHeight + padding);
-        healthBar.setPoint(center);
+        PointF pointf = new PointF();
+        pointf.x = center.x - (float)lineDistance;
+        pointf.y = center.y - (float)(lineDistance + healthBarHeight + padding);
+        healthBar.setPoint(pointf);
     }
 
     private void setHealthBarPercentage(Unit unit, HealthBar healthBar) {

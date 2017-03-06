@@ -5,8 +5,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Rect;
+import android.graphics.PointF;
+import android.graphics.RectF;
 
 import com.ede.standyourground.framework.Logger;
 
@@ -20,17 +20,17 @@ public class HealthBar extends ComponentElement {
     private final CornerPathEffect cornerPathEffect = new CornerPathEffect(15);
 
     private final UUID componentElementId;
-    private final Rect rect;
-    private final Rect border;
-    private int width;
-    private int height;
+    private final RectF rect;
+    private final RectF border;
+    private float width;
+    private float height;
     private float healthPercentage;
 
     public HealthBar(UUID componentElementId, Context context) {
         super(context);
         this.componentElementId = componentElementId;
-        this.rect = new Rect();
-        this.border = new Rect();
+        this.rect = new RectF();
+        this.border = new RectF();
     }
 
     @Override
@@ -53,8 +53,8 @@ public class HealthBar extends ComponentElement {
         canvas.drawRect(border, paint);
     }
 
-    public void setPoint(Point point) {
-        rect.set(point.x, point.y, point.x + (int)(width * healthPercentage), point.y + height);
+    public void setPoint(PointF point) {
+        rect.set(point.x, point.y, point.x + (width * healthPercentage), point.y + height);
         border.set(point.x, point.y, point.x + width, point.y + height);
     }
 
@@ -63,11 +63,11 @@ public class HealthBar extends ComponentElement {
         return componentElementId;
     }
 
-    public void setWidth(int width) {
+    public void setWidth(float width) {
         this.width = width;
     }
 
-    public void setHeight(int height) {
+    public void setHeight(float height) {
         this.height = height;
     }
 

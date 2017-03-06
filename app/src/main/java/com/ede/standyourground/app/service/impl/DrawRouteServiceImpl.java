@@ -76,13 +76,13 @@ public class DrawRouteServiceImpl implements DrawRouteService {
             waypointsLatLng.add(marker.getPosition());
         }
 
-        directionsService.get().getRoutes(playerLocation, opponentLocation, waypointsLatLng, new Callback<Routes>() {
+        directionsService.get().getRoutes(opponentLocation, playerLocation, waypointsLatLng, new Callback<Routes>() {
             @Override
             public void onResponse(Call<Routes> call, Response<Routes> response) {
                 logger.i("response with routes received");
                 Polyline polyline = drawRoute(response.body().getRoutes().get(0));
 
-                worldManager.get().createEnemyUnit(polyline.getPoints(), playerLocation, toCreate);
+                worldManager.get().createEnemyUnit(polyline.getPoints(), opponentLocation, toCreate);
             }
 
             @Override
