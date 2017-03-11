@@ -2,6 +2,7 @@ package com.ede.standyourground.game.model;
 
 import android.os.SystemClock;
 
+import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.model.api.Attackable;
 import com.ede.standyourground.game.model.api.DeathListener;
 import com.ede.standyourground.game.model.api.Renderable;
@@ -15,6 +16,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Unit implements Renderable, Attackable {
 
+    private static final Logger logger = new Logger(Unit.class);
+
     private final LatLng startingPosition;
     private final UUID id = UUID.randomUUID();
     private final AtomicLong createdTime;
@@ -23,19 +26,22 @@ public abstract class Unit implements Renderable, Attackable {
     private final AtomicBoolean isVisible;
     private final double radius;
     private final AtomicInteger health = new AtomicInteger(getMaxHealth());
+    private final Units type;
 
     protected DeathListener deathListener;
 
     public abstract int getMaxHealth();
     public abstract double getVisionRadius();
+    protected abstract void onUnitDeath();
 
-    public Unit(LatLng startingPosition, double radius, boolean isEnemy) {
+    public Unit(LatLng startingPosition, double radius, Units type, boolean isEnemy) {
         this.startingPosition = startingPosition;
         this.createdTime = new AtomicLong(SystemClock.uptimeMillis());
         this.isEnemy = isEnemy;
         this.isVisible = new AtomicBoolean(!isEnemy);
         this.currentPosition = new AtomicReference<>(startingPosition);
         this.radius = radius;
+        this.type = type;
     }
 
     public LatLng getStartingPosition() {
@@ -79,6 +85,16 @@ public abstract class Unit implements Renderable, Attackable {
         this.deathListener = deathListener;
     }
 
+    @Override
+    public void onDeath() {
+        logger.d("calling onUnitDeath");
+        onUnitDeath();
+        logger.d("called onUnitDeath");
+        logger.d("calling onDeath");
+        deathListener.onDeath(this);
+        logger.d("called onDeath");
+    }
+
     public double getRadius() {
         return radius;
     }
@@ -89,5 +105,9 @@ public abstract class Unit implements Renderable, Attackable {
 
     public void deductHealth(int toDeduct) {
         health.getAndSet(health.get() - toDeduct);
+    }
+
+    public Units getType() {
+        return type;
     }
 }

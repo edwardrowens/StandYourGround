@@ -4,7 +4,6 @@ import android.graphics.Point;
 import android.graphics.PointF;
 
 import com.ede.standyourground.app.activity.MapsActivity;
-import com.ede.standyourground.app.ui.Component;
 import com.ede.standyourground.app.ui.HealthBar;
 import com.ede.standyourground.app.ui.HealthBarComponent;
 import com.ede.standyourground.framework.Logger;
@@ -35,8 +34,8 @@ public class RenderServiceImpl implements RenderService {
 
     @Override
     public void renderHealthBar(Unit unit) {
-        Component healthBarComponent = MapsActivity.getComponent(HealthBarComponent.class);
-        HealthBar healthBar = (HealthBar) healthBarComponent.getElement(unit.getId());
+        HealthBarComponent healthBarComponent = (HealthBarComponent) MapsActivity.getComponent(HealthBarComponent.class);
+        HealthBar healthBar = healthBarComponent.getElement(unit.getId());
         if (healthBar == null) {
             if (unit.isVisible()) {
                 healthBar = new HealthBar(unit.getId(), MapsActivity.getComponent(HealthBarComponent.class).getActivity().getApplicationContext());

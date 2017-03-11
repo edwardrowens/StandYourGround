@@ -17,6 +17,7 @@ public class HealthBar extends ComponentElement {
     private static final Logger logger = new Logger(HealthBar.class);
 
     private final Paint paint = new Paint();
+    private final Paint newPaint = new Paint();
     private final CornerPathEffect cornerPathEffect = new CornerPathEffect(15);
 
     private final UUID componentElementId;
@@ -38,19 +39,15 @@ public class HealthBar extends ComponentElement {
         // background
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.BLACK);
+        paint.setPathEffect(cornerPathEffect);
+        paint.setStrokeWidth(5);
         canvas.drawRect(border, paint);
 
+        paint.set(newPaint);
         // fill
         paint.setColor(Color.LTGRAY);
         paint.setStyle(Paint.Style.FILL);
         canvas.drawRect(rect, paint);
-
-        // border
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.BLACK);
-        paint.setPathEffect(cornerPathEffect);
-        paint.setStrokeWidth(5);
-        canvas.drawRect(border, paint);
     }
 
     public void setPoint(PointF point) {
@@ -73,5 +70,17 @@ public class HealthBar extends ComponentElement {
 
     public void setHealthPercentage(float healthPercentage) {
         this.healthPercentage = healthPercentage;
+    }
+
+    public float getHealthPercentage() {
+        return healthPercentage;
+    }
+
+    public RectF getHealthBar() {
+        return rect;
+    }
+
+    public RectF getHealthBarBorder() {
+        return border;
     }
 }

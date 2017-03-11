@@ -1,0 +1,19 @@
+package com.ede.standyourground.game.model.api;
+
+import android.graphics.Color;
+
+import com.google.android.gms.maps.model.CircleOptions;
+
+/**
+ *
+ */
+
+public interface UnitsOptions {
+    CircleOptions CIRCLE_OPTIONS = new CircleOptions()
+            .clickable(true)
+            .radius(50)
+            .fillColor(Color.BLUE)
+            .strokeColor(Color.BLACK)
+            .zIndex(1.0f)
+            .strokeWidth(5);
+}

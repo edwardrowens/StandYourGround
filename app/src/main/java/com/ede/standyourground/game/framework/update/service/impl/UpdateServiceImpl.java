@@ -40,13 +40,12 @@ public class UpdateServiceImpl implements UpdateService {
     public void determineVisibility(Unit unit) {
         if (unit.isEnemy()) {
             Iterator<Unit> iter = worldManager.get().getUnits().values().iterator();
-            Unit target = iter.next();
             boolean visible = false;
             while (iter.hasNext() && !visible) {
+                Unit target = iter.next();
                 if (!target.isEnemy()) {
                     visible = latLngService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), target.getVisionRadius() + unit.getRadius());
                 }
-                target = iter.next();
             }
             worldManager.get().getUnit(unit.getId()).setIsVisible(visible);
         }

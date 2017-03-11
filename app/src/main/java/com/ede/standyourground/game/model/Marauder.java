@@ -1,13 +1,12 @@
 package com.ede.standyourground.game.model;
 
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.ede.standyourground.app.activity.MapsActivity;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.model.api.Attackable;
 import com.ede.standyourground.game.model.api.Attacker;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -23,17 +22,10 @@ public class Marauder extends MovableUnit {
 
     private long lastAttackTime;
 
-    private final Circle circle;
-
-    public Marauder(List<LatLng> waypoints, LatLng position, Path path, Circle circle, boolean isEnemy) {
-        super(waypoints, position, path, 60, isEnemy);
+    public Marauder(List<LatLng> waypoints, LatLng position, Path path, double radius, boolean isEnemy) {
+        super(waypoints, position, path, 60, Units.MARAUDER, isEnemy);
         this.lastAttackTime = 0;
-        this.circle = circle;
-        this.circle.setRadius(60);
-        if (!isEnemy) {
-            this.circle.setFillColor(Color.CYAN);
-        }
-        this.attackRange = circle.getRadius() * 2;
+        this.attackRange = radius * 2;
     }
 
     @Override
@@ -85,15 +77,9 @@ public class Marauder extends MovableUnit {
     }
 
     @Override
-    public void onDeath() {
-        circle.remove();
-        deathListener.onDeath(this);
-    }
-
-    @Override
     public void onRender() {
-        circle.setCenter(getCurrentPosition());
-        circle.setVisible(isVisible());
+        MapsActivity.getCircles().get(getId()).setCenter(getCurrentPosition());
+        MapsActivity.getCircles().get(getId()).setVisible(isVisible());
     }
 
     @Override
@@ -104,6 +90,11 @@ public class Marauder extends MovableUnit {
     @Override
     public double getVisionRadius() {
         return 321.869; // .2 miles
+    }
+
+    @Override
+    protected void onUnitDeath() {
+        MapsActivity.removeCircle(getId());
     }
 
     @Override

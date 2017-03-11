@@ -11,29 +11,26 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class HealthBarComponent implements Component {
 
-    private final Map<UUID, ComponentElement> healthBars = new ConcurrentHashMap<>();
+    private final Map<UUID, HealthBar> healthBars = new ConcurrentHashMap<>();
     private final Activity activity;
 
     public HealthBarComponent(Activity activity) {
         this.activity = activity;
     }
 
-    @Override
-    public void addComponentElement(ComponentElement componentElement) {
-        healthBars.put(componentElement.getComponentElementId(), componentElement);
+    public void addComponentElement(HealthBar healthBar) {
+        healthBars.put(healthBar.getComponentElementId(), healthBar);
         RelativeLayout linearLayout = (RelativeLayout) activity.findViewById(R.id.mapContainer);
-        linearLayout.addView(componentElement);
+        linearLayout.addView(healthBar);
     }
 
-    @Override
     public void removeComponentElement(UUID componentElementId) {
         RelativeLayout linearLayout = (RelativeLayout) activity.findViewById(R.id.mapContainer);
         linearLayout.removeView(healthBars.get(componentElementId));
         healthBars.remove(componentElementId);
     }
 
-    @Override
-    public ComponentElement getElement(UUID componentElementId) {
+    public HealthBar getElement(UUID componentElementId) {
         return healthBars.get(componentElementId);
     }
 

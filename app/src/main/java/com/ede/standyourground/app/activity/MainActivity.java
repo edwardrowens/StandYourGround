@@ -22,6 +22,18 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+//        Point point = new Point();
+//        point.x = 100;
+//        point.y = 100;
+//
+//        UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, point);
+//        unitGroupComponent.createUnitGroupBlockHealthBar(UUID.randomUUID(), Units.BASE, .10f);
+//        unitGroupComponent.createUnitGroupBlockHealthBar(UUID.randomUUID(), Units.BASE, .80f);
+//        unitGroupComponent.createUnitGroupBlockHealthBar(UUID.randomUUID(), Units.BASE, .80f);
+//        unitGroupComponent.createUnitGroupBlockHealthBar(UUID.randomUUID(), Units.BASE, .80f);
+//        unitGroupComponent.drawComponentElements();
+
         requestPermissions();
     }
 
@@ -29,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case FINE_LOCATION_PERMISSION_REQUEST_CODE : {
+            case FINE_LOCATION_PERMISSION_REQUEST_CODE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.i(TAG, "Access fine location granted");
                 } else {

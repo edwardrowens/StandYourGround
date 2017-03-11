@@ -15,19 +15,17 @@ public abstract class MovableUnit extends Unit implements Attacker {
     private final Path path;
     private final AtomicLong lastUpdated;
     private final AtomicReference<Double> distanceTraveled;
-    private final boolean reachedEnemyBase;
     private final List<LatLng> waypoints;
     private final AtomicReference<Double> mph = new AtomicReference<>(startingMph());
 
     protected abstract double startingMph();
 
-    public MovableUnit(List<LatLng> waypoints, LatLng position, Path path, double radius, boolean isEnemy) {
-        super(position, radius, isEnemy);
+    public MovableUnit(List<LatLng> waypoints, LatLng position, Path path, double radius, Units type, boolean isEnemy) {
+        super(position, radius, type, isEnemy);
         this.path = path;
         currentTarget = 0;
         this.lastUpdated = new AtomicLong(getCreatedTime());
         this.distanceTraveled = new AtomicReference<>(0d);
-        this.reachedEnemyBase = false;
         this.waypoints = waypoints;
     }
 

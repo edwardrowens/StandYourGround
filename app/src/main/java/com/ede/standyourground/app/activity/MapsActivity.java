@@ -1,6 +1,7 @@
 package com.ede.standyourground.app.activity;
 
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
@@ -14,6 +15,7 @@ import com.ede.standyourground.app.service.api.GameEndService;
 import com.ede.standyourground.app.service.api.OnMapReadyService;
 import com.ede.standyourground.app.ui.Component;
 import com.ede.standyourground.app.ui.HealthBarComponent;
+import com.ede.standyourground.app.ui.UnitGroupComponent;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.dagger.application.MyApp;
@@ -24,6 +26,8 @@ import com.ede.standyourground.game.model.Units;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
@@ -39,18 +43,19 @@ import javax.inject.Inject;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    private final Logger logger = new Logger(MapsActivity.class);
+    private static final Logger logger = new Logger(MapsActivity.class);
 
     // VIEWS
     private HorizontalScrollView unitChoicesScrollView;
     private Button confirmRouteButton;
 
-    private GoogleMap googleMap;
+    private static GoogleMap googleMap;
     private List<Marker> waypoints = new ArrayList<>();
     private Units selectedUnit;
     private LatLng playerLocation;
     private LatLng opponentLocation;
-    private static Map<Class<? extends Component>, Component> componentMap = new ConcurrentHashMap<>();
+    private static final Map<Class<? extends Component>, Component> componentMap = new ConcurrentHashMap<>();
+    private static final Map<UUID, Circle> circles = new ConcurrentHashMap<>();
 
     @Inject WorldManager worldManager;
     @Inject LatLngService latLngService;
@@ -66,6 +71,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         ((MyApp) getApplication()).getAppComponent().inject(this);
 
         HealthBarComponent healthBarComponent = new HealthBarComponent(this);
+        UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0,0));
+        componentMap.put(UnitGroupComponent.class, unitGroupComponent);
         componentMap.put(HealthBarComponent.class, healthBarComponent);
 
         setContentView(R.layout.activity_maps);
@@ -104,7 +111,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         logger.i("Starting map");
-        this.googleMap = googleMap;
+        MapsActivity.googleMap = googleMap;
 
         googleMapProvider.setGoogleMap(googleMap);
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
@@ -163,5 +170,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public static Component getComponent(Class<? extends Component> componentClass) {
         return componentMap.get(componentClass);
+    }
+
+    public static Map<UUID, Circle> getCircles() {
+        return circles;
+    }
+
+    public static void removeCircle(UUID unitId) {
+        circles.get(unitId).remove();
+        circles.remove(unitId);
+    }
+
+    public static void addCircle(UUID unitId, CircleOptions circleOptions) {
+        logger.d("adding %s", unitId);
+        circles.put(unitId, googleMap.addCircle(circleOptions));
     }
 }

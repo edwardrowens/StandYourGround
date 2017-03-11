@@ -20,7 +20,6 @@ import dagger.Lazy;
 public class GameEndServiceImpl implements GameEndService {
 
     private final Lazy<WorldManager> worldManager;
-    private Activity activity;
 
     @Inject
     GameEndServiceImpl(Lazy<WorldManager> worldManager) {
@@ -31,7 +30,7 @@ public class GameEndServiceImpl implements GameEndService {
         worldManager.get().registerDeathListener(new DeathListener() {
             @Override
             public void onDeath(Unit mortal) {
-                MapsActivity.getComponent(HealthBarComponent.class).removeComponentElement(mortal.getId());
+                ((HealthBarComponent) MapsActivity.getComponent(HealthBarComponent.class)).removeComponentElement(mortal.getId());
                 if (mortal instanceof Base) {
                     Base base = (Base) mortal;
                     if (!base.isEnemy()) {

@@ -9,6 +9,7 @@ import com.ede.standyourground.game.framework.update.service.api.UpdateService;
 import com.ede.standyourground.game.model.Unit;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -21,7 +22,9 @@ public class UpdateLoop implements Runnable {
     private static final Logger logger = new Logger(UpdateLoop.class);
     private static final long LOOP_DELAY = 16;
 
-    private final HandlerThread loopThread = new HandlerThread("UpdateLoop");
+    private final AtomicBoolean loop = new AtomicBoolean();
+
+    private HandlerThread loopThread = new HandlerThread("UpdateLoop");
     private Handler handler;
 
     private final Lazy<UpdateService> updateService;
@@ -36,14 +39,17 @@ public class UpdateLoop implements Runnable {
 
     public void startLoop() {
         logger.i("Starting update loop");
-        loopThread.start();
-        handler = new Handler(loopThread.getLooper());
+        loop.set(true);
+        if (!loopThread.isAlive()) {
+            loopThread.start();
+            handler = new Handler(loopThread.getLooper());
+        }
         handler.post(this);
     }
 
     public void stopLoop() {
         logger.i("Stopping update loop");
-        loopThread.quit();
+        loop.set(false);
     }
 
     @Override
@@ -55,6 +61,8 @@ public class UpdateLoop implements Runnable {
         }
         updateService.get().processCombat(units);
 
-        handler.postDelayed(this, LOOP_DELAY);
+        if (loop.get()) {
+            handler.postDelayed(this, LOOP_DELAY);
+        }
     }
 }

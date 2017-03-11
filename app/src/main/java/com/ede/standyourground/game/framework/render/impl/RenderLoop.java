@@ -8,6 +8,8 @@ import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.framework.render.api.RenderService;
 import com.ede.standyourground.game.model.Unit;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.inject.Inject;
 
 import dagger.Lazy;
@@ -19,6 +21,7 @@ public class RenderLoop {
     private final Handler renderingHandler = new Handler(Looper.getMainLooper());
     private final Lazy<WorldManager> worldManager;
     private final Lazy<RenderService> renderService;
+    private final AtomicBoolean loop = new AtomicBoolean();
 
     @Inject
     RenderLoop(Lazy<WorldManager> worldManager,
@@ -28,6 +31,7 @@ public class RenderLoop {
     }
 
     public void startLoop() {
+        loop.set(true);
         renderingHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -35,12 +39,15 @@ public class RenderLoop {
                     unit.onRender();
                     renderService.get().renderHealthBar(unit);
                 }
-                renderingHandler.postDelayed(this, 16);
+                if (loop.get()) {
+                    renderingHandler.postDelayed(this, 16);
+                }
             }
         });
     }
 
     public void stopLoop() {
         logger.i("Stopping rendering loop");
+        loop.set(false);
     }
 }
