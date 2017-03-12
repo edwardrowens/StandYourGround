@@ -38,12 +38,14 @@ public class FootSoldier extends MovableUnit {
     }
 
     @Override
-    public void onAttack(final Attackable attackable, double distance) {
+    public boolean combat(final Attackable attackable) {
+        this.stop();
         if ((System.currentTimeMillis() - lastAttackTime) > (1000 / getAttackSpeed())) {
-            this.stop();
             attackable.onAttacked(this);
             lastAttackTime = System.currentTimeMillis();
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -64,8 +66,9 @@ public class FootSoldier extends MovableUnit {
     @Override
     public boolean canAttack(Attackable attackable, double distance) {
         return (distance <= getAttackRange() + attackable.getRadius())
-                && ((isEnemy() && !attackable.isEnemy()) || (!isEnemy() && attackable.isEnemy()))
-                && getHealth() > 0;
+                && (attackable.isEnemy() != isEnemy())
+                && attackable.isAlive()
+                && isAlive();
     }
 
     @Override

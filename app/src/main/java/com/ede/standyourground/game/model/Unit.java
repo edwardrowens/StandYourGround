@@ -29,6 +29,7 @@ public abstract class Unit implements Renderable, Attackable {
     private final double radius;
     private final AtomicInteger health = new AtomicInteger(getMaxHealth());
     private final Units type;
+    private final AtomicBoolean alive = new AtomicBoolean(true);
 
     protected DeathListener deathListener;
 
@@ -90,6 +91,7 @@ public abstract class Unit implements Renderable, Attackable {
     @Override
     public void onDeath() {
         logger.i("%s has died.", getId());
+        alive.set(false);
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -108,10 +110,15 @@ public abstract class Unit implements Renderable, Attackable {
     }
 
     public void deductHealth(int toDeduct) {
-        health.getAndSet(health.get() - toDeduct);
+        health.addAndGet(-toDeduct);
     }
 
     public Units getType() {
         return type;
+    }
+
+    @Override
+    public boolean isAlive() {
+        return alive.get() && getHealth() > 0;
     }
 }

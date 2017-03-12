@@ -85,28 +85,31 @@ public class UpdateServiceImpl implements UpdateService {
     public void processCombat(List<Unit> units) {
         List<Integer> deadTargets = new ArrayList<>();
         for (int i = 0; i < units.size(); ++i) {
-            if (deadTargets.contains(i)) {
+            Unit unit = units.get(i);
+            if (deadTargets.contains(i) || !unit.isAlive()) {
                 continue;
             }
             Unit attackTarget = null;
-            Unit unit = units.get(i);
             int j = 0;
             for (; j < units.size() && attackTarget == null; ++j) {
-                if (deadTargets.contains(j)) {
+                Unit target = units.get(j);
+                if (deadTargets.contains(j) || !target.isAlive()) {
                     continue;
                 }
-                    Unit target = units.get(j);
                     double distance = latLngService.get().calculateDistance(unit.getCurrentPosition(), target.getCurrentPosition());
                     if (unit instanceof Attacker) {
                         if (((Attacker) unit).canAttack(target, distance)) {
                             attackTarget = target;
-                            ((Attacker) unit).onAttack(target, distance);
+                            boolean attacked = ((Attacker) unit).combat(target);
+                            if (attacked) {
+                                logger.i("%s attacks %s. %s health currently at %d", unit.getId(), target.getId(), target.getId(), target.getHealth());
+                            }
                         }
                     }
             }
             if (attackTarget == null && unit instanceof MovableUnit && ((MovableUnit) unit).getMph() == 0d) {
                 ((MovableUnit) unit).move();
-            } else if (attackTarget != null && attackTarget.getHealth() <= 0) {
+            } else if (attackTarget != null && !attackTarget.isAlive()) {
                 deadTargets.add(j-1);
             }
         }
