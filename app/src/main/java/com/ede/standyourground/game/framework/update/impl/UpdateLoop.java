@@ -8,7 +8,7 @@ import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.framework.update.service.api.UpdateService;
 import com.ede.standyourground.game.model.Unit;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
@@ -54,7 +54,7 @@ public class UpdateLoop implements Runnable {
 
     @Override
     public void run() {
-        Collection<Unit> units = worldManager.get().getUnits().values();
+        List<Unit> units = worldManager.get().getUnits();
         for (Unit unit : units) {
             updateService.get().determinePosition(unit);
             updateService.get().determineVisibility(unit);

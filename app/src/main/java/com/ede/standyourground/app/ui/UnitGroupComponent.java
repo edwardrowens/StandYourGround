@@ -35,6 +35,7 @@ public class UnitGroupComponent implements Component {
         layoutParams.leftMargin = point.x;
         layoutParams.topMargin = point.y;
         this.gridLayout.setLayoutParams(layoutParams);
+        setVisibility(View.INVISIBLE);
     }
 
     public void createUnitGroupBlockHealthBar(UUID healthBarId, Units units, float healthPercentage) {

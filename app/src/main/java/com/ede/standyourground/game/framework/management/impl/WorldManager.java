@@ -14,6 +14,7 @@ import com.ede.standyourground.networking.exchange.request.impl.CreateUnitReques
 import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -95,8 +96,8 @@ public class WorldManager {
         logger.i("Added unit. %d units managed", units.size());
     }
 
-    public Map<UUID, Unit> getUnits() {
-        return units;
+    public List<Unit> getUnits() {
+        return new ArrayList<>(units.values());
     }
 
     public Unit getUnit(UUID id) {

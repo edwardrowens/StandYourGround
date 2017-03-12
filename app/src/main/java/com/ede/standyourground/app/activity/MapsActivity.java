@@ -177,7 +177,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public static void removeCircle(UUID unitId) {
-        circles.get(unitId).remove();
+        Circle circle = circles.get(unitId);
+        if (circle == null) {
+            logger.w("Attempted to remove circle that had already been removed for unit %s", unitId);
+        } else {
+            circle.remove();
+        }
         circles.remove(unitId);
     }
 

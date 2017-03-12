@@ -1,5 +1,7 @@
 package com.ede.standyourground.game.model;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 
 import com.ede.standyourground.framework.Logger;
@@ -87,12 +89,14 @@ public abstract class Unit implements Renderable, Attackable {
 
     @Override
     public void onDeath() {
-        logger.d("calling onUnitDeath");
-        onUnitDeath();
-        logger.d("called onUnitDeath");
-        logger.d("calling onDeath");
-        deathListener.onDeath(this);
-        logger.d("called onDeath");
+        logger.i("%s has died.", getId());
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                onUnitDeath();
+                deathListener.onDeath(Unit.this);
+            }
+        });
     }
 
     public double getRadius() {

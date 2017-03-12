@@ -66,7 +66,11 @@ public abstract class MovableUnit extends Unit implements Attacker {
         return mph.get();
     }
 
-    public void setMph(double mph) {
-        this.mph.set(mph);
+    public void move() {
+        this.mph.set(startingMph());
+    }
+
+    protected void stop() {
+        this.mph.set(0d);
     }
 }

@@ -1,8 +1,5 @@
 package com.ede.standyourground.game.model;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import com.ede.standyourground.app.activity.MapsActivity;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.model.api.Attackable;
@@ -42,23 +39,10 @@ public class FootSoldier extends MovableUnit {
 
     @Override
     public void onAttack(final Attackable attackable, double distance) {
-        if (canAttack(attackable, distance)) {
-            setMph(0);
+        if ((System.currentTimeMillis() - lastAttackTime) > (1000 / getAttackSpeed())) {
+            this.stop();
             attackable.onAttacked(this);
             lastAttackTime = System.currentTimeMillis();
-            if (attackable.getHealth() <= 0) {
-                setMph(DEFAULT_MPH);
-                // This must be posted to the main looper because a unit may be manipulating
-                // a google maps object (which can't be manipulated by a foreign thread) on death.
-                logger.d("posting death");
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        logger.d("executing death");
-                        attackable.onDeath();
-                    }
-                });
-            }
         }
     }
 
@@ -79,9 +63,9 @@ public class FootSoldier extends MovableUnit {
 
     @Override
     public boolean canAttack(Attackable attackable, double distance) {
-        return (System.currentTimeMillis() - lastAttackTime) > (1000 / getAttackSpeed())
-                && (distance <= getAttackRange() + attackable.getRadius())
-                && ((isEnemy() && !attackable.isEnemy()) || (!isEnemy() && attackable.isEnemy()));
+        return (distance <= getAttackRange() + attackable.getRadius())
+                && ((isEnemy() && !attackable.isEnemy()) || (!isEnemy() && attackable.isEnemy()))
+                && getHealth() > 0;
     }
 
     @Override
@@ -101,7 +85,6 @@ public class FootSoldier extends MovableUnit {
 
     @Override
     protected void onUnitDeath() {
-        logger.d("removing %s", getId());
         MapsActivity.removeCircle(getId());
     }
 }

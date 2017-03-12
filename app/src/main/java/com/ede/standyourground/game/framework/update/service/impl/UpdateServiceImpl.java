@@ -2,19 +2,19 @@ package com.ede.standyourground.game.framework.update.service.impl;
 
 import android.os.SystemClock;
 
+import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.api.RouteService;
 import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.framework.update.service.api.UpdateService;
 import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
-import com.ede.standyourground.game.model.api.Attackable;
 import com.ede.standyourground.game.model.api.Attacker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -22,6 +22,8 @@ import dagger.Lazy;
 
 
 public class UpdateServiceImpl implements UpdateService {
+
+    private static final Logger logger = new Logger(UpdateServiceImpl.class);
 
     private final Lazy<RouteService> routeService;
     private final Lazy<LatLngService> latLngService;
@@ -39,10 +41,10 @@ public class UpdateServiceImpl implements UpdateService {
     @Override
     public void determineVisibility(Unit unit) {
         if (unit.isEnemy()) {
-            Iterator<Unit> iter = worldManager.get().getUnits().values().iterator();
+            List<Unit> units = worldManager.get().getUnits();
             boolean visible = false;
-            while (iter.hasNext() && !visible) {
-                Unit target = iter.next();
+            for (int i = 0; i < units.size() && !visible; ++i) {
+                Unit target = units.get(i);
                 if (!target.isEnemy()) {
                     visible = latLngService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), target.getVisionRadius() + unit.getRadius());
                 }
@@ -80,14 +82,37 @@ public class UpdateServiceImpl implements UpdateService {
     }
 
     @Override
-    public void processCombat(Collection<Unit> units) {
-        for (final Unit unit : units) {
-            for (final Unit target : units) {
-                double distance = latLngService.get().calculateDistance(unit.getCurrentPosition(), target.getCurrentPosition());
-                if (unit instanceof Attacker && target instanceof Attackable) {
-                    ((Attacker) unit).onAttack(target, distance);
-                }
+    public void processCombat(List<Unit> units) {
+        List<Integer> deadTargets = new ArrayList<>();
+        for (int i = 0; i < units.size(); ++i) {
+            if (deadTargets.contains(i)) {
+                continue;
             }
+            Unit attackTarget = null;
+            Unit unit = units.get(i);
+            int j = 0;
+            for (; j < units.size() && attackTarget == null; ++j) {
+                if (deadTargets.contains(j)) {
+                    continue;
+                }
+                    Unit target = units.get(j);
+                    double distance = latLngService.get().calculateDistance(unit.getCurrentPosition(), target.getCurrentPosition());
+                    if (unit instanceof Attacker) {
+                        if (((Attacker) unit).canAttack(target, distance)) {
+                            attackTarget = target;
+                            ((Attacker) unit).onAttack(target, distance);
+                        }
+                    }
+            }
+            if (attackTarget == null && unit instanceof MovableUnit && ((MovableUnit) unit).getMph() == 0d) {
+                ((MovableUnit) unit).move();
+            } else if (attackTarget != null && attackTarget.getHealth() <= 0) {
+                deadTargets.add(j-1);
+            }
+        }
+
+        for (int i : deadTargets) {
+            units.get(i).onDeath();
         }
     }
 }

@@ -35,7 +35,7 @@ public class RenderLoop {
         renderingHandler.post(new Runnable() {
             @Override
             public void run() {
-                for (Unit unit : worldManager.get().getUnits().values()) {
+                for (Unit unit : worldManager.get().getUnits()) {
                     unit.onRender();
                     renderService.get().renderHealthBar(unit);
                 }

@@ -1,6 +1,9 @@
 package com.ede.standyourground.game.model;
 
 
+import android.os.Handler;
+import android.os.Looper;
+
 import com.ede.standyourground.app.activity.MapsActivity;
 import com.ede.standyourground.game.model.api.Attacker;
 import com.google.android.gms.maps.model.LatLng;
@@ -34,7 +37,12 @@ public class Base extends Unit {
 
     @Override
     protected void onUnitDeath() {
-        MapsActivity.removeCircle(getId());
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                MapsActivity.removeCircle(getId());
+            }
+        });
     }
 
     @Override
