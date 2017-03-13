@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
-    <color name="teal">#42f4e2</color>
+    <color name="colorPrimary">#FF3F51B5</color>
+    <color name="colorPrimaryDark">#FF303F9F</color>
+    <color name="colorAccent">#FFFF4081</color>
+    <color name="cyan">#FF05FFE1</color>
+    <color name="blue">#FF0E21FF</color>
+    <color name="magenta">#FFD156FF</color>
+    <color name="red">#FFF92F2F</color>
 </resources>

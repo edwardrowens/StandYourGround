@@ -6,8 +6,8 @@ import com.google.android.gms.maps.model.CircleOptions;
 
 public enum Units {
     BASE(R.drawable.base, UnitsOptions.CIRCLE_OPTIONS.radius(75)),
-    FOOT_SOLDIER(R.drawable.base, UnitsOptions.CIRCLE_OPTIONS),
-    MARAUDER(R.drawable.base, UnitsOptions.CIRCLE_OPTIONS.radius(60));
+    FOOT_SOLDIER(R.drawable.foot_soldier, UnitsOptions.CIRCLE_OPTIONS),
+    MARAUDER(R.drawable.marauder, UnitsOptions.CIRCLE_OPTIONS.radius(60));
 
     private final int drawableId;
     private final CircleOptions circleOptions;

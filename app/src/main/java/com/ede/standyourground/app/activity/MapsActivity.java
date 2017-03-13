@@ -129,7 +129,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // TODO DELETE
         logger.i("Creating enemy foot soldier.");
-        drawRouteService.drawRoutesForEnemyUnit(Units.FOOT_SOLDIER, new ArrayList<Marker>(), playerLocation, opponentLocation);
+        drawRouteService.drawRoutesForEnemyUnit(Units.MARAUDER, new ArrayList<Marker>(), playerLocation, opponentLocation);
         // TODO END OF DELETE
 
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {

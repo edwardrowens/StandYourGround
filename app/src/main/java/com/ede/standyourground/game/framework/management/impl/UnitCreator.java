@@ -1,14 +1,15 @@
 package com.ede.standyourground.game.framework.management.impl;
 
 
+import android.app.Activity;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.ede.standyourground.R;
 import com.ede.standyourground.app.activity.MapsActivity;
-import com.ede.standyourground.framework.api.MathService;
+import com.ede.standyourground.app.ui.HealthBarComponent;
 import com.ede.standyourground.framework.api.RouteService;
-import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.game.model.Base;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.Marauder;
@@ -28,19 +29,13 @@ public class UnitCreator {
 
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
     private final Lazy<WorldManager> worldManager;
-    private final Lazy<GoogleMapProvider> googleMapProvider;
     private final Lazy<RouteService> routeService;
-    private final Lazy<MathService> mathService;
 
     @Inject
-    UnitCreator(Lazy<GoogleMapProvider> googleMapProvider,
-                Lazy<WorldManager> worldManager,
-                Lazy<RouteService> routeService,
-                Lazy<MathService> mathService) {
-        this.googleMapProvider = googleMapProvider;
+    UnitCreator(Lazy<WorldManager> worldManager,
+                Lazy<RouteService> routeService) {
         this.worldManager = worldManager;
         this.routeService = routeService;
-        this.mathService = mathService;
     }
 
     public void createPlayerUnit(final List<LatLng> route, final LatLng position, Units units) {
@@ -49,7 +44,7 @@ public class UnitCreator {
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        createUnit(Units.FOOT_SOLDIER, Color.MAGENTA, position, route, false);
+                        createUnit(Units.FOOT_SOLDIER, R.color.magenta, position, route, false);
                     }
                 });
                 break;
@@ -57,7 +52,7 @@ public class UnitCreator {
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        createUnit(Units.BASE, Color.BLUE, position, route, false);
+                        createUnit(Units.BASE, R.color.blue, position, route, false);
                     }
                 });
                 break;
@@ -65,7 +60,7 @@ public class UnitCreator {
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        createUnit(Units.MARAUDER, Color.CYAN, position, route, false);
+                        createUnit(Units.MARAUDER, R.color.cyan, position, route, false);
                     }
                 });
         }
@@ -77,7 +72,7 @@ public class UnitCreator {
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        createUnit(Units.FOOT_SOLDIER, Color.RED, position, route, true);
+                        createUnit(Units.FOOT_SOLDIER, R.color.red, position, route, true);
                     }
                 });
                 break;
@@ -85,7 +80,7 @@ public class UnitCreator {
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        createUnit(Units.BASE, Color.RED, position, route, true);
+                        createUnit(Units.BASE, R.color.red, position, route, true);
                     }
                 });
                 break;
@@ -93,13 +88,16 @@ public class UnitCreator {
                 mainThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        createUnit(Units.MARAUDER, Color.RED, position, route, true);
+                        createUnit(Units.MARAUDER, R.color.red, position, route, true);
                     }
                 });
         }
     }
 
     private void createUnit(Units type, int color, LatLng position, List<LatLng> route, boolean isEnemy) {
+        // hacky way in order to get the proper conversion of colors
+        Activity activity = MapsActivity.getComponent(HealthBarComponent.class).getActivity();
+        color = activity.getResources().getColor(color);
         switch (type) {
             case FOOT_SOLDIER:
                 Path path = new Path(route, routeService.get().getDistanceOfSteps(route, position));
@@ -123,5 +121,9 @@ public class UnitCreator {
                 worldManager.get().addEnemyUnit(unitM);
                 break;
         }
+    }
+
+    private int hexToARGB(int color) {
+        return Color.argb(Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color));
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 public class Marauder extends MovableUnit {
     private static final Logger logger = new Logger(Marauder.class);
 
-    private static final double STARTING_MPH = 150;
+    private static final double STARTING_MPH = 200;
     private static final int STARTING_HEALTH = 150;
     private static final double ATTACK_SPEED = .5;
 

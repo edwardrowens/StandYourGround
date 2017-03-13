@@ -10,6 +10,7 @@ import com.ede.standyourground.R;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.model.Units;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -21,8 +22,8 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
 
     private final RelativeLayout healthBarContainer;
 
-    public UnitGroupBlockHealthBar(UUID componentElementId, Activity activity, Units units, HealthBar healthBar) {
-        super(componentElementId, activity, units);
+    public UnitGroupBlockHealthBar(UUID componentElementId, List<UUID> unitIds, Activity activity, Units units, HealthBar healthBar) {
+        super(componentElementId, unitIds, activity, units);
         this.healthBarContainer = (RelativeLayout) LayoutInflater.from(activity.getApplicationContext()).inflate(R.layout.unit_group_block_health_bar, null);
 
         healthBarContainer.setLayoutParams(new ViewGroup.LayoutParams((int)healthBar.getHealthBarBorder().width(), (int)healthBar.getHealthBarBorder().height()));
@@ -42,13 +43,14 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
         this.container.invalidate();
     }
 
-    public UUID getComponentElementId() {
-        return componentElementId;
-    }
-
     @Override
     protected void setVisible(int visibility) {
         healthBarContainer.setVisibility(visibility);
+    }
+
+    @Override
+    protected void clearViews() {
+        healthBarContainer.removeAllViews();
     }
 
     public LinearLayout getContainer() {

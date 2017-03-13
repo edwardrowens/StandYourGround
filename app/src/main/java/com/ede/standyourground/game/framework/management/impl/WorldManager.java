@@ -36,7 +36,7 @@ public class WorldManager {
     private final Lazy<UnitCreator> unitCreator;
     private final Lazy<NetworkingManager> networkingManager;
     private final Lazy<GameSessionIdProvider> gameSessionIdProvider;
-    private DeathListener deathListener;
+    private final List<DeathListener> deathListeners = new ArrayList<>();
 
     @Inject
     WorldManager(Lazy<UpdateLoop> updateLoop,
@@ -81,7 +81,7 @@ public class WorldManager {
     }
 
     public void registerDeathListener(DeathListener deathListener) {
-        this.deathListener = deathListener;
+        deathListeners.add(deathListener);
     }
 
     private void addUnit(final Unit unit) {
@@ -89,7 +89,9 @@ public class WorldManager {
             @Override
             public void onDeath(Unit mortal) {
                 units.remove(mortal.getId());
-                deathListener.onDeath(unit);
+                for (DeathListener deathListener : deathListeners) {
+                    deathListener.onDeath(unit);
+                }
             }
         });
         units.put(unit.getId(), unit);

@@ -8,9 +8,16 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.ede.standyourground.R;
+import com.ede.standyourground.framework.dagger.application.MyApp;
+import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.model.Units;
 
+import java.util.List;
 import java.util.UUID;
+
+import javax.inject.Inject;
+
+import dagger.Lazy;
 
 /**
  *
@@ -19,17 +26,21 @@ import java.util.UUID;
 public abstract class UnitGroupBlock implements Component {
 
     protected final Activity activity;
-    protected final UUID componentElementId;
+    protected final List<UUID> unitIds;
     protected final LinearLayout container;
     protected final RelativeLayout iconContainer;
+    private final UUID componentElementId;
+    protected Lazy<WorldManager> worldManager;
 
-    public UnitGroupBlock(UUID componentElementId, Activity activity, Units units) {
+    public UnitGroupBlock(UUID componentElementId, List<UUID> unitIds, Activity activity, Units units) {
+        ((MyApp) activity.getApplication()).getAppComponent().inject(this);
         this.componentElementId = componentElementId;
+        this.unitIds = unitIds;
         this.activity = activity;
         this.container = (LinearLayout) LayoutInflater.from(activity).inflate(R.layout.unit_group_block, null);
         this.iconContainer = (RelativeLayout) LayoutInflater.from(activity.getApplicationContext()).inflate(R.layout.unit_group_block_icon, null);
 
-        Icon icon = new Icon(componentElementId, activity, units);
+        Icon icon = new Icon(unitIds.get(0), activity, units);
 
         container.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         iconContainer.setLayoutParams(new ViewGroup.LayoutParams(icon.getIcon().getIntrinsicWidth(), icon.getIcon().getIntrinsicHeight()));
@@ -39,12 +50,31 @@ public abstract class UnitGroupBlock implements Component {
         container.addView(iconContainer);
     }
 
+    @Inject
+    void setWorldManager(Lazy<WorldManager> worldManager) {
+        this.worldManager = worldManager;
+    }
+
     public void setVisibility(int visibility) {
         setVisible(visibility);
         iconContainer.setVisibility(visibility);
     }
 
+    protected void clear() {
+        clearViews();
+        iconContainer.removeAllViews();
+        container.removeAllViews();
+    }
+
+    public List<UUID> getUnitIds() {
+        return unitIds;
+    }
+
+    public UUID getComponentElementId() {
+        return componentElementId;
+    }
+
     protected abstract void setVisible(int visibility);
+    protected abstract void clearViews();
     public abstract View getContainer();
-    public abstract UUID getComponentElementId();
 }

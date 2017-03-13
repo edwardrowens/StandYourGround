@@ -8,30 +8,27 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 
 import com.ede.standyourground.R;
+import com.ede.standyourground.framework.Logger;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
+    private static final Logger logger = new Logger(MainActivity.class);
     private static final int FINE_LOCATION_PERMISSION_REQUEST_CODE = 1;
-    private static final String TAG = MainActivity.class.getName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 //        Point point = new Point();
 //        point.x = 100;
 //        point.y = 100;
 //
 //        UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, point);
-//        unitGroupComponent.createUnitGroupBlockHealthBar(UUID.randomUUID(), Units.BASE, .10f);
-//        unitGroupComponent.createUnitGroupBlockHealthBar(UUID.randomUUID(), Units.BASE, .80f);
-//        unitGroupComponent.createUnitGroupBlockHealthBar(UUID.randomUUID(), Units.BASE, .80f);
-//        unitGroupComponent.createUnitGroupBlockHealthBar(UUID.randomUUID(), Units.BASE, .80f);
+//        unitGroupComponent.createUnitGroupBlockCount(Units.BASE, 2);
+//        unitGroupComponent.initialize(R.id.activity_main);
 //        unitGroupComponent.drawComponentElements();
 
         requestPermissions();
@@ -43,9 +40,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         switch (requestCode) {
             case FINE_LOCATION_PERMISSION_REQUEST_CODE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.i(TAG, "Access fine location granted");
+                    logger.i("Access fine location granted");
                 } else {
-                    Log.i(TAG, "Access fine location denied");
+                    logger.i("Access fine location denied");
                 }
             }
         }
@@ -53,11 +50,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
 
     public void startGame(View view) {
-        Log.i(TAG, "Starting game");
+        logger.i("Starting game");
         Intent intent = new Intent(this, FindMatchActivity.class);
         startActivity(intent);
     }
-
 
     private void requestPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

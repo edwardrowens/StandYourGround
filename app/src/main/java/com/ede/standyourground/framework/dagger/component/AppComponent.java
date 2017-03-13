@@ -2,6 +2,8 @@ package com.ede.standyourground.framework.dagger.component;
 
 import com.ede.standyourground.app.activity.FindMatchActivity;
 import com.ede.standyourground.app.activity.MapsActivity;
+import com.ede.standyourground.app.ui.UnitGroupBlock;
+import com.ede.standyourground.app.ui.UnitGroupComponent;
 import com.ede.standyourground.framework.dagger.module.AppModule;
 import com.ede.standyourground.framework.dagger.module.ServiceModule;
 
@@ -14,4 +16,6 @@ import dagger.Component;
 public interface AppComponent {
     void inject(FindMatchActivity findMatchActivity);
     void inject(MapsActivity mapsActivity);
+    void inject(UnitGroupBlock unitGroupBlock);
+    void inject(UnitGroupComponent unitGroupComponent);
 }

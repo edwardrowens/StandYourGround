@@ -100,10 +100,7 @@ public class UpdateServiceImpl implements UpdateService {
                     if (unit instanceof Attacker) {
                         if (((Attacker) unit).canAttack(target, distance)) {
                             attackTarget = target;
-                            boolean attacked = ((Attacker) unit).combat(target);
-                            if (attacked) {
-                                logger.i("%s attacks %s. %s health currently at %d", unit.getId(), target.getId(), target.getId(), target.getHealth());
-                            }
+                            ((Attacker) unit).combat(target);
                         }
                     }
             }
