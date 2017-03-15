@@ -10,6 +10,7 @@ import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.game.model.api.DeathListener;
+import com.ede.standyourground.game.model.api.HealthChangeListener;
 import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
 import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.android.gms.maps.model.LatLng;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -36,7 +38,8 @@ public class WorldManager {
     private final Lazy<UnitCreator> unitCreator;
     private final Lazy<NetworkingManager> networkingManager;
     private final Lazy<GameSessionIdProvider> gameSessionIdProvider;
-    private final List<DeathListener> deathListeners = new ArrayList<>();
+    private final List<DeathListener> deathListeners = new CopyOnWriteArrayList<>();
+    private final List<HealthChangeListener> healthChangeListeners = new CopyOnWriteArrayList<>();
 
     @Inject
     WorldManager(Lazy<UpdateLoop> updateLoop,
@@ -84,6 +87,10 @@ public class WorldManager {
         deathListeners.add(deathListener);
     }
 
+    public void registerHealthChangeListener(HealthChangeListener healthChangeListener) {
+        healthChangeListeners.add(healthChangeListener);
+    }
+
     private void addUnit(final Unit unit) {
         unit.registerDeathListener(new DeathListener() {
             @Override
@@ -91,6 +98,14 @@ public class WorldManager {
                 units.remove(mortal.getId());
                 for (DeathListener deathListener : deathListeners) {
                     deathListener.onDeath(unit);
+                }
+            }
+        });
+        unit.registerHealthChangeListener(new HealthChangeListener() {
+            @Override
+            public void onHealthChange(Unit unit) {
+                for (HealthChangeListener healthChangeListener : healthChangeListeners) {
+                    healthChangeListener.onHealthChange(unit);
                 }
             }
         });

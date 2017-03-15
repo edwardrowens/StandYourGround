@@ -68,7 +68,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((MyApp) getApplication()).getAppComponent().inject(this);
+        MyApp.getAppComponent().inject(this);
 
         HealthBarComponent healthBarComponent = new HealthBarComponent(this);
         UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0,0));
@@ -112,6 +112,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(final GoogleMap googleMap) {
         logger.i("Starting map");
         MapsActivity.googleMap = googleMap;
+
+        googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+            @Override
+            public void onCameraMove() {
+                ((UnitGroupComponent)getComponent(UnitGroupComponent.class)).clear();
+            }
+        });
 
         googleMapProvider.setGoogleMap(googleMap);
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));

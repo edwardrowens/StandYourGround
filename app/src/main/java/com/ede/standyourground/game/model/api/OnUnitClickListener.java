@@ -78,7 +78,6 @@ public class OnUnitClickListener implements GoogleMap.OnCircleClickListener {
             if (!unit.isEnemy() && samePosition) {
                 unitsOnPosition.add(unit);
                 bag.put(unit.getType(), bag.containsKey(unit.getType()) ? bag.get(unit.getType()) + 1 : 1);
-                logger.d("%s is on this circle's position. %d in the bag", unit.getType().toString(), bag.get(unit.getType()));
             }
         }
 
@@ -87,12 +86,10 @@ public class OnUnitClickListener implements GoogleMap.OnCircleClickListener {
                 if (e.getValue() == 1) {
                     for (Unit u : unitsOnPosition) {
                         if (u.getType().equals(e.getKey())) {
-                            logger.d("adding %s with health %.5f", u.getType().toString(), u.getHealth() / (float)u.getMaxHealth());
                             unitGroupComponent.createUnitGroupBlockHealthBar(u.getId(), u.getType(), u.getHealth() / (float)u.getMaxHealth());
                         }
                     }
                 } else {
-                    logger.d("adding %s with count %d", e.getKey().toString(), e.getValue());
                     List<UUID> unitIds = new ArrayList<>();
                     for (Unit u : unitsOnPosition) {
                         unitIds.add(u.getId());

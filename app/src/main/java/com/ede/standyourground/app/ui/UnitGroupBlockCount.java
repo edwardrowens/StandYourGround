@@ -7,12 +7,15 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.ede.standyourground.R;
+import com.ede.standyourground.app.activity.MapsActivity;
+import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.game.model.api.DeathListener;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -20,13 +23,15 @@ import java.util.UUID;
 
 public class UnitGroupBlockCount extends UnitGroupBlock {
 
+    private static Logger logger = new Logger(UnitGroupBlockCount.class);
+
     private final TextView countContainer;
     private final Activity activity;
-    private int count;
+    private final AtomicInteger count;
 
-    public UnitGroupBlockCount(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units, int count) {
+    public UnitGroupBlockCount(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units, final int count) {
         super(componentElementId, unitIds, activity, units);
-        this.count = count;
+        this.count = new AtomicInteger(count);
         this.activity = activity;
         this.countContainer = (TextView) LayoutInflater.from(activity).inflate(R.layout.unit_group_block_count, null);
 
@@ -37,7 +42,16 @@ public class UnitGroupBlockCount extends UnitGroupBlock {
             @Override
             public void onDeath(Unit mortal) {
                 if (unitIds.contains(mortal.getId())) {
-                    decrementCount();
+                    logger.d("%s died. count is %d", mortal.getId(), decrementCount());
+                    if (UnitGroupBlockCount.this.count.get() == 1) {
+                        for (Unit unit : worldManager.get().getUnits()) {
+                            if (!unit.isEnemy() && unit.getType().equals(mortal.getType())) {
+                                ((UnitGroupComponent) MapsActivity.getComponent(UnitGroupComponent.class))
+                                        .createUnitGroupBlockHealthBar(unit.getId(), unit.getType(), unit.getHealth() / (float) unit.getMaxHealth());
+                                container.setVisibility(View.GONE);
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -64,13 +78,13 @@ public class UnitGroupBlockCount extends UnitGroupBlock {
 
     @Override
     public void drawComponentElements() {
-        iconContainer.invalidate();
-        countContainer.invalidate();
+        iconContainer.postInvalidate();
+        countContainer.postInvalidate();
     }
 
     private int decrementCount() {
-        --count;
-        countContainer.setText(activity.getResources().getString(R.string.unitGroupCountText, count));
-        return count;
+        count.decrementAndGet();
+        countContainer.setText(activity.getResources().getString(R.string.unitGroupCountText, count.get()));
+        return count.get();
     }
 }

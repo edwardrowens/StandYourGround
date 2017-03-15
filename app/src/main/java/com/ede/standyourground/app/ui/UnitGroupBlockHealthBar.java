@@ -2,13 +2,17 @@ package com.ede.standyourground.app.ui;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.framework.Logger;
+import com.ede.standyourground.framework.dagger.application.MyApp;
+import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
+import com.ede.standyourground.game.model.api.DeathListener;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,13 +26,22 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
 
     private final RelativeLayout healthBarContainer;
 
-    public UnitGroupBlockHealthBar(UUID componentElementId, List<UUID> unitIds, Activity activity, Units units, HealthBar healthBar) {
+    public UnitGroupBlockHealthBar(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units, final HealthBar healthBar) {
         super(componentElementId, unitIds, activity, units);
-        this.healthBarContainer = (RelativeLayout) LayoutInflater.from(activity.getApplicationContext()).inflate(R.layout.unit_group_block_health_bar, null);
+        this.healthBarContainer = (RelativeLayout) LayoutInflater.from(activity).inflate(R.layout.unit_group_block_health_bar, null);
 
-        healthBarContainer.setLayoutParams(new ViewGroup.LayoutParams((int)healthBar.getHealthBarBorder().width(), (int)healthBar.getHealthBarBorder().height()));
+        healthBarContainer.setLayoutParams(new ViewGroup.LayoutParams((int) healthBar.getHealthBarBorder().width(), (int) healthBar.getHealthBarBorder().height()));
         this.healthBarContainer.addView(healthBar);
         this.container.addView(healthBarContainer);
+
+        MyApp.getAppComponent().getWorldManager().get().registerDeathListener(new DeathListener() {
+            @Override
+            public void onDeath(Unit mortal) {
+                if (unitIds.contains(mortal.getId())) {
+                    container.setVisibility(View.GONE);
+                }
+            }
+        });
     }
 
     @Override
@@ -38,9 +51,9 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
 
     @Override
     public void drawComponentElements() {
-        this.iconContainer.invalidate();
-        this.healthBarContainer.invalidate();
-        this.container.invalidate();
+        this.healthBarContainer.postInvalidate();
+        this.container.postInvalidate();
+        this.iconContainer.postInvalidate();
     }
 
     @Override

@@ -10,8 +10,8 @@ import android.widget.GridLayout;
 import android.widget.RelativeLayout;
 
 import com.ede.standyourground.R;
+import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.dagger.application.MyApp;
-import com.ede.standyourground.game.framework.management.impl.WorldManager;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.game.model.api.DeathListener;
@@ -22,14 +22,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.inject.Inject;
-
-import dagger.Lazy;
-
 /**
  *
  */
 public class UnitGroupComponent implements Component {
+
+    private static final Logger logger = new Logger(UnitGroupComponent.class);
 
     private static final RelativeLayout.LayoutParams CONTAINER_LAYOUT_PARAMS = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
@@ -37,13 +35,10 @@ public class UnitGroupComponent implements Component {
     private final List<UUID> unitIds = new ArrayList<>();
     private final Activity activity;
     private final GridLayout gridLayout;
-    Lazy<WorldManager> worldManager;
 
     public UnitGroupComponent(Activity activity, Point point) {
-
-        ((MyApp) activity.getApplication()).getAppComponent().inject(this);
         this.activity = activity;
-        this.gridLayout = (GridLayout) LayoutInflater.from(activity.getApplicationContext()).inflate(R.layout.unit_group_block_component, null);
+        this.gridLayout = (GridLayout) LayoutInflater.from(activity).inflate(R.layout.unit_group_block_component, null);
 
         RelativeLayout.LayoutParams layoutParams = CONTAINER_LAYOUT_PARAMS;
         layoutParams.leftMargin = point.x;
@@ -56,7 +51,7 @@ public class UnitGroupComponent implements Component {
             }
         });
 
-        worldManager.get().registerDeathListener(new DeathListener() {
+        MyApp.getAppComponent().getWorldManager().get().registerDeathListener(new DeathListener() {
             @Override
             public void onDeath(Unit mortal) {
                 if (unitIds.remove(mortal.getId())) {
@@ -66,21 +61,17 @@ public class UnitGroupComponent implements Component {
                 }
             }
         });
+
         setVisibility(View.INVISIBLE);
     }
 
-    @Inject
-    void setWorldManager(Lazy<WorldManager> worldManager) {
-        this.worldManager = worldManager;
-    }
-
-    public void createUnitGroupBlockHealthBar(UUID unitId, Units units, float healthPercentage) {
+    public UUID createUnitGroupBlockHealthBar(final UUID unitId, Units units, float healthPercentage) {
         if (gridLayout.getVisibility() != View.VISIBLE) {
             setVisibility(View.VISIBLE);
         }
         unitIds.add(unitId);
 
-        HealthBar healthBar = new HealthBar(unitId, activity.getApplicationContext());
+        HealthBar healthBar = new HealthBar(unitId, activity);
         healthBar.setHealthPercentage(healthPercentage);
         healthBar.setWidth(100);
         healthBar.setHeight(50);
@@ -97,13 +88,14 @@ public class UnitGroupComponent implements Component {
         UnitGroupBlockHealthBar unitGroupBlockHealthBar = new UnitGroupBlockHealthBar(unitGroupBlockId, unitIds, activity, units, healthBar);
         gridLayout.addView(unitGroupBlockHealthBar.getContainer());
         unitGroupBlocks.put(unitGroupBlockId, unitGroupBlockHealthBar);
+        return unitGroupBlockId;
     }
 
     public UUID createUnitGroupBlockCount(List<UUID> unitIds, Units units, int count) {
         if (gridLayout.getVisibility() != View.VISIBLE) {
             setVisibility(View.VISIBLE);
         }
-        unitIds.addAll(unitIds);
+        this.unitIds.addAll(unitIds);
         UUID unitGroupBlockId = UUID.randomUUID();
         UnitGroupBlockCount unitGroupBlockCount = new UnitGroupBlockCount(unitGroupBlockId, unitIds, activity, units, count);
         gridLayout.addView(unitGroupBlockCount.getContainer());
@@ -146,7 +138,7 @@ public class UnitGroupComponent implements Component {
 
     @Override
     public void drawComponentElements() {
-        gridLayout.invalidate();
+        gridLayout.postInvalidate();
         for (UnitGroupBlock unitGroupBlock : unitGroupBlocks.values()) {
             unitGroupBlock.drawComponentElements();
         }

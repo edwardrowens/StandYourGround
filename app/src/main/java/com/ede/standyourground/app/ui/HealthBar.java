@@ -9,6 +9,9 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 
 import com.ede.standyourground.framework.Logger;
+import com.ede.standyourground.framework.dagger.application.MyApp;
+import com.ede.standyourground.game.model.Unit;
+import com.ede.standyourground.game.model.api.HealthChangeListener;
 
 import java.util.UUID;
 
@@ -27,11 +30,20 @@ public class HealthBar extends ComponentElement {
     private float height;
     private float healthPercentage;
 
-    public HealthBar(UUID componentElementId, Context context) {
+    public HealthBar(final UUID componentElementId, Context context) {
         super(context);
         this.componentElementId = componentElementId;
         this.rect = new RectF();
         this.border = new RectF();
+        this.healthPercentage = 1f;
+        MyApp.getAppComponent().getWorldManager().get().registerHealthChangeListener(new HealthChangeListener() {
+            @Override
+            public void onHealthChange(Unit unit) {
+                if (unit.getId().equals(componentElementId)) {
+                    setHealthPercentage(((float)unit.getHealth()) / unit.getMaxHealth());
+                }
+            }
+        });
     }
 
     @Override
@@ -40,7 +52,6 @@ public class HealthBar extends ComponentElement {
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.BLACK);
         paint.setPathEffect(cornerPathEffect);
-        paint.setStrokeWidth(5);
         canvas.drawRect(border, paint);
 
         paint.set(newPaint);
@@ -52,7 +63,8 @@ public class HealthBar extends ComponentElement {
 
     public void setPoint(PointF point) {
         rect.set(point.x, point.y, point.x + (width * healthPercentage), point.y + height);
-        border.set(point.x, point.y, point.x + width, point.y + height);
+        border.set(point.x - 5, point.y - 5, point.x + width + 5, point.y + height + 5);
+        postInvalidate();
     }
 
     @Override
@@ -70,6 +82,8 @@ public class HealthBar extends ComponentElement {
 
     public void setHealthPercentage(float healthPercentage) {
         this.healthPercentage = healthPercentage;
+        rect.set(rect.left, rect.top, rect.left + (width * healthPercentage), rect.bottom);
+        postInvalidate();
     }
 
     public float getHealthPercentage() {

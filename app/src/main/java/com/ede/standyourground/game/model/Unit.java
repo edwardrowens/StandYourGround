@@ -7,6 +7,7 @@ import android.os.SystemClock;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.model.api.Attackable;
 import com.ede.standyourground.game.model.api.DeathListener;
+import com.ede.standyourground.game.model.api.HealthChangeListener;
 import com.ede.standyourground.game.model.api.Renderable;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -32,6 +33,7 @@ public abstract class Unit implements Renderable, Attackable {
     private final AtomicBoolean alive = new AtomicBoolean(true);
 
     protected DeathListener deathListener;
+    protected HealthChangeListener healthChangeListener;
 
     public abstract int getMaxHealth();
     public abstract double getVisionRadius();
@@ -84,11 +86,6 @@ public abstract class Unit implements Renderable, Attackable {
     }
 
     @Override
-    public void registerDeathListener(DeathListener deathListener) {
-        this.deathListener = deathListener;
-    }
-
-    @Override
     public void onDeath() {
         logger.i("%s has died.", getId());
         alive.set(false);
@@ -111,6 +108,7 @@ public abstract class Unit implements Renderable, Attackable {
 
     public void deductHealth(int toDeduct) {
         health.addAndGet(-toDeduct);
+        healthChangeListener.onHealthChange(this);
     }
 
     public Units getType() {
@@ -120,5 +118,15 @@ public abstract class Unit implements Renderable, Attackable {
     @Override
     public boolean isAlive() {
         return alive.get() && getHealth() > 0;
+    }
+
+    @Override
+    public void registerHealthChangeListener(HealthChangeListener healthChangeListener) {
+        this.healthChangeListener = healthChangeListener;
+    }
+
+    @Override
+    public void registerDeathListener(DeathListener deathListener) {
+        this.deathListener = deathListener;
     }
 }

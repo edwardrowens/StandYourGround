@@ -6,4 +6,5 @@ public interface Attackable extends Mortal {
     boolean isEnemy();
     double getRadius();
     boolean isAlive();
+    void registerHealthChangeListener(HealthChangeListener healthChangeListener);
 }

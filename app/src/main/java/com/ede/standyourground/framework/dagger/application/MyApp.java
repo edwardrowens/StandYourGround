@@ -7,7 +7,7 @@ import com.ede.standyourground.framework.dagger.component.DaggerAppComponent;
 
 public class MyApp extends Application {
 
-    private AppComponent appComponent;
+    private static AppComponent appComponent;
 
     @Override
     public void onCreate() {
@@ -15,7 +15,7 @@ public class MyApp extends Application {
         appComponent = DaggerAppComponent.create();
     }
 
-    public AppComponent getAppComponent() {
+    public static AppComponent getAppComponent() {
         return appComponent;
     }
 }

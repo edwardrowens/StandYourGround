@@ -40,7 +40,6 @@ public class RenderServiceImpl implements RenderService {
             if (unit.isVisible()) {
                 healthBar = new HealthBar(unit.getId(), MapsActivity.getComponent(HealthBarComponent.class).getActivity().getApplicationContext());
                 setHealthBarPosition(unit, healthBar);
-                setHealthBarPercentage(unit, healthBar);
                 healthBarComponent.addComponentElement(healthBar);
             }
         } else {
@@ -48,11 +47,8 @@ public class RenderServiceImpl implements RenderService {
                 healthBarComponent.removeComponentElement(unit.getId());
             } else {
                 setHealthBarPosition(unit, healthBar);
-                setHealthBarPercentage(unit, healthBar);
             }
         }
-
-        healthBarComponent.drawComponentElements();
     }
 
     private void setHealthBarPosition(Unit unit, HealthBar healthBar) {
@@ -71,9 +67,5 @@ public class RenderServiceImpl implements RenderService {
         pointf.x = center.x - (float)lineDistance;
         pointf.y = center.y - (float)(lineDistance + healthBarHeight + padding);
         healthBar.setPoint(pointf);
-    }
-
-    private void setHealthBarPercentage(Unit unit, HealthBar healthBar) {
-        healthBar.setHealthPercentage(((float)unit.getHealth()) / unit.getMaxHealth());
     }
 }
