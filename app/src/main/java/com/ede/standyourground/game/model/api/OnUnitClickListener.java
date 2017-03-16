@@ -86,13 +86,15 @@ public class OnUnitClickListener implements GoogleMap.OnCircleClickListener {
                 if (e.getValue() == 1) {
                     for (Unit u : unitsOnPosition) {
                         if (u.getType().equals(e.getKey())) {
-                            unitGroupComponent.createUnitGroupBlockHealthBar(u.getId(), u.getType(), u.getHealth() / (float)u.getMaxHealth());
+                            unitGroupComponent.createAndAddUnitGroupBlockHealthBar(u.getId(), u.getType(), u.getHealth() / (float)u.getMaxHealth());
                         }
                     }
                 } else {
                     List<UUID> unitIds = new ArrayList<>();
                     for (Unit u : unitsOnPosition) {
-                        unitIds.add(u.getId());
+                        if (u.getType().equals(e.getKey())) {
+                            unitIds.add(u.getId());
+                        }
                     }
                     unitGroupComponent.createUnitGroupBlockCount(unitIds, e.getKey(), e.getValue());
                 }

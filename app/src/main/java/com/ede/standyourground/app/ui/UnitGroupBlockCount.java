@@ -46,9 +46,15 @@ public class UnitGroupBlockCount extends UnitGroupBlock {
                     if (UnitGroupBlockCount.this.count.get() == 1) {
                         for (Unit unit : worldManager.get().getUnits()) {
                             if (!unit.isEnemy() && unit.getType().equals(mortal.getType())) {
-                                ((UnitGroupComponent) MapsActivity.getComponent(UnitGroupComponent.class))
-                                        .createUnitGroupBlockHealthBar(unit.getId(), unit.getType(), unit.getHealth() / (float) unit.getMaxHealth());
-                                container.setVisibility(View.GONE);
+                                logger.d("creating health bar component");
+                                ViewGroup parent = (ViewGroup)container.getParent();
+                                int index = parent.indexOfChild(container);
+                                clear();
+                                parent.removeView(container);
+                                logger.d("index is %d", index);
+                                UnitGroupComponent parentComponent = ((UnitGroupComponent) MapsActivity.getComponent(UnitGroupComponent.class));
+                                UnitGroupBlockHealthBar unitGroupBlockHealthBar = parentComponent.createUnitGroupBlockHealthBar(unit.getId(), unit.getType(), unit.getHealth() / (float) unit.getMaxHealth());
+                                parentComponent.addUnitGroupBlockHealthBar(unitGroupBlockHealthBar, index);
                             }
                         }
                     }
@@ -64,6 +70,7 @@ public class UnitGroupBlockCount extends UnitGroupBlock {
 
     @Override
     protected void clearViews() {
+        countContainer.setVisibility(View.GONE);
     }
 
     @Override

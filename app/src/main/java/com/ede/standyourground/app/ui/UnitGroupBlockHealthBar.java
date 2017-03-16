@@ -38,7 +38,7 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
             @Override
             public void onDeath(Unit mortal) {
                 if (unitIds.contains(mortal.getId())) {
-                    container.setVisibility(View.GONE);
+                    clear();
                 }
             }
         });
@@ -64,6 +64,7 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
     @Override
     protected void clearViews() {
         healthBarContainer.removeAllViews();
+        healthBarContainer.setVisibility(View.GONE);
     }
 
     public LinearLayout getContainer() {

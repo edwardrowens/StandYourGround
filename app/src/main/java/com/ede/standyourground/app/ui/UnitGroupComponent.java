@@ -65,12 +65,12 @@ public class UnitGroupComponent implements Component {
         setVisibility(View.INVISIBLE);
     }
 
-    public UUID createUnitGroupBlockHealthBar(final UUID unitId, Units units, float healthPercentage) {
-        if (gridLayout.getVisibility() != View.VISIBLE) {
-            setVisibility(View.VISIBLE);
-        }
-        unitIds.add(unitId);
+    public UUID createAndAddUnitGroupBlockHealthBar(final UUID unitId, Units units, float healthPercentage) {
+        UnitGroupBlockHealthBar unitGroupBlockHealthBar = createUnitGroupBlockHealthBar(unitId, units, healthPercentage);
+        return addUnitGroupBlockHealthBar(unitGroupBlockHealthBar, null);
+    }
 
+    public UnitGroupBlockHealthBar createUnitGroupBlockHealthBar(final UUID unitId, Units units, float healthPercentage) {
         HealthBar healthBar = new HealthBar(unitId, activity);
         healthBar.setHealthPercentage(healthPercentage);
         healthBar.setWidth(100);
@@ -83,12 +83,22 @@ public class UnitGroupComponent implements Component {
         List<UUID> unitIds = new ArrayList<>();
         unitIds.add(unitId);
 
-        UUID unitGroupBlockId = UUID.randomUUID();
+        return new UnitGroupBlockHealthBar(UUID.randomUUID(), unitIds, activity, units, healthBar);
+    }
 
-        UnitGroupBlockHealthBar unitGroupBlockHealthBar = new UnitGroupBlockHealthBar(unitGroupBlockId, unitIds, activity, units, healthBar);
-        gridLayout.addView(unitGroupBlockHealthBar.getContainer());
-        unitGroupBlocks.put(unitGroupBlockId, unitGroupBlockHealthBar);
-        return unitGroupBlockId;
+    public UUID addUnitGroupBlockHealthBar(UnitGroupBlockHealthBar unitGroupBlockHealthBar, Integer index) {
+        if (gridLayout.getVisibility() != View.VISIBLE) {
+            setVisibility(View.VISIBLE);
+        }
+        unitIds.add(unitGroupBlockHealthBar.getUnitIds().get(0));
+        unitGroupBlocks.put(unitGroupBlockHealthBar.getComponentElementId(), unitGroupBlockHealthBar);
+        if (index == null) {
+            gridLayout.addView(unitGroupBlockHealthBar.getContainer());
+        } else {
+            gridLayout.addView(unitGroupBlockHealthBar.getContainer(), index);
+        }
+
+        return unitGroupBlockHealthBar.getComponentElementId();
     }
 
     public UUID createUnitGroupBlockCount(List<UUID> unitIds, Units units, int count) {
@@ -161,7 +171,7 @@ public class UnitGroupComponent implements Component {
         gridLayout.removeView(unitGroupBlocks.get(componentElementId).getContainer());
         unitGroupBlocks.remove(componentElementId);
         if (unitGroupBlocks.size() == 0 ) {
-            setVisibility(View.INVISIBLE);
+            setVisibility(View.GONE);
         }
     }
 }

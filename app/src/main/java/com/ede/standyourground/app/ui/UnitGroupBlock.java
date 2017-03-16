@@ -59,7 +59,9 @@ public abstract class UnitGroupBlock implements Component {
     protected void clear() {
         clearViews();
         iconContainer.removeAllViews();
+        iconContainer.setVisibility(View.GONE);
         container.removeAllViews();
+        container.setVisibility(View.GONE);
     }
 
     public List<UUID> getUnitIds() {
