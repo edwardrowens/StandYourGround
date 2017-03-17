@@ -17,8 +17,10 @@ import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.game.model.api.DeathListener;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,7 +34,7 @@ public class UnitGroupComponent implements Component {
     private static final RelativeLayout.LayoutParams CONTAINER_LAYOUT_PARAMS = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
     private final Map<UUID, UnitGroupBlock> unitGroupBlocks = new ConcurrentHashMap<>();
-    private final List<UUID> unitIds = new ArrayList<>();
+    private final Set<UUID> unitIds = new HashSet<>();
     private final Activity activity;
     private final GridLayout gridLayout;
 

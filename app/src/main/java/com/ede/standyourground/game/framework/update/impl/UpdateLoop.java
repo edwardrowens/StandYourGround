@@ -54,15 +54,29 @@ public class UpdateLoop implements Runnable {
 
     @Override
     public void run() {
+        long t = System.currentTimeMillis();
+        long position = 0;
+        long visibility = 0;
+        logger.d("Begin update loop iter");
         List<Unit> units = worldManager.get().getUnits();
         for (Unit unit : units) {
+
+            long v = System.currentTimeMillis();
             updateService.get().determinePosition(unit);
+            position += System.currentTimeMillis() - v;
+            long p = System.currentTimeMillis();
             updateService.get().determineVisibility(unit);
+            visibility += System.currentTimeMillis() - p;
         }
+        long m = System.currentTimeMillis();
         updateService.get().processCombat(units);
+        logger.d("\tcombat <%d ms>", System.currentTimeMillis()-m);
 
         if (loop.get()) {
             handler.postDelayed(this, LOOP_DELAY);
         }
+        logger.d("\tPosition <%d ms>", position);
+        logger.d("\tVisibility <%d ms>", visibility);
+        logger.d("End update loop iter <%d ms>", System.currentTimeMillis()-t);
     }
 }

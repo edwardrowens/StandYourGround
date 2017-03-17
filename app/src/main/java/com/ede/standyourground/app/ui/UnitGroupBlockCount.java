@@ -42,19 +42,18 @@ public class UnitGroupBlockCount extends UnitGroupBlock {
             @Override
             public void onDeath(Unit mortal) {
                 if (unitIds.contains(mortal.getId())) {
-                    logger.d("%s died. count is %d", mortal.getId(), decrementCount());
                     if (UnitGroupBlockCount.this.count.get() == 1) {
                         for (Unit unit : worldManager.get().getUnits()) {
                             if (!unit.isEnemy() && unit.getType().equals(mortal.getType())) {
-                                logger.d("creating health bar component");
-                                ViewGroup parent = (ViewGroup)container.getParent();
-                                int index = parent.indexOfChild(container);
-                                clear();
-                                parent.removeView(container);
-                                logger.d("index is %d", index);
-                                UnitGroupComponent parentComponent = ((UnitGroupComponent) MapsActivity.getComponent(UnitGroupComponent.class));
-                                UnitGroupBlockHealthBar unitGroupBlockHealthBar = parentComponent.createUnitGroupBlockHealthBar(unit.getId(), unit.getType(), unit.getHealth() / (float) unit.getMaxHealth());
-                                parentComponent.addUnitGroupBlockHealthBar(unitGroupBlockHealthBar, index);
+                                ViewGroup parent = (ViewGroup) container.getParent();
+                                if (parent != null) {
+                                    int index = parent.indexOfChild(container);
+                                    clear();
+                                    parent.removeView(container);
+                                    UnitGroupComponent parentComponent = ((UnitGroupComponent) MapsActivity.getComponent(UnitGroupComponent.class));
+                                    UnitGroupBlockHealthBar unitGroupBlockHealthBar = parentComponent.createUnitGroupBlockHealthBar(unit.getId(), unit.getType(), unit.getHealth() / (float) unit.getMaxHealth());
+                                    parentComponent.addUnitGroupBlockHealthBar(unitGroupBlockHealthBar, index);
+                                }
                             }
                         }
                     }
