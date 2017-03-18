@@ -5,8 +5,8 @@ import com.ede.standyourground.framework.Callback;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.networking.exchange.api.Exchange;
 import com.ede.standyourground.networking.exchange.handler.impl.request.CreateUnitRequestHandler;
-import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
-import com.ede.standyourground.networking.exchange.response.impl.OkResponse;
+import com.ede.standyourground.networking.exchange.request.CreateUnitRequest;
+import com.ede.standyourground.networking.exchange.response.OkResponse;
 import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.gson.Gson;
 

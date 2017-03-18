@@ -53,7 +53,7 @@ public class UnitGroupComponent implements Component {
             }
         });
 
-        MyApp.getAppComponent().getWorldManager().get().registerDeathListener(new DeathListener() {
+        MyApp.getAppComponent().getUnitService().get().registerDeathListener(new DeathListener() {
             @Override
             public void onDeath(Unit mortal) {
                 if (unitIds.remove(mortal.getId())) {

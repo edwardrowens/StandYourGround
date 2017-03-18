@@ -38,12 +38,12 @@ public class UnitGroupBlockCount extends UnitGroupBlock {
         countContainer.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         countContainer.setText(activity.getResources().getString(R.string.unitGroupCountText, count));
         container.addView(countContainer);
-        worldManager.get().registerDeathListener(new DeathListener() {
+        unitService.get().registerDeathListener(new DeathListener() {
             @Override
             public void onDeath(Unit mortal) {
                 if (unitIds.contains(mortal.getId())) {
                     if (UnitGroupBlockCount.this.count.get() == 1) {
-                        for (Unit unit : worldManager.get().getUnits()) {
+                        for (Unit unit : unitService.get().getUnits()) {
                             if (!unit.isEnemy() && unit.getType().equals(mortal.getType())) {
                                 ViewGroup parent = (ViewGroup) container.getParent();
                                 if (parent != null) {

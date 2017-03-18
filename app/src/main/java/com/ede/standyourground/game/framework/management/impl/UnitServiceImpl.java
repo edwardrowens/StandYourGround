@@ -2,16 +2,17 @@ package com.ede.standyourground.game.framework.management.impl;
 
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.dagger.providers.GameSessionIdProvider;
-import com.ede.standyourground.game.framework.render.impl.RenderLoop;
-import com.ede.standyourground.game.framework.update.impl.UpdateLoop;
+import com.ede.standyourground.game.framework.management.api.UnitService;
 import com.ede.standyourground.game.model.Base;
 import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.game.model.api.DeathListener;
+import com.ede.standyourground.game.model.api.GameEndListener;
 import com.ede.standyourground.game.model.api.HealthChangeListener;
-import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
+import com.ede.standyourground.game.model.api.UnitCreatedListener;
+import com.ede.standyourground.networking.exchange.request.CreateUnitRequest;
 import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -28,73 +29,90 @@ import javax.inject.Singleton;
 import dagger.Lazy;
 
 @Singleton
-public class WorldManager {
+public class UnitServiceImpl implements UnitService {
 
-    private static Logger logger = new Logger(WorldManager.class);
+    private static Logger logger = new Logger(UnitServiceImpl.class);
 
     private Map<UUID, Unit> units = new ConcurrentHashMap<>();
-    private final Lazy<UpdateLoop> updateLoop;
-    private final Lazy<RenderLoop> renderLoop;
-    private final Lazy<UnitCreator> unitCreator;
+    private final Lazy<UnitFactory> unitCreator;
     private final Lazy<NetworkingManager> networkingManager;
     private final Lazy<GameSessionIdProvider> gameSessionIdProvider;
+
+    // Listeners
     private final List<DeathListener> deathListeners = new CopyOnWriteArrayList<>();
     private final List<HealthChangeListener> healthChangeListeners = new CopyOnWriteArrayList<>();
+    private final List<GameEndListener> gameEndListeners = new CopyOnWriteArrayList<>();
+    private final List<UnitCreatedListener> unitCreatedListeners = new CopyOnWriteArrayList<>();
 
     @Inject
-    WorldManager(Lazy<UpdateLoop> updateLoop,
-                 Lazy<UnitCreator> unitCreator,
-                 Lazy<NetworkingManager> networkingManager,
-                 Lazy<GameSessionIdProvider> gameSessionIdProvider,
-                 Lazy<RenderLoop> renderLoop) {
-        this.updateLoop = updateLoop;
-        this.unitCreator = unitCreator;
+    UnitServiceImpl(Lazy<UnitFactory> unitFactory,
+                    Lazy<NetworkingManager> networkingManager,
+                    Lazy<GameSessionIdProvider> gameSessionIdProvider) {
+        this.unitCreator = unitFactory;
         this.networkingManager = networkingManager;
         this.gameSessionIdProvider = gameSessionIdProvider;
-        this.renderLoop = renderLoop;
     }
 
-
-    public void start() {
-        updateLoop.get().startLoop();
-        renderLoop.get().startLoop();
-    }
-
-    public void stop() {
-        logger.i("Ending game");
-        updateLoop.get().stopLoop();
-        renderLoop.get().stopLoop();
-    }
-
+    @Override
     public void createEnemyUnit(List<LatLng> route, LatLng position, Units units) {
-        unitCreator.get().createEnemyUnit(route, position, units);
+        Unit unit = unitCreator.get().createEnemyUnit(route, position, units);
+        addEnemyUnit(unit);
     }
 
+    @Override
     public void createPlayerUnit(List<LatLng> route, LatLng position, Units units) {
-        unitCreator.get().createPlayerUnit(route, position, units);
+        Unit unit = unitCreator.get().createPlayerUnit(route, position, units);
+        addPlayerUnit(unit);
     }
 
-    public void addPlayerUnit(final Unit unit) {
-        sendCreateUnitRequest(unit);
-        addUnit(unit);
+    @Override
+    public List<Unit> getUnits() {
+        return new ArrayList<>(units.values());
     }
 
-    public void addEnemyUnit(Unit unit) {
-        addUnit(unit);
+    @Override
+    public Unit getUnit(UUID id) {
+        return units.get(id);
     }
 
+    @Override
     public void registerDeathListener(DeathListener deathListener) {
         deathListeners.add(deathListener);
     }
 
+    @Override
     public void registerHealthChangeListener(HealthChangeListener healthChangeListener) {
         healthChangeListeners.add(healthChangeListener);
+    }
+
+    @Override
+    public void registerGameEndListener(GameEndListener gameEndListener) {
+        gameEndListeners.add(gameEndListener);
+    }
+
+    @Override
+    public void registerUnitCreatedListener(UnitCreatedListener unitCreatedListener) {
+        unitCreatedListeners.add(unitCreatedListener);
+    }
+
+    private void addPlayerUnit(final Unit unit) {
+        sendCreateUnitRequest(unit);
+        addUnit(unit);
+    }
+
+    private void addEnemyUnit(Unit unit) {
+        addUnit(unit);
     }
 
     private void addUnit(final Unit unit) {
         unit.registerDeathListener(new DeathListener() {
             @Override
             public void onDeath(Unit mortal) {
+                if (mortal instanceof Base) {
+                    for (GameEndListener gameEndListener : gameEndListeners) {
+                        gameEndListener.onGameEnd(mortal.isEnemy());
+                    }
+                }
                 units.remove(mortal.getId());
                 for (DeathListener deathListener : deathListeners) {
                     deathListener.onDeath(unit);
@@ -111,14 +129,6 @@ public class WorldManager {
         });
         units.put(unit.getId(), unit);
         logger.i("Added unit. %d units managed", units.size());
-    }
-
-    public List<Unit> getUnits() {
-        return new ArrayList<>(units.values());
-    }
-
-    public Unit getUnit(UUID id) {
-        return units.get(id);
     }
 
     private void sendCreateUnitRequest(Unit unit) {

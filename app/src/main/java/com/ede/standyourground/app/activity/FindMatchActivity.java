@@ -20,14 +20,14 @@ import com.ede.standyourground.app.api.MatchMakingApi;
 import com.ede.standyourground.app.service.android.FindMatchService;
 import com.ede.standyourground.app.service.android.RemoveFromMatchMakingService;
 import com.ede.standyourground.app.service.android.ServiceGenerator;
-import com.ede.standyourground.app.to.FindMatchRequestTO;
-import com.ede.standyourground.app.to.FindMatchResponseTO;
 import com.ede.standyourground.framework.Callback;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.Receiver;
 import com.ede.standyourground.framework.StandYourGroundResultReceiver;
 import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.dagger.application.MyApp;
+import com.ede.standyourground.networking.exchange.request.FindMatchRequest;
+import com.ede.standyourground.networking.exchange.response.FindMatchResponse;
 import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -109,13 +109,13 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         Intent intent = new Intent(this, FindMatchService.class);
         intent.putExtra(FindMatchActivity.FIND_MATCH_RESULT_RECEIVER, standYourGroundResultReceiver);
 
-        FindMatchRequestTO findMatchRequestTO = new FindMatchRequestTO();
-        findMatchRequestTO.setId(playerId);
-        findMatchRequestTO.setLat(currentLocation.getLatitude());
-        findMatchRequestTO.setLng(currentLocation.getLongitude());
-        findMatchRequestTO.setRadius(5);
+        FindMatchRequest findMatchRequest = new FindMatchRequest();
+        findMatchRequest.setId(playerId);
+        findMatchRequest.setLat(currentLocation.getLatitude());
+        findMatchRequest.setLng(currentLocation.getLongitude());
+        findMatchRequest.setRadius(5);
 
-        intent.putExtra(FindMatchService.FIND_MATCH_REQUEST, findMatchRequestTO);
+        intent.putExtra(FindMatchService.FIND_MATCH_REQUEST, findMatchRequest);
 
         this.startService(intent);
     }
@@ -130,8 +130,8 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
                 resetActivity(getResources().getString(R.string.server_is_down));
                 break;
             case 200:
-                final FindMatchResponseTO findMatchResponseTO = (FindMatchResponseTO) resultData.get(FindMatchService.FIND_MATCH_RESPONSE);
-                connectToOpponent(findMatchResponseTO);
+                final FindMatchResponse findMatchResponse = (FindMatchResponse) resultData.get(FindMatchService.FIND_MATCH_RESPONSE);
+                connectToOpponent(findMatchResponse);
                 break;
             default:
                 resetActivity(getResources().getString(R.string.problem_connecting));
@@ -245,8 +245,8 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         opponentFoundText.startAnimation(in);
     }
 
-    private void connectToOpponent(final FindMatchResponseTO findMatchResponseTO) {
-        if (findMatchResponseTO != null) {
+    private void connectToOpponent(final FindMatchResponse findMatchResponse) {
+        if (findMatchResponse != null) {
             logger.i("Connecting to opponent");
 
             animateMessage(getResources().getString(R.string.find_match_opponent_found));
@@ -255,18 +255,18 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
             playerMatched = true;
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
 
-            networkingManager.connect(findMatchResponseTO.getGameSessionId(), new Callback() {
+            networkingManager.connect(findMatchResponse.getGameSessionId(), new Callback() {
                 @Override
                 public void onSuccess() {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            LatLng opponentLocation = new LatLng(findMatchResponseTO.getLat(), findMatchResponseTO.getLng());
+                            LatLng opponentLocation = new LatLng(findMatchResponse.getLat(), findMatchResponse.getLng());
 
                             Intent intent = new Intent(FindMatchActivity.this, MapsActivity.class);
                             intent.putExtra(OPPONENT_LOCATION, opponentLocation);
                             intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
-                            intent.putExtra(GAME_SESSION_ID, findMatchResponseTO.getGameSessionId());
+                            intent.putExtra(GAME_SESSION_ID, findMatchResponse.getGameSessionId());
                             FindMatchActivity.this.startActivity(intent);
                         }
                     });
@@ -290,22 +290,22 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     public void onFaceAi(View view) {
         MatchMakingApi matchMakingApi = ServiceGenerator.createService(MatchMakingApi.class);
 
-        FindMatchRequestTO findMatchRequestTO = new FindMatchRequestTO();
-        findMatchRequestTO.setId(UUID.randomUUID());
-        findMatchRequestTO.setRadius(5);
-        findMatchRequestTO.setLat(34.170805);
-        findMatchRequestTO.setLng(-118.229919);
+        FindMatchRequest findMatchRequest = new FindMatchRequest();
+        findMatchRequest.setId(UUID.randomUUID());
+        findMatchRequest.setRadius(5);
+        findMatchRequest.setLat(34.170805);
+        findMatchRequest.setLng(-118.229919);
 
-        Call<FindMatchResponseTO> findMatchCall = matchMakingApi.findMatch(findMatchRequestTO);
+        Call<FindMatchResponse> findMatchCall = matchMakingApi.findMatch(findMatchRequest);
 
-        findMatchCall.enqueue(new retrofit2.Callback<FindMatchResponseTO>() {
+        findMatchCall.enqueue(new retrofit2.Callback<FindMatchResponse>() {
             @Override
-            public void onResponse(Call<FindMatchResponseTO> call, Response<FindMatchResponseTO> response) {
+            public void onResponse(Call<FindMatchResponse> call, Response<FindMatchResponse> response) {
                 logger.i("Received response %d for AI", response.code());
             }
 
             @Override
-            public void onFailure(Call<FindMatchResponseTO> call, Throwable t) {
+            public void onFailure(Call<FindMatchResponse> call, Throwable t) {
                 logger.e("Call to add AI to matchmaking failed", t);
             }
         });

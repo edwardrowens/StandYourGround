@@ -4,8 +4,8 @@ import com.ede.standyourground.app.api.DirectionsApi;
 import com.ede.standyourground.app.model.Routes;
 import com.ede.standyourground.app.service.android.ServiceGenerator;
 import com.ede.standyourground.app.service.api.DirectionsService;
-import com.ede.standyourground.app.to.RoutesRequestTO;
 import com.ede.standyourground.framework.api.RouteService;
+import com.ede.standyourground.networking.exchange.request.RoutesRequest;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -31,14 +31,14 @@ public class DirectionsServiceImpl implements DirectionsService {
     public void getRoutes(final LatLng origin, final LatLng destination, final List<LatLng> waypoints, final Callback<Routes> callback) {
         DirectionsApi directionsApi = ServiceGenerator.createService(DirectionsApi.class);
 
-        RoutesRequestTO routesRequestTO = new RoutesRequestTO();
-        routesRequestTO.setEndLat(destination.latitude);
-        routesRequestTO.setEndLng(destination.longitude);
-        routesRequestTO.setStartLat(origin.latitude);
-        routesRequestTO.setStartLng(origin.longitude);
-        routesRequestTO.setWaypoints(waypoints);
+        RoutesRequest routesRequest = new RoutesRequest();
+        routesRequest.setEndLat(destination.latitude);
+        routesRequest.setEndLng(destination.longitude);
+        routesRequest.setStartLat(origin.latitude);
+        routesRequest.setStartLng(origin.longitude);
+        routesRequest.setWaypoints(waypoints);
 
-        Call<Routes> routesCall = directionsApi.calculateRoutes(routesRequestTO);
+        Call<Routes> routesCall = directionsApi.calculateRoutes(routesRequest);
 
         routesCall.enqueue(new Callback<Routes>() {
             @Override

@@ -10,7 +10,7 @@ import android.widget.RelativeLayout;
 import com.ede.standyourground.R;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.dagger.application.MyApp;
-import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.framework.management.api.UnitService;
 import com.ede.standyourground.game.model.Units;
 
 import java.util.List;
@@ -31,10 +31,10 @@ public abstract class UnitGroupBlock implements Component {
     protected final LinearLayout container;
     protected final RelativeLayout iconContainer;
     private final UUID componentElementId;
-    protected Lazy<WorldManager> worldManager;
+    protected Lazy<UnitService> unitService;
 
     public UnitGroupBlock(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units) {
-        worldManager = MyApp.getAppComponent().getWorldManager();
+        unitService = MyApp.getAppComponent().getUnitService();
         this.componentElementId = componentElementId;
         this.unitIds = unitIds;
         this.activity = activity;

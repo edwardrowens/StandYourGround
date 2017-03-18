@@ -1,10 +1,10 @@
-package com.ede.standyourground.app.to;
+package com.ede.standyourground.networking.exchange.request;
 
 /**
  * Created by Eddie on 2/11/2017.
  */
 
-public class RetrievePublicIpTO {
+public class RetrievePublicIpRequest {
     private String ip;
 
     public String getIp() {

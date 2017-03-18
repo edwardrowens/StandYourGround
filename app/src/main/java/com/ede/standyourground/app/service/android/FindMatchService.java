@@ -11,9 +11,9 @@ import android.support.annotation.Nullable;
 
 import com.ede.standyourground.app.activity.FindMatchActivity;
 import com.ede.standyourground.app.api.MatchMakingApi;
-import com.ede.standyourground.app.to.FindMatchRequestTO;
-import com.ede.standyourground.app.to.FindMatchResponseTO;
 import com.ede.standyourground.framework.Logger;
+import com.ede.standyourground.networking.exchange.request.FindMatchRequest;
+import com.ede.standyourground.networking.exchange.response.FindMatchResponse;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,7 +32,7 @@ public class FindMatchService extends Service implements Runnable {
 
     private static Logger logger = new Logger(FindMatchService.class);
 
-    private FindMatchRequestTO findMatchRequestTO;
+    private FindMatchRequest findMatchRequest;
     private ResultReceiver resultReceiver;
     private static AtomicBoolean runThread = new AtomicBoolean(true);
 
@@ -46,7 +46,7 @@ public class FindMatchService extends Service implements Runnable {
         }
         if (bundle != null) {
             resultReceiver = bundle.getParcelable(FindMatchActivity.FIND_MATCH_RESULT_RECEIVER);
-            findMatchRequestTO = bundle.getParcelable(FIND_MATCH_REQUEST);
+            findMatchRequest = bundle.getParcelable(FIND_MATCH_REQUEST);
         }
         runThread.set(true);
         handlerThread.start();
@@ -60,12 +60,12 @@ public class FindMatchService extends Service implements Runnable {
         findMatch();
     }
 
-    public Response<FindMatchResponseTO> findMatch(FindMatchRequestTO findMatchRequestTO) {
+    public Response<FindMatchResponse> findMatch(FindMatchRequest findMatchRequest) {
         MatchMakingApi matchMakingApi = ServiceGenerator.createService(MatchMakingApi.class);
 
-        Call<FindMatchResponseTO> findMatchCall = matchMakingApi.findMatch(findMatchRequestTO);
+        Call<FindMatchResponse> findMatchCall = matchMakingApi.findMatch(findMatchRequest);
 
-        Response<FindMatchResponseTO> response = null;
+        Response<FindMatchResponse> response = null;
         try {
             response = findMatchCall.execute();
         } catch (IOException e) {
@@ -77,7 +77,7 @@ public class FindMatchService extends Service implements Runnable {
     }
 
     private void findMatch() {
-        Response<FindMatchResponseTO> response = findMatch(findMatchRequestTO);
+        Response<FindMatchResponse> response = findMatch(findMatchRequest);
         if (response.code() == 200) {
             logger.i("Found match!");
             Bundle bundle = new Bundle();

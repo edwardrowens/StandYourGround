@@ -25,6 +25,7 @@ public class MockNetworkingManager implements NetworkingManager {
     @Override
     public void sendExchange(Exchange exchange) {
         logger.i("Sending %s exchange", exchange.getType());
+
     }
 
     @Override

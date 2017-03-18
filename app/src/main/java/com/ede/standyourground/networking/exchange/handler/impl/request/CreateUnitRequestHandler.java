@@ -1,9 +1,9 @@
 package com.ede.standyourground.networking.exchange.handler.impl.request;
 
-import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.framework.management.impl.UnitServiceImpl;
 import com.ede.standyourground.networking.exchange.handler.api.ExchangeHandler;
-import com.ede.standyourground.networking.exchange.request.impl.CreateUnitRequest;
-import com.ede.standyourground.networking.exchange.response.impl.OkResponse;
+import com.ede.standyourground.networking.exchange.request.CreateUnitRequest;
+import com.ede.standyourground.networking.exchange.response.OkResponse;
 import com.ede.standyourground.networking.framework.api.NetworkingManager;
 
 import javax.inject.Inject;
@@ -12,11 +12,11 @@ import dagger.Lazy;
 
 public class CreateUnitRequestHandler implements ExchangeHandler {
 
-    private final Lazy<WorldManager> worldManager;
+    private final Lazy<UnitServiceImpl> worldManager;
     private final Lazy<NetworkingManager> networkingManager;
 
     @Inject
-    CreateUnitRequestHandler(Lazy<WorldManager> worldManager,
+    CreateUnitRequestHandler(Lazy<UnitServiceImpl> worldManager,
                              Lazy<NetworkingManager> networkingManager) {
         this.worldManager = worldManager;
         this.networkingManager = networkingManager;

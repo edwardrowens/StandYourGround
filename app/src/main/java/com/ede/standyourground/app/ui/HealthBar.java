@@ -36,7 +36,7 @@ public class HealthBar extends ComponentElement {
         this.rect = new RectF();
         this.border = new RectF();
         this.healthPercentage = 1f;
-        MyApp.getAppComponent().getWorldManager().get().registerHealthChangeListener(new HealthChangeListener() {
+        MyApp.getAppComponent().getUnitService().get().registerHealthChangeListener(new HealthChangeListener() {
             @Override
             public void onHealthChange(Unit unit) {
                 if (unit.getId().equals(componentElementId)) {

@@ -1,4 +1,4 @@
-package com.ede.standyourground.networking.exchange.request.impl;
+package com.ede.standyourground.networking.exchange.request;
 
 import com.ede.standyourground.game.model.Units;
 import com.ede.standyourground.networking.exchange.api.Exchange;

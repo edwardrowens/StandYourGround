@@ -8,7 +8,7 @@ import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.api.MathService;
 import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
-import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.framework.management.api.UnitService;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
 import com.google.android.gms.maps.GoogleMap;
@@ -23,14 +23,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import dagger.Lazy;
 
 /**
  *
  */
-@Singleton
 public class OnUnitClickListener implements GoogleMap.OnCircleClickListener {
 
     private static final Logger logger = new Logger(OnUnitClickListener.class);
@@ -40,17 +38,17 @@ public class OnUnitClickListener implements GoogleMap.OnCircleClickListener {
 
     private final Lazy<GoogleMapProvider> googleMapProvider;
     private final Lazy<MathService> mathService;
-    private final Lazy<WorldManager> worldManager;
+    private final Lazy<UnitService> unitService;
     private final Lazy<LatLngService> latLngService;
 
     @Inject
     OnUnitClickListener(Lazy<GoogleMapProvider> googleMapProvider,
                         Lazy<MathService> mathService,
-                        Lazy<WorldManager> worldManager,
+                        Lazy<UnitService> unitService,
                         Lazy<LatLngService> latLngService) {
         this.googleMapProvider = googleMapProvider;
         this.mathService = mathService;
-        this.worldManager = worldManager;
+        this.unitService = unitService;
         this.latLngService = latLngService;
     }
 
@@ -73,7 +71,7 @@ public class OnUnitClickListener implements GoogleMap.OnCircleClickListener {
         Map<Units, Integer> bag = new HashMap<>();
         List<Unit> unitsOnPosition = new ArrayList<>();
         for (Map.Entry<UUID, Circle> entry : MapsActivity.getCircles().entrySet()) {
-            Unit unit = worldManager.get().getUnit(entry.getKey());
+            Unit unit = unitService.get().getUnit(entry.getKey());
             boolean samePosition = latLngService.get().withinDistance(unit.getCurrentPosition(), circle.getCenter(), EQUAL_DISTANCE_TOLERANCE);
             if (!unit.isEnemy() && samePosition) {
                 unitsOnPosition.add(unit);

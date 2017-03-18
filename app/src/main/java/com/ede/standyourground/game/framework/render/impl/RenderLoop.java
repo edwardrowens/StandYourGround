@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.ede.standyourground.framework.Logger;
-import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.framework.management.api.UnitService;
 import com.ede.standyourground.game.framework.render.api.RenderService;
 import com.ede.standyourground.game.model.Unit;
 
@@ -19,14 +19,14 @@ public class RenderLoop {
     private static final Logger logger = new Logger(RenderLoop.class);
 
     private final Handler renderingHandler = new Handler(Looper.getMainLooper());
-    private final Lazy<WorldManager> worldManager;
+    private final Lazy<UnitService> unitService;
     private final Lazy<RenderService> renderService;
     private final AtomicBoolean loop = new AtomicBoolean();
 
     @Inject
-    RenderLoop(Lazy<WorldManager> worldManager,
+    RenderLoop(Lazy<UnitService> unitService,
                Lazy<RenderService> renderService) {
-        this.worldManager = worldManager;
+        this.unitService = unitService;
         this.renderService = renderService;
     }
 
@@ -35,7 +35,7 @@ public class RenderLoop {
         renderingHandler.post(new Runnable() {
             @Override
             public void run() {
-                for (Unit unit : worldManager.get().getUnits()) {
+                for (Unit unit : unitService.get().getUnits()) {
                     unit.onRender();
                     renderService.get().renderHealthBar(unit);
                 }

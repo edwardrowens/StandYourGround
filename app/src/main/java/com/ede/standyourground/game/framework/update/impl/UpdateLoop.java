@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 import com.ede.standyourground.framework.Logger;
-import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.framework.management.impl.UnitServiceImpl;
 import com.ede.standyourground.game.framework.update.service.api.UpdateService;
 import com.ede.standyourground.game.model.Unit;
 
@@ -28,13 +28,13 @@ public class UpdateLoop implements Runnable {
     private Handler handler;
 
     private final Lazy<UpdateService> updateService;
-    private final Lazy<WorldManager> worldManager;
+    private final Lazy<UnitServiceImpl> unitService;
 
     @Inject
     UpdateLoop(Lazy<UpdateService> updateService,
-               Lazy<WorldManager> worldManager) {
+               Lazy<UnitServiceImpl> unitService) {
         this.updateService = updateService;
-        this.worldManager = worldManager;
+        this.unitService = unitService;
     }
 
     public void startLoop() {
@@ -58,7 +58,7 @@ public class UpdateLoop implements Runnable {
         long position = 0;
         long visibility = 0;
         logger.d("Begin update loop iter");
-        List<Unit> units = worldManager.get().getUnits();
+        List<Unit> units = unitService.get().getUnits();
         for (Unit unit : units) {
 
             long v = System.currentTimeMillis();

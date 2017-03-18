@@ -1,7 +1,7 @@
 package com.ede.standyourground.app.api;
 
-import com.ede.standyourground.app.to.FindMatchRequestTO;
-import com.ede.standyourground.app.to.FindMatchResponseTO;
+import com.ede.standyourground.networking.exchange.request.FindMatchRequest;
+import com.ede.standyourground.networking.exchange.response.FindMatchResponse;
 
 import java.util.UUID;
 
@@ -15,7 +15,7 @@ import retrofit2.http.Path;
 public interface MatchMakingApi {
 
     @POST("/matchmaking")
-    Call<FindMatchResponseTO> findMatch(@Body FindMatchRequestTO findMatchRequestTO);
+    Call<FindMatchResponse> findMatch(@Body FindMatchRequest findMatchRequest);
 
     @DELETE("/matchmaking/players/{playerId}")
     Call<Void> deleteMatchedPlayer(@Path(value="playerId") UUID playerId);

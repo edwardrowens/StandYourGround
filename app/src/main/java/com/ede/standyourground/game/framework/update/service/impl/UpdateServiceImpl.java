@@ -5,7 +5,7 @@ import android.os.SystemClock;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.api.RouteService;
-import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.framework.management.impl.UnitServiceImpl;
 import com.ede.standyourground.game.framework.update.service.api.UpdateService;
 import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
@@ -27,12 +27,12 @@ public class UpdateServiceImpl implements UpdateService {
 
     private final Lazy<RouteService> routeService;
     private final Lazy<LatLngService> latLngService;
-    private final Lazy<WorldManager> worldManager;
+    private final Lazy<UnitServiceImpl> worldManager;
 
     @Inject
     UpdateServiceImpl(Lazy<RouteService> routeService,
                       Lazy<LatLngService> latLngService,
-                      Lazy<WorldManager> worldManager) {
+                      Lazy<UnitServiceImpl> worldManager) {
         this.routeService = routeService;
         this.latLngService = latLngService;
         this.worldManager = worldManager;

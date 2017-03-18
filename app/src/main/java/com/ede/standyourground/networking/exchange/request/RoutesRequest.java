@@ -1,4 +1,4 @@
-package com.ede.standyourground.app.to;
+package com.ede.standyourground.networking.exchange.request;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.annotations.Expose;
@@ -10,7 +10,7 @@ import java.util.List;
  * Created by Eddie on 1/30/2017.
  */
 
-public class RoutesRequestTO {
+public class RoutesRequest {
 
     @SerializedName("startLat")
     @Expose

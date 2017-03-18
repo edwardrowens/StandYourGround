@@ -8,7 +8,7 @@ import com.ede.standyourground.app.service.api.DirectionsService;
 import com.ede.standyourground.app.service.api.DrawRouteService;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
-import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.framework.management.api.UnitService;
 import com.ede.standyourground.game.model.Units;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -32,15 +32,15 @@ public class DrawRouteServiceImpl implements DrawRouteService {
     private static final Logger logger = new Logger(DrawRouteServiceImpl.class);
     private final Lazy<GoogleMapProvider> googleMapProvider;
     private final Lazy<DirectionsService> directionsService;
-    private final Lazy<WorldManager> worldManager;
+    private final Lazy<UnitService> unitService;
 
     @Inject
     DrawRouteServiceImpl(Lazy<GoogleMapProvider> googleMapProvider,
                          Lazy<DirectionsService> directionsService,
-                         Lazy<WorldManager> worldManager) {
+                         Lazy<UnitService> unitService) {
         this.googleMapProvider = googleMapProvider;
         this.directionsService = directionsService;
-        this.worldManager = worldManager;
+        this.unitService = unitService;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class DrawRouteServiceImpl implements DrawRouteService {
                 logger.i("response with routes received");
                 Polyline polyline = drawRoute(response.body().getRoutes().get(0));
 
-                worldManager.get().createPlayerUnit(polyline.getPoints(), playerLocation, toCreate);
+                unitService.get().createPlayerUnit(polyline.getPoints(), playerLocation, toCreate);
             }
 
             @Override
@@ -82,7 +82,7 @@ public class DrawRouteServiceImpl implements DrawRouteService {
                 logger.i("response with routes received");
                 Polyline polyline = drawRoute(response.body().getRoutes().get(0));
 
-                worldManager.get().createEnemyUnit(polyline.getPoints(), opponentLocation, toCreate);
+                unitService.get().createEnemyUnit(polyline.getPoints(), opponentLocation, toCreate);
             }
 
             @Override

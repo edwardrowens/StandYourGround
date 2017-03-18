@@ -1,4 +1,4 @@
-package com.ede.standyourground.app.to;
+package com.ede.standyourground.networking.exchange.response;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -7,13 +7,13 @@ import android.os.Parcelable;
  * Created by Eddie on 2/9/2017.
  */
 
-public class FindMatchResponseTO implements Parcelable {
+public class FindMatchResponse implements Parcelable {
 
     private Double lat;
     private Double lng;
     private String gameSessionId;
 
-    public FindMatchResponseTO() {}
+    public FindMatchResponse() {}
 
     public Double getLat() {
         return lat;
@@ -51,18 +51,18 @@ public class FindMatchResponseTO implements Parcelable {
         dest.writeString(gameSessionId);
     }
 
-    public static final Parcelable.Creator<FindMatchResponseTO> CREATOR
-            = new Parcelable.Creator<FindMatchResponseTO>() {
-        public FindMatchResponseTO createFromParcel(Parcel in) {
-            return new FindMatchResponseTO(in);
+    public static final Parcelable.Creator<FindMatchResponse> CREATOR
+            = new Parcelable.Creator<FindMatchResponse>() {
+        public FindMatchResponse createFromParcel(Parcel in) {
+            return new FindMatchResponse(in);
         }
 
-        public FindMatchResponseTO[] newArray(int size) {
-            return new FindMatchResponseTO[size];
+        public FindMatchResponse[] newArray(int size) {
+            return new FindMatchResponse[size];
         }
     };
 
-    private FindMatchResponseTO(Parcel in) {
+    private FindMatchResponse(Parcel in) {
         lat = in.readDouble();
         lng = in.readDouble();
         gameSessionId = in.readString();

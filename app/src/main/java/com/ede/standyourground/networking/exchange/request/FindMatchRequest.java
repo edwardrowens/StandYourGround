@@ -1,12 +1,12 @@
-package com.ede.standyourground.app.to;
+package com.ede.standyourground.networking.exchange.request;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.UUID;
 
-public class FindMatchRequestTO implements Parcelable {
-    public FindMatchRequestTO(){}
+public class FindMatchRequest implements Parcelable {
+    public FindMatchRequest(){}
     private double lat;
     private double lng;
     private int radius;
@@ -57,18 +57,18 @@ public class FindMatchRequestTO implements Parcelable {
         dest.writeSerializable(id);
     }
 
-    public static final Parcelable.Creator<FindMatchRequestTO> CREATOR
-            = new Parcelable.Creator<FindMatchRequestTO>() {
-        public FindMatchRequestTO createFromParcel(Parcel in) {
-            return new FindMatchRequestTO(in);
+    public static final Parcelable.Creator<FindMatchRequest> CREATOR
+            = new Parcelable.Creator<FindMatchRequest>() {
+        public FindMatchRequest createFromParcel(Parcel in) {
+            return new FindMatchRequest(in);
         }
 
-        public FindMatchRequestTO[] newArray(int size) {
-            return new FindMatchRequestTO[size];
+        public FindMatchRequest[] newArray(int size) {
+            return new FindMatchRequest[size];
         }
     };
 
-    private FindMatchRequestTO(Parcel in) {
+    private FindMatchRequest(Parcel in) {
         lat = in.readDouble();
         lng = in.readDouble();
         radius = in.readInt();

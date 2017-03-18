@@ -7,22 +7,26 @@ import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
+import android.widget.Toast;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.service.android.StopGameService;
 import com.ede.standyourground.app.service.api.DrawRouteService;
-import com.ede.standyourground.app.service.api.GameEndService;
-import com.ede.standyourground.app.service.api.OnMapReadyService;
+import com.ede.standyourground.app.service.api.MapSetupService;
 import com.ede.standyourground.app.ui.Component;
 import com.ede.standyourground.app.ui.HealthBarComponent;
 import com.ede.standyourground.app.ui.UnitGroupComponent;
 import com.ede.standyourground.framework.Logger;
-import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.dagger.application.MyApp;
 import com.ede.standyourground.framework.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
-import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.framework.management.api.GameService;
+import com.ede.standyourground.game.framework.management.api.UnitService;
+import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
+import com.ede.standyourground.game.model.api.DeathListener;
+import com.ede.standyourground.game.model.api.GameEndListener;
+import com.ede.standyourground.game.model.api.UnitCreatedListener;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -57,13 +61,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final Map<Class<? extends Component>, Component> componentMap = new ConcurrentHashMap<>();
     private static final Map<UUID, Circle> circles = new ConcurrentHashMap<>();
 
-    @Inject WorldManager worldManager;
-    @Inject LatLngService latLngService;
     @Inject GoogleMapProvider googleMapProvider;
     @Inject GameSessionIdProvider gameSessionIdProvider;
-    @Inject OnMapReadyService onMapReadyService;
-    @Inject GameEndService gameEndService;
+    @Inject MapSetupService mapSetupService;
     @Inject DrawRouteService drawRouteService;
+    @Inject GameService gameService;
+    @Inject UnitService unitService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +95,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     protected void onDestroy() {
-        worldManager.stop();
+        gameService.stopGame();
         Intent intent = new Intent(this, StopGameService.class);
         intent.putExtra(FindMatchActivity.GAME_SESSION_ID, gameSessionIdProvider.getGameSessionId());
         startService(intent);
@@ -113,18 +116,60 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         logger.i("Starting map");
         MapsActivity.googleMap = googleMap;
 
-        googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
-            @Override
-            public void onCameraMove() {
-                ((UnitGroupComponent)getComponent(UnitGroupComponent.class)).clear();
-            }
-        });
-
         googleMapProvider.setGoogleMap(googleMap);
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
 
-        onMapReadyService.onMapReady(opponentLocation, playerLocation);
-        gameEndService.registerEndGame(this);
+        mapSetupService.setupMap(opponentLocation, playerLocation);
+        gameService.registerGameEndListener(new GameEndListener() {
+            @Override
+            public void onGameEnd(final boolean won) {
+                MapsActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (won) {
+                            Toast.makeText(MapsActivity.this, "You Win", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MapsActivity.this, "You Lose", Toast.LENGTH_SHORT).show();
+                        }
+                        Intent intent = new Intent(MapsActivity.this, MainActivity.class);
+                        MapsActivity.this.startActivity(intent);
+                    }
+                });
+            }
+        });
+
+        unitService.registerUnitCreatedListener(new UnitCreatedListener() {
+            @Override
+            public void onUnitCreated(final Unit unit) {
+                MapsActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (unit.isEnemy()) {
+                            int color = MapsActivity.this.getResources().getColor(unit.getType().getEnemyColor());
+                            addCircle(unit.getId(), unit.getType().getCircleOptions().center(unit.getCurrentPosition()).fillColor(color));
+                        } else {
+                            int color = MapsActivity.this.getResources().getColor(unit.getType().getPlayerColor());
+                            addCircle(unit.getId(), unit.getType().getCircleOptions().center(unit.getCurrentPosition()).fillColor(color));
+                        }
+                    }
+                });
+            }
+        });
+
+        unitService.registerDeathListener(new DeathListener() {
+            @Override
+            public void onDeath(final Unit mortal) {
+                MapsActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Circle circle = circles.get(mortal.getId());
+                        if (circle != null) {
+                            removeCircle(mortal.getId());
+                        }
+                    }
+                });
+            }
+        });
 
         confirmRouteButton = (Button) findViewById(R.id.confirmRouteButton);
         unitChoicesScrollView = (HorizontalScrollView) findViewById(R.id.unitChoicesScrollView);
@@ -193,7 +238,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         circles.remove(unitId);
     }
 
-    public static void addCircle(UUID unitId, CircleOptions circleOptions) {
+    private void addCircle(UUID unitId, CircleOptions circleOptions) {
         logger.d("adding %s", unitId);
         circles.put(unitId, googleMap.addCircle(circleOptions));
     }

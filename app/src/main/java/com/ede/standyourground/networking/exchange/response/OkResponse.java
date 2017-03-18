@@ -1,4 +1,4 @@
-package com.ede.standyourground.networking.exchange.response.impl;
+package com.ede.standyourground.networking.exchange.response;
 
 import com.ede.standyourground.networking.exchange.api.Exchange;
 

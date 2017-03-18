@@ -4,7 +4,7 @@ import com.ede.standyourground.app.activity.FindMatchActivity;
 import com.ede.standyourground.app.activity.MapsActivity;
 import com.ede.standyourground.framework.dagger.module.AppModule;
 import com.ede.standyourground.framework.dagger.module.ServiceModule;
-import com.ede.standyourground.game.framework.management.impl.WorldManager;
+import com.ede.standyourground.game.framework.management.api.UnitService;
 
 import javax.inject.Singleton;
 
@@ -16,5 +16,5 @@ import dagger.Lazy;
 public interface AppComponent {
     void inject(FindMatchActivity findMatchActivity);
     void inject(MapsActivity mapsActivity);
-    Lazy<WorldManager> getWorldManager();
+    Lazy<UnitService> getUnitService();
 }
