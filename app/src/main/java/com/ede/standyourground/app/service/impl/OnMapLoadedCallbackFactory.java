@@ -1,7 +1,6 @@
 package com.ede.standyourground.app.service.impl;
 
 import com.ede.standyourground.R;
-import com.ede.standyourground.app.activity.MapsActivity;
 import com.ede.standyourground.app.ui.UnitGroupComponent;
 import com.ede.standyourground.framework.api.LatLngService;
 import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
@@ -36,11 +35,11 @@ public class OnMapLoadedCallbackFactory {
         this.googleMapProvider = googleMapProvider;
     }
 
-    public GoogleMap.OnMapLoadedCallback createOnMapLoadedCallback(final LatLng playerLocation, final LatLng opponentLocation) {
+    public GoogleMap.OnMapLoadedCallback createOnMapLoadedCallback(final LatLng playerLocation, final LatLng opponentLocation, final UnitGroupComponent unitGroupComponent) {
         return new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
-                ((UnitGroupComponent) MapsActivity.getComponent(UnitGroupComponent.class)).initialize(R.id.mapContainer);
+                unitGroupComponent.initialize(R.id.mapContainer);
 
                 // Set up the camera's initial position
                 LatLngBounds latLngBounds = LatLngBounds.builder().include(opponentLocation).include(playerLocation).build();

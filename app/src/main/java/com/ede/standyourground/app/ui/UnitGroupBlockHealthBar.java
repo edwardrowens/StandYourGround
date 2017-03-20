@@ -1,6 +1,8 @@
 package com.ede.standyourground.app.ui;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +14,7 @@ import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.dagger.application.MyApp;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
-import com.ede.standyourground.game.model.api.DeathListener;
+import com.ede.standyourground.game.model.api.OnDeathListener;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,12 +36,17 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
         this.healthBarContainer.addView(healthBar);
         this.container.addView(healthBarContainer);
 
-        MyApp.getAppComponent().getUnitService().get().registerDeathListener(new DeathListener() {
+        MyApp.getAppComponent().getUnitService().get().registerOnDeathListener(new OnDeathListener() {
             @Override
-            public void onDeath(Unit mortal) {
-                if (unitIds.contains(mortal.getId())) {
-                    clear();
-                }
+            public void onDeath(final Unit mortal) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (unitIds.contains(mortal.getId())) {
+                            clear();
+                        }
+                    }
+                });
             }
         });
     }

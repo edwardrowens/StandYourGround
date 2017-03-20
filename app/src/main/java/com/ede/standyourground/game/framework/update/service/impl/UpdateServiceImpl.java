@@ -46,7 +46,10 @@ public class UpdateServiceImpl implements UpdateService {
             for (int i = 0; i < units.size() && !visible; ++i) {
                 Unit target = units.get(i);
                 if (!target.isEnemy()) {
-                    visible = latLngService.get().withinDistance(unit.getCurrentPosition(), target.getCurrentPosition(), target.getVisionRadius() + unit.getRadius());
+                    LatLng unitPosition = unit instanceof MovableUnit ? ((MovableUnit) unit).getCurrentPosition() : unit.getStartingPosition();
+                    LatLng targetPosition = target instanceof MovableUnit ? ((MovableUnit) target).getCurrentPosition() : target.getStartingPosition();
+
+                    visible = latLngService.get().withinDistance(unitPosition, targetPosition, target.getVisionRadius() + unit.getRadius());
                 }
             }
             worldManager.get().getUnit(unit.getId()).setIsVisible(visible);
@@ -96,18 +99,20 @@ public class UpdateServiceImpl implements UpdateService {
                 if (deadTargets.contains(j) || !target.isAlive()) {
                     continue;
                 }
-                    double distance = latLngService.get().calculateDistance(unit.getCurrentPosition(), target.getCurrentPosition());
-                    if (unit instanceof Attacker) {
-                        if (((Attacker) unit).canAttack(target, distance)) {
-                            attackTarget = target;
-                            ((Attacker) unit).combat(target);
-                        }
+                LatLng unitPosition = unit instanceof MovableUnit ? ((MovableUnit) unit).getCurrentPosition() : unit.getStartingPosition();
+                LatLng targetPosition = target instanceof MovableUnit ? ((MovableUnit) target).getCurrentPosition() : target.getStartingPosition();
+                double distance = latLngService.get().calculateDistance(unitPosition, targetPosition);
+                if (unit instanceof Attacker) {
+                    if (((Attacker) unit).canAttack(target, distance)) {
+                        attackTarget = target;
+                        ((Attacker) unit).combat(target);
                     }
+                }
             }
             if (attackTarget == null && unit instanceof MovableUnit && ((MovableUnit) unit).getMph() == 0d) {
                 ((MovableUnit) unit).move();
             } else if (attackTarget != null && !attackTarget.isAlive()) {
-                deadTargets.add(j-1);
+                deadTargets.add(j - 1);
             }
         }
 

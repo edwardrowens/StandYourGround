@@ -3,6 +3,8 @@ package com.ede.standyourground.app.ui;
 import android.app.Activity;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +16,7 @@ import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.dagger.application.MyApp;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
-import com.ede.standyourground.game.model.api.DeathListener;
+import com.ede.standyourground.game.model.api.OnDeathListener;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -53,14 +55,19 @@ public class UnitGroupComponent implements Component {
             }
         });
 
-        MyApp.getAppComponent().getUnitService().get().registerDeathListener(new DeathListener() {
+        MyApp.getAppComponent().getUnitService().get().registerOnDeathListener(new OnDeathListener() {
             @Override
-            public void onDeath(Unit mortal) {
-                if (unitIds.remove(mortal.getId())) {
-                    if (unitIds.size() == 0) {
-                        clear();
+            public void onDeath(final Unit mortal) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (unitIds.remove(mortal.getId())) {
+                            if (unitIds.size() == 0) {
+                                clear();
+                            }
+                        }
                     }
-                }
+                });
             }
         });
 
@@ -109,7 +116,24 @@ public class UnitGroupComponent implements Component {
         }
         this.unitIds.addAll(unitIds);
         UUID unitGroupBlockId = UUID.randomUUID();
-        UnitGroupBlockCount unitGroupBlockCount = new UnitGroupBlockCount(unitGroupBlockId, unitIds, activity, units, count);
+        final UnitGroupBlockCount unitGroupBlockCount = new UnitGroupBlockCount(unitGroupBlockId, unitIds, activity, units, count);
+
+        unitGroupBlockCount.registerFinalDecrementListener(new FinalDecrementListener() {
+            @Override
+            public void onFinalDecrement(final Unit unit) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        int index = gridLayout.indexOfChild(unitGroupBlockCount.getContainer());
+                        clear();
+                        gridLayout.removeView(unitGroupBlockCount.getContainer());
+                        UnitGroupBlockHealthBar unitGroupBlockHealthBar = createUnitGroupBlockHealthBar(unit.getId(), unit.getType(), unit.getHealth() / (float) unit.getMaxHealth());
+                        addUnitGroupBlockHealthBar(unitGroupBlockHealthBar, index);
+                    }
+                });
+            }
+        });
+
         gridLayout.addView(unitGroupBlockCount.getContainer());
         unitGroupBlocks.put(unitGroupBlockId, unitGroupBlockCount);
 
@@ -172,7 +196,7 @@ public class UnitGroupComponent implements Component {
         unitIds.removeAll(unitGroupBlocks.get(componentElementId).getUnitIds());
         gridLayout.removeView(unitGroupBlocks.get(componentElementId).getContainer());
         unitGroupBlocks.remove(componentElementId);
-        if (unitGroupBlocks.size() == 0 ) {
+        if (unitGroupBlocks.size() == 0) {
             setVisibility(View.GONE);
         }
     }

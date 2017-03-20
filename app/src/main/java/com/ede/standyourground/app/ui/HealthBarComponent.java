@@ -34,6 +34,10 @@ public class HealthBarComponent implements Component {
         return healthBars.get(componentElementId);
     }
 
+    public boolean containsHealthBar(UUID componentElementId) {
+        return healthBars.containsKey(componentElementId);
+    }
+
     @Override
     public Activity getActivity() {
         return activity;

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
@@ -12,9 +13,10 @@ import android.widget.Toast;
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.service.android.StopGameService;
 import com.ede.standyourground.app.service.api.DrawRouteService;
-import com.ede.standyourground.app.service.api.MapSetupService;
+import com.ede.standyourground.app.service.impl.OnMapLoadedCallbackFactory;
 import com.ede.standyourground.app.ui.Component;
 import com.ede.standyourground.app.ui.HealthBarComponent;
+import com.ede.standyourground.app.ui.HealthBarComponentFactory;
 import com.ede.standyourground.app.ui.UnitGroupComponent;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.framework.dagger.application.MyApp;
@@ -22,11 +24,16 @@ import com.ede.standyourground.framework.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.game.framework.management.api.GameService;
 import com.ede.standyourground.game.framework.management.api.UnitService;
+import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
-import com.ede.standyourground.game.model.api.DeathListener;
 import com.ede.standyourground.game.model.api.GameEndListener;
+import com.ede.standyourground.game.model.api.OnCameraMoveListenerFactory;
+import com.ede.standyourground.game.model.api.OnDeathListener;
+import com.ede.standyourground.game.model.api.OnUnitClickListenerFactory;
+import com.ede.standyourground.game.model.api.PositionChangeListener;
 import com.ede.standyourground.game.model.api.UnitCreatedListener;
+import com.ede.standyourground.game.model.api.VisibilityChangeListener;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -61,22 +68,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final Map<Class<? extends Component>, Component> componentMap = new ConcurrentHashMap<>();
     private static final Map<UUID, Circle> circles = new ConcurrentHashMap<>();
 
-    @Inject GoogleMapProvider googleMapProvider;
-    @Inject GameSessionIdProvider gameSessionIdProvider;
-    @Inject MapSetupService mapSetupService;
-    @Inject DrawRouteService drawRouteService;
-    @Inject GameService gameService;
-    @Inject UnitService unitService;
+    @Inject
+    GoogleMapProvider googleMapProvider;
+    @Inject
+    GameSessionIdProvider gameSessionIdProvider;
+    @Inject
+    DrawRouteService drawRouteService;
+    @Inject
+    GameService gameService;
+    @Inject
+    UnitService unitService;
+    @Inject
+    OnUnitClickListenerFactory onUnitClickListenerFactory;
+    @Inject
+    HealthBarComponentFactory healthBarComponentFactory;
+    @Inject
+    OnMapLoadedCallbackFactory onMapLoadedCallbackFactory;
+    @Inject
+    OnCameraMoveListenerFactory onCameraMoveListenerFactory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         MyApp.getAppComponent().inject(this);
 
-        HealthBarComponent healthBarComponent = new HealthBarComponent(this);
-        UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0,0));
+        UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0, 0));
         componentMap.put(UnitGroupComponent.class, unitGroupComponent);
-        componentMap.put(HealthBarComponent.class, healthBarComponent);
+        componentMap.put(HealthBarComponent.class, healthBarComponentFactory.createHealthBarComponent(this));
 
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -117,9 +135,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         MapsActivity.googleMap = googleMap;
 
         googleMapProvider.setGoogleMap(googleMap);
-        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
 
-        mapSetupService.setupMap(opponentLocation, playerLocation);
+        // Map setup
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
+        googleMap.getUiSettings().setMapToolbarEnabled(false);
+        googleMap.getUiSettings().setCompassEnabled(false);
+
+        UnitGroupComponent unitGroupComponent = (UnitGroupComponent) componentMap.get(UnitGroupComponent.class);
+        HealthBarComponent healthBarComponent = (HealthBarComponent) componentMap.get(HealthBarComponent.class);
+
+        // Create map listeners
+        googleMap.setOnCircleClickListener(onUnitClickListenerFactory.createOnCircleClickedListener(unitGroupComponent));
+        googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, healthBarComponent));
+        googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(playerLocation, opponentLocation, unitGroupComponent));
+        googleMap.setOnCircleClickListener(onUnitClickListenerFactory.createOnCircleClickedListener(unitGroupComponent));
+
+        // Register listeners for game events
         gameService.registerGameEndListener(new GameEndListener() {
             @Override
             public void onGameEnd(final boolean won) {
@@ -144,19 +175,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MapsActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        // Add circle
                         if (unit.isEnemy()) {
-                            int color = MapsActivity.this.getResources().getColor(unit.getType().getEnemyColor());
-                            addCircle(unit.getId(), unit.getType().getCircleOptions().center(unit.getCurrentPosition()).fillColor(color));
+                            int color = ContextCompat.getColor(MapsActivity.this, unit.getType().getEnemyColor());
+                            addCircle(unit.getId(), unit.getType().getCircleOptions().center(unit.getStartingPosition()).fillColor(color));
                         } else {
-                            int color = MapsActivity.this.getResources().getColor(unit.getType().getPlayerColor());
-                            addCircle(unit.getId(), unit.getType().getCircleOptions().center(unit.getCurrentPosition()).fillColor(color));
+                            int color = ContextCompat.getColor(MapsActivity.this, unit.getType().getPlayerColor());
+                            addCircle(unit.getId(), unit.getType().getCircleOptions().center(unit.getStartingPosition()).fillColor(color));
                         }
+                        circles.get(unit.getId()).setVisible(unit.isVisible());
                     }
                 });
             }
         });
 
-        unitService.registerDeathListener(new DeathListener() {
+        unitService.registerOnDeathListener(new OnDeathListener() {
             @Override
             public void onDeath(final Unit mortal) {
                 MapsActivity.this.runOnUiThread(new Runnable() {
@@ -170,6 +203,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 });
             }
         });
+
+        unitService.registerVisibilityChangeListener(new VisibilityChangeListener() {
+            @Override
+            public void onVisibilityChange(final Unit unit) {
+                MapsActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        circles.get(unit.getId()).setVisible(unit.isVisible());
+                    }
+                });
+            }
+        });
+
+        unitService.registerPositionChangeListener(new PositionChangeListener() {
+            @Override
+            public void onPositionChange(final MovableUnit movableUnit) {
+                MapsActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        circles.get(movableUnit.getId()).setCenter(movableUnit.getCurrentPosition());
+                    }
+                });
+            }
+        });
+
+        gameService.startGame();
 
         confirmRouteButton = (Button) findViewById(R.id.confirmRouteButton);
         unitChoicesScrollView = (HorizontalScrollView) findViewById(R.id.unitChoicesScrollView);
@@ -220,26 +279,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    public static Component getComponent(Class<? extends Component> componentClass) {
-        return componentMap.get(componentClass);
-    }
-
-    public static Map<UUID, Circle> getCircles() {
-        return circles;
-    }
-
-    public static void removeCircle(UUID unitId) {
+    private void removeCircle(UUID unitId) {
         Circle circle = circles.get(unitId);
         if (circle == null) {
             logger.w("Attempted to remove circle that had already been removed for unit %s", unitId);
         } else {
+            logger.i("Removing circle for unit %s", unitId);
             circle.remove();
         }
         circles.remove(unitId);
     }
 
     private void addCircle(UUID unitId, CircleOptions circleOptions) {
-        logger.d("adding %s", unitId);
+        logger.d("Creating circle for unit %s", unitId);
         circles.put(unitId, googleMap.addCircle(circleOptions));
     }
 }

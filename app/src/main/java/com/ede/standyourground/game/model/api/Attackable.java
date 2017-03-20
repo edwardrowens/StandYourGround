@@ -1,10 +1,11 @@
 package com.ede.standyourground.game.model.api;
 
 
-public interface Attackable extends Mortal {
+import com.ede.standyourground.game.framework.management.api.HealthChangeObserver;
+
+public interface Attackable extends Mortal, HealthChangeObserver {
     void onAttacked(Attacker attacker);
     boolean isEnemy();
     double getRadius();
     boolean isAlive();
-    void registerHealthChangeListener(HealthChangeListener healthChangeListener);
 }

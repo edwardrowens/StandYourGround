@@ -8,10 +8,12 @@ import com.ede.standyourground.game.model.FootSoldier;
 import com.ede.standyourground.game.model.MovableUnit;
 import com.ede.standyourground.game.model.Unit;
 import com.ede.standyourground.game.model.Units;
-import com.ede.standyourground.game.model.api.DeathListener;
 import com.ede.standyourground.game.model.api.GameEndListener;
 import com.ede.standyourground.game.model.api.HealthChangeListener;
+import com.ede.standyourground.game.model.api.OnDeathListener;
+import com.ede.standyourground.game.model.api.PositionChangeListener;
 import com.ede.standyourground.game.model.api.UnitCreatedListener;
+import com.ede.standyourground.game.model.api.VisibilityChangeListener;
 import com.ede.standyourground.networking.exchange.request.CreateUnitRequest;
 import com.ede.standyourground.networking.framework.api.NetworkingManager;
 import com.google.android.gms.maps.model.LatLng;
@@ -39,10 +41,12 @@ public class UnitServiceImpl implements UnitService {
     private final Lazy<GameSessionIdProvider> gameSessionIdProvider;
 
     // Listeners
-    private final List<DeathListener> deathListeners = new CopyOnWriteArrayList<>();
+    private final List<OnDeathListener> onDeathListeners = new CopyOnWriteArrayList<>();
     private final List<HealthChangeListener> healthChangeListeners = new CopyOnWriteArrayList<>();
     private final List<GameEndListener> gameEndListeners = new CopyOnWriteArrayList<>();
     private final List<UnitCreatedListener> unitCreatedListeners = new CopyOnWriteArrayList<>();
+    private final List<PositionChangeListener> positionChangeListeners = new CopyOnWriteArrayList<>();
+    private final List<VisibilityChangeListener> visibilityChangeListeners = new CopyOnWriteArrayList<>();
 
     @Inject
     UnitServiceImpl(Lazy<UnitFactory> unitFactory,
@@ -76,8 +80,8 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public void registerDeathListener(DeathListener deathListener) {
-        deathListeners.add(deathListener);
+    public void registerOnDeathListener(OnDeathListener onDeathListener) {
+        onDeathListeners.add(onDeathListener);
     }
 
     @Override
@@ -95,6 +99,16 @@ public class UnitServiceImpl implements UnitService {
         unitCreatedListeners.add(unitCreatedListener);
     }
 
+    @Override
+    public void registerPositionChangeListener(PositionChangeListener positionChangeListener) {
+        positionChangeListeners.add(positionChangeListener);
+    }
+
+    @Override
+    public void registerVisibilityChangeListener(VisibilityChangeListener visibilityChangeListener) {
+        visibilityChangeListeners.add(visibilityChangeListener);
+    }
+
     private void addPlayerUnit(final Unit unit) {
         sendCreateUnitRequest(unit);
         addUnit(unit);
@@ -105,7 +119,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     private void addUnit(final Unit unit) {
-        unit.registerDeathListener(new DeathListener() {
+        unit.registerOnDeathListener(new OnDeathListener() {
             @Override
             public void onDeath(Unit mortal) {
                 if (mortal instanceof Base) {
@@ -114,8 +128,8 @@ public class UnitServiceImpl implements UnitService {
                     }
                 }
                 units.remove(mortal.getId());
-                for (DeathListener deathListener : deathListeners) {
-                    deathListener.onDeath(unit);
+                for (OnDeathListener onDeathListener : onDeathListeners) {
+                    onDeathListener.onDeath(unit);
                 }
             }
         });
@@ -127,8 +141,30 @@ public class UnitServiceImpl implements UnitService {
                 }
             }
         });
+        unit.registerVisibilityChangeListener(new VisibilityChangeListener() {
+            @Override
+            public void onVisibilityChange(Unit unit) {
+                for (VisibilityChangeListener visibilityChangeListener : visibilityChangeListeners) {
+                    visibilityChangeListener.onVisibilityChange(unit);
+                }
+            }
+        });
+        if (unit instanceof MovableUnit) {
+            ((MovableUnit) unit).registerPositionChangeListener(new PositionChangeListener() {
+                @Override
+                public void onPositionChange(MovableUnit movableUnit) {
+                    for (PositionChangeListener positionChangeListener : positionChangeListeners) {
+                        positionChangeListener.onPositionChange(movableUnit);
+                    }
+                }
+            });
+        }
         units.put(unit.getId(), unit);
         logger.i("Added unit. %d units managed", units.size());
+
+        for(UnitCreatedListener unitCreatedListener : unitCreatedListeners) {
+            unitCreatedListener.onUnitCreated(unit);
+        }
     }
 
     private void sendCreateUnitRequest(Unit unit) {

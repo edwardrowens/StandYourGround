@@ -1,6 +1,5 @@
 package com.ede.standyourground.game.model;
 
-import com.ede.standyourground.app.activity.MapsActivity;
 import com.ede.standyourground.framework.Logger;
 import com.ede.standyourground.game.model.api.Attackable;
 import com.ede.standyourground.game.model.api.Attacker;
@@ -66,8 +65,6 @@ public class Marauder extends MovableUnit {
 
     @Override
     public void onRender() {
-        MapsActivity.getCircles().get(getId()).setCenter(getCurrentPosition());
-        MapsActivity.getCircles().get(getId()).setVisible(isVisible());
     }
 
     @Override
@@ -82,7 +79,6 @@ public class Marauder extends MovableUnit {
 
     @Override
     protected void onUnitDeath() {
-        MapsActivity.removeCircle(getId());
     }
 
     @Override
