@@ -25,7 +25,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:name=".framework.dagger.application.MyApp">
+        android:name=".framework.api.dagger.application.MyApp">
         <activity android:name=".app.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -55,13 +55,13 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service
-            android:name=".app.service.android.FindMatchService"
+            android:name=".app.activity.service.FindMatchService"
             android:exported="false" />
         <service
-            android:name=".app.service.android.RemoveFromMatchMakingService"
+            android:name=".app.activity.service.RemoveFromMatchMakingService"
             android:exported="false" />
         <service
-            android:name=".app.service.android.StopGameService"
+            android:name=".app.activity.service.StopGameService"
             android:exported="false"></service>
     </application>
 

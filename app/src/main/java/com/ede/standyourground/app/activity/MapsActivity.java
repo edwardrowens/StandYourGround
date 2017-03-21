@@ -11,29 +11,29 @@ import android.widget.HorizontalScrollView;
 import android.widget.Toast;
 
 import com.ede.standyourground.R;
-import com.ede.standyourground.app.service.android.StopGameService;
-import com.ede.standyourground.app.service.api.DrawRouteService;
-import com.ede.standyourground.app.service.impl.OnMapLoadedCallbackFactory;
-import com.ede.standyourground.app.ui.Component;
-import com.ede.standyourground.app.ui.HealthBarComponent;
-import com.ede.standyourground.app.ui.HealthBarComponentFactory;
-import com.ede.standyourground.app.ui.UnitGroupComponent;
-import com.ede.standyourground.framework.Logger;
-import com.ede.standyourground.framework.dagger.application.MyApp;
-import com.ede.standyourground.framework.dagger.providers.GameSessionIdProvider;
-import com.ede.standyourground.framework.dagger.providers.GoogleMapProvider;
-import com.ede.standyourground.game.framework.management.api.GameService;
-import com.ede.standyourground.game.framework.management.api.UnitService;
-import com.ede.standyourground.game.model.MovableUnit;
-import com.ede.standyourground.game.model.Unit;
-import com.ede.standyourground.game.model.Units;
-import com.ede.standyourground.game.model.api.GameEndListener;
-import com.ede.standyourground.game.model.api.OnCameraMoveListenerFactory;
-import com.ede.standyourground.game.model.api.OnDeathListener;
-import com.ede.standyourground.game.model.api.OnUnitClickListenerFactory;
-import com.ede.standyourground.game.model.api.PositionChangeListener;
-import com.ede.standyourground.game.model.api.UnitCreatedListener;
-import com.ede.standyourground.game.model.api.VisibilityChangeListener;
+import com.ede.standyourground.app.activity.service.StopGameService;
+import com.ede.standyourground.app.event.OnCameraMoveListenerFactory;
+import com.ede.standyourground.app.event.OnCircleClickListenerFactory;
+import com.ede.standyourground.app.event.OnMapLoadedCallbackFactory;
+import com.ede.standyourground.app.ui.api.component.Component;
+import com.ede.standyourground.app.ui.api.component.HealthBarComponentFactory;
+import com.ede.standyourground.app.ui.impl.component.HealthBarComponent;
+import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
+import com.ede.standyourground.framework.api.Logger;
+import com.ede.standyourground.framework.api.dagger.application.MyApp;
+import com.ede.standyourground.framework.api.dagger.providers.GameSessionIdProvider;
+import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
+import com.ede.standyourground.framework.api.service.DrawRouteService;
+import com.ede.standyourground.game.api.event.listener.GameEndListener;
+import com.ede.standyourground.game.api.event.listener.OnDeathListener;
+import com.ede.standyourground.game.api.event.listener.PositionChangeListener;
+import com.ede.standyourground.game.api.event.listener.UnitCreatedListener;
+import com.ede.standyourground.game.api.event.listener.VisibilityChangeListener;
+import com.ede.standyourground.game.api.model.MovableUnit;
+import com.ede.standyourground.game.api.model.Unit;
+import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.service.GameService;
+import com.ede.standyourground.game.api.service.UnitService;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -79,7 +79,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Inject
     UnitService unitService;
     @Inject
-    OnUnitClickListenerFactory onUnitClickListenerFactory;
+    OnCircleClickListenerFactory onCircleClickListenerFactory;
     @Inject
     HealthBarComponentFactory healthBarComponentFactory;
     @Inject
@@ -145,10 +145,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         HealthBarComponent healthBarComponent = (HealthBarComponent) componentMap.get(HealthBarComponent.class);
 
         // Create map listeners
-        googleMap.setOnCircleClickListener(onUnitClickListenerFactory.createOnCircleClickedListener(unitGroupComponent));
+        googleMap.setOnCircleClickListener(onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent));
         googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, healthBarComponent));
         googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(playerLocation, opponentLocation, unitGroupComponent));
-        googleMap.setOnCircleClickListener(onUnitClickListenerFactory.createOnCircleClickedListener(unitGroupComponent));
+        googleMap.setOnCircleClickListener(onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent));
 
         // Register listeners for game events
         gameService.registerGameEndListener(new GameEndListener() {

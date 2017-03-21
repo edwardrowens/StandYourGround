@@ -8,11 +8,15 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 
 import com.ede.standyourground.R;
-import com.ede.standyourground.framework.Logger;
+import com.ede.standyourground.framework.api.Logger;
+import com.ede.standyourground.framework.api.dagger.application.MyApp;
+import com.ede.standyourground.networking.api.exchange.api.GooglePlacesApi;
+import com.ede.standyourground.networking.api.exchange.payload.response.GooglePlaces;
+
+import retrofit2.Call;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -23,6 +27,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        GooglePlacesApi googlePlacesApi = MyApp.getAppComponent().getRetrofit().get().create(GooglePlacesApi.class);
+        Call<GooglePlaces> response = googlePlacesApi.retrieveNearbyPlaces("car_repair", "34.155169, -118.246858", 1000);
+
         requestPermissions();
     }
 

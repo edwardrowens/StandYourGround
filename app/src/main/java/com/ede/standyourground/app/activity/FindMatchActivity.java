@@ -16,19 +16,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.ede.standyourground.R;
-import com.ede.standyourground.app.api.MatchMakingApi;
-import com.ede.standyourground.app.service.android.FindMatchService;
-import com.ede.standyourground.app.service.android.RemoveFromMatchMakingService;
-import com.ede.standyourground.app.service.android.ServiceGenerator;
-import com.ede.standyourground.framework.Callback;
-import com.ede.standyourground.framework.Logger;
-import com.ede.standyourground.framework.Receiver;
-import com.ede.standyourground.framework.StandYourGroundResultReceiver;
-import com.ede.standyourground.framework.api.LatLngService;
-import com.ede.standyourground.framework.dagger.application.MyApp;
-import com.ede.standyourground.networking.exchange.request.FindMatchRequest;
-import com.ede.standyourground.networking.exchange.response.FindMatchResponse;
-import com.ede.standyourground.networking.framework.api.NetworkingManager;
+import com.ede.standyourground.app.activity.service.FindMatchService;
+import com.ede.standyourground.app.activity.service.RemoveFromMatchMakingService;
+import com.ede.standyourground.framework.api.Logger;
+import com.ede.standyourground.framework.api.dagger.application.MyApp;
+import com.ede.standyourground.framework.api.service.LatLngService;
+import com.ede.standyourground.framework.api.transmit.Callback;
+import com.ede.standyourground.framework.api.transmit.Receiver;
+import com.ede.standyourground.framework.api.transmit.StandYourGroundResultReceiver;
+import com.ede.standyourground.networking.api.NetworkingHandler;
+import com.ede.standyourground.networking.api.exchange.api.MatchMakingApi;
+import com.ede.standyourground.networking.api.exchange.payload.request.FindMatchRequest;
+import com.ede.standyourground.networking.api.exchange.payload.response.FindMatchResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -44,6 +43,7 @@ import javax.inject.Inject;
 
 import retrofit2.Call;
 import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class FindMatchActivity extends AppCompatActivity implements Receiver, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -73,7 +73,10 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
 
     @Inject
     LatLngService latLngService;
-    @Inject NetworkingManager networkingManager;
+    @Inject
+    NetworkingHandler networkingHandler;
+    @Inject
+    Retrofit retrofit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -255,7 +258,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
             playerMatched = true;
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
 
-            networkingManager.connect(findMatchResponse.getGameSessionId(), new Callback() {
+            networkingHandler.connect(findMatchResponse.getGameSessionId(), new Callback() {
                 @Override
                 public void onSuccess() {
                     handler.post(new Runnable() {
@@ -288,7 +291,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     }
 
     public void onFaceAi(View view) {
-        MatchMakingApi matchMakingApi = ServiceGenerator.createService(MatchMakingApi.class);
+        MatchMakingApi matchMakingApi = retrofit.create(MatchMakingApi.class);
 
         FindMatchRequest findMatchRequest = new FindMatchRequest();
         findMatchRequest.setId(UUID.randomUUID());
