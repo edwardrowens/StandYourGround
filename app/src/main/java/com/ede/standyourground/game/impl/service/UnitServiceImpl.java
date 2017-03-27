@@ -8,6 +8,7 @@ import com.ede.standyourground.game.api.event.listener.OnDeathListener;
 import com.ede.standyourground.game.api.event.listener.PositionChangeListener;
 import com.ede.standyourground.game.api.event.listener.UnitCreatedListener;
 import com.ede.standyourground.game.api.event.listener.VisibilityChangeListener;
+import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.Units;
@@ -64,9 +65,15 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public void createPlayerUnit(List<LatLng> route, LatLng position, Units units) {
+    public void createFriendlyUnit(List<LatLng> route, LatLng position, Units units) {
         Unit unit = unitCreator.get().createPlayerUnit(route, position, units);
         addPlayerUnit(unit);
+    }
+
+    @Override
+    public void createNeutralUnit(LatLng position, Units units, String name, String photoReference, final Hostility hostility) {
+        Unit unit = unitCreator.get().createNeutralUnit(position, units, name, photoReference, hostility);
+        addUnit(unit);
     }
 
     @Override
@@ -121,10 +128,10 @@ public class UnitServiceImpl implements UnitService {
     private void addUnit(final Unit unit) {
         unit.registerOnDeathListener(new OnDeathListener() {
             @Override
-            public void onDeath(Unit mortal) {
+            public void onDeath(Unit mortal, Unit killer) {
                 if (mortal instanceof Base) {
                     for (GameEndListener gameEndListener : gameEndListeners) {
-                        gameEndListener.onGameEnd(mortal.isEnemy());
+                        gameEndListener.onGameEnd(mortal.getHostility() == Hostility.ENEMY);
                     }
                 }
                 if (units.remove(mortal.getId()) != null) {
@@ -133,7 +140,7 @@ public class UnitServiceImpl implements UnitService {
                     logger.w("Unit %s was not contained within the game.", mortal.getId());
                 }
                 for (OnDeathListener onDeathListener : onDeathListeners) {
-                    onDeathListener.onDeath(unit);
+                    onDeathListener.onDeath(unit, killer);
                 }
             }
         });

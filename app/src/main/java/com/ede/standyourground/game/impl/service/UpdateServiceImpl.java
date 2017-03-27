@@ -1,18 +1,19 @@
 package com.ede.standyourground.game.impl.service;
 
 import android.os.SystemClock;
+import android.util.SparseIntArray;
 
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.framework.api.service.RouteService;
 import com.ede.standyourground.game.api.model.Attacker;
+import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.service.UpdateService;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -39,12 +40,12 @@ public class UpdateServiceImpl implements UpdateService {
 
     @Override
     public void determineVisibility(Unit unit) {
-        if (unit.isEnemy()) {
+        if (unit.getHostility() != Hostility.FRIENDLY) {
             List<Unit> units = worldManager.get().getUnits();
             boolean visible = false;
             for (int i = 0; i < units.size() && !visible; ++i) {
                 Unit target = units.get(i);
-                if (!target.isEnemy()) {
+                if (target.getHostility() == Hostility.FRIENDLY) {
                     LatLng unitPosition = unit instanceof MovableUnit ? ((MovableUnit) unit).getCurrentPosition() : unit.getStartingPosition();
                     LatLng targetPosition = target instanceof MovableUnit ? ((MovableUnit) target).getCurrentPosition() : target.getStartingPosition();
 
@@ -85,17 +86,18 @@ public class UpdateServiceImpl implements UpdateService {
 
     @Override
     public void processCombat(List<Unit> units) {
-        List<Integer> deadTargets = new ArrayList<>();
+        // key = who died, value = who killed them
+        SparseIntArray deadTargets = new SparseIntArray();
         for (int i = 0; i < units.size(); ++i) {
             Unit unit = units.get(i);
-            if (deadTargets.contains(i) || !unit.isAlive()) {
+            if (deadTargets.get(i, -1) == i || !unit.isAlive()) {
                 continue;
             }
             Unit attackTarget = null;
             int j = 0;
             for (; j < units.size() && attackTarget == null; ++j) {
                 Unit target = units.get(j);
-                if (deadTargets.contains(j) || !target.isAlive()) {
+                if (deadTargets.get(j, -1) == j || !target.isAlive()) {
                     continue;
                 }
                 LatLng unitPosition = unit instanceof MovableUnit ? ((MovableUnit) unit).getCurrentPosition() : unit.getStartingPosition();
@@ -111,12 +113,14 @@ public class UpdateServiceImpl implements UpdateService {
             if (attackTarget == null && unit instanceof MovableUnit && ((MovableUnit) unit).getMph() == 0d) {
                 ((MovableUnit) unit).move();
             } else if (attackTarget != null && !attackTarget.isAlive()) {
-                deadTargets.add(j - 1);
+                deadTargets.put(j - 1, i);
             }
         }
 
-        for (int i : deadTargets) {
-            units.get(i).onDeath();
+        for (int i = 0; i < deadTargets.size(); ++i) {
+            int deadUnit = deadTargets.keyAt(i);
+            int killingUnit = deadTargets.valueAt(i);
+            units.get(deadUnit).onDeath(units.get(killingUnit));
         }
     }
 }

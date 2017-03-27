@@ -15,7 +15,9 @@ import com.ede.standyourground.game.api.model.Units;
 import com.ede.standyourground.game.api.service.UnitService;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import dagger.Lazy;
 
@@ -28,7 +30,7 @@ public abstract class UnitGroupBlock implements Component {
     private static final Logger logger = new Logger(UnitGroupBlock.class);
 
     protected final Activity activity;
-    protected final List<UUID> unitIds;
+    protected final Set<UUID> unitIds = new ConcurrentSkipListSet<>();
     protected final LinearLayout container;
     protected final RelativeLayout iconContainer;
     private final UUID componentElementId;
@@ -37,7 +39,7 @@ public abstract class UnitGroupBlock implements Component {
     public UnitGroupBlock(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units) {
         unitService = MyApp.getAppComponent().getUnitService();
         this.componentElementId = componentElementId;
-        this.unitIds = unitIds;
+        this.unitIds.addAll(unitIds);
         this.activity = activity;
         this.container = (LinearLayout) LayoutInflater.from(activity).inflate(R.layout.unit_group_block, null);
         this.iconContainer = (RelativeLayout) LayoutInflater.from(activity).inflate(R.layout.unit_group_block_icon, null);
@@ -65,7 +67,7 @@ public abstract class UnitGroupBlock implements Component {
         container.setVisibility(View.GONE);
     }
 
-    public List<UUID> getUnitIds() {
+    public Set<UUID> getUnitIds() {
         return unitIds;
     }
 

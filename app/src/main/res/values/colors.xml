@@ -7,4 +7,6 @@
     <color name="blue">#FF0E21FF</color>
     <color name="magenta">#FFD156FF</color>
     <color name="red">#FFF92F2F</color>
+    <color name="friendlyMedicGreen">#FF42f456</color>
+    <color name="enemyMedicGreen">#FF2ba839</color>
 </resources>

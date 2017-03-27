@@ -27,8 +27,8 @@ public abstract class MovableUnit extends Unit implements Attacker, PositionChan
 
     protected abstract double startingMph();
 
-    public MovableUnit(List<LatLng> waypoints, LatLng startingPosition, Path path, double radius, Units type, boolean isEnemy) {
-        super(startingPosition, radius, type, isEnemy);
+    public MovableUnit(List<LatLng> waypoints, LatLng startingPosition, Path path, Units type, Hostility hostility) {
+        super(startingPosition, type, hostility);
         this.path = path;
         currentTarget = 0;
         this.currentPosition = new AtomicReference<>(startingPosition);

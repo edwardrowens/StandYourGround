@@ -8,6 +8,7 @@ import com.ede.standyourground.app.ui.impl.component.HealthBarComponent;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
 import com.ede.standyourground.game.api.event.listener.PositionChangeListener;
 import com.ede.standyourground.game.api.event.listener.UnitCreatedListener;
+import com.ede.standyourground.game.api.event.listener.VisibilityChangeListener;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.service.UnitService;
@@ -71,9 +72,34 @@ public class HealthBarComponentFactory {
             }
         });
 
+        unitService.get().registerVisibilityChangeListener(new VisibilityChangeListener() {
+            @Override
+            public void onVisibilityChange(final Unit unit) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        HealthBar healthBar = healthBarComponent.getElement(unit.getId());
+                        if (healthBar == null) {
+                            if (unit.isVisible()) {
+                                healthBar = new HealthBar(unit.getId(), activity);
+                                healthBarService.get().setHealthBarPosition(unit, healthBar);
+                                healthBarComponent.addComponentElement(healthBar);
+                            }
+                        } else {
+                            if (!unit.isVisible()) {
+                                healthBarComponent.removeComponentElement(unit.getId());
+                            } else {
+                                healthBarService.get().setHealthBarPosition(unit, healthBar);
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
         unitService.get().registerOnDeathListener(new OnDeathListener() {
             @Override
-            public void onDeath(final Unit mortal) {
+            public void onDeath(final Unit mortal, Unit killer) {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

@@ -56,7 +56,7 @@ public class DrawRouteServiceImpl implements DrawRouteService {
                 logger.i("response with routes received");
                 Polyline polyline = drawRoute(response.body().getRoutes().get(0));
 
-                unitService.get().createPlayerUnit(polyline.getPoints(), playerLocation, toCreate);
+                unitService.get().createFriendlyUnit(polyline.getPoints(), playerLocation, toCreate);
             }
 
             @Override

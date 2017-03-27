@@ -2,7 +2,7 @@ package com.ede.standyourground.game.impl.model;
 
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.game.api.model.Attackable;
-import com.ede.standyourground.game.api.model.Attacker;
+import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Path;
 import com.ede.standyourground.game.api.model.Units;
@@ -22,19 +22,10 @@ public class FootSoldier extends MovableUnit {
 
     private long lastAttackTime;
 
-    public FootSoldier(List<LatLng> waypoints, LatLng position, Path path, double radius, boolean isEnemy) {
-        super(waypoints, position, path, radius, Units.FOOT_SOLDIER, isEnemy);
+    public FootSoldier(List<LatLng> waypoints, LatLng position, Path path, Hostility hostility) {
+        super(waypoints, position, path, Units.FOOT_SOLDIER, hostility);
         this.lastAttackTime = 0;
-        this.attackRange = radius * 2;
-    }
-
-    @Override
-    public void onRender() {
-    }
-
-    @Override
-    public void onAttacked(Attacker attacker) {
-        this.deductHealth(attacker.getDamage());
+        this.attackRange = getRadius() * 2;
     }
 
     @Override
@@ -66,7 +57,7 @@ public class FootSoldier extends MovableUnit {
     @Override
     public boolean canAttack(Attackable attackable, double distance) {
         return (distance <= getAttackRange() + attackable.getRadius())
-                && (attackable.isEnemy() != isEnemy())
+                && (attackable.getHostility() != getHostility())
                 && attackable.isAlive()
                 && isAlive();
     }

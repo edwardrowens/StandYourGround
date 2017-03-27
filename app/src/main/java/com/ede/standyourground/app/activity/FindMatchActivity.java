@@ -81,7 +81,7 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((MyApp) getApplication()).getAppComponent().inject(this);
+        MyApp.getAppComponent().inject(this);
         setContentView(R.layout.activity_find_match);
 
         onFindMatchButton = (Button) findViewById(R.id.onFindMatchButton);

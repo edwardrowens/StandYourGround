@@ -39,7 +39,7 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
 
         MyApp.getAppComponent().getUnitService().get().registerOnDeathListener(new OnDeathListener() {
             @Override
-            public void onDeath(final Unit mortal) {
+            public void onDeath(final Unit mortal, final Unit killer) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {

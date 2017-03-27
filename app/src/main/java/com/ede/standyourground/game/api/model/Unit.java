@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class Unit implements Renderable, Attackable, VisibilityChangeObserver {
+public abstract class Unit implements Attackable, VisibilityChangeObserver {
 
     private static final Logger logger = new Logger(Unit.class);
 
@@ -23,13 +23,13 @@ public abstract class Unit implements Renderable, Attackable, VisibilityChangeOb
     private final AtomicBoolean alive = new AtomicBoolean(true);
     private final LatLng startingPosition;
     private final UUID id = UUID.randomUUID();
-    private final boolean isEnemy;
+    private final Hostility hostility;
     private final double radius;
     private final Units type;
     // Listeners
     private OnDeathListener onDeathListener;
     private HealthChangeListener healthChangeListener;
-    private VisibilityChangeListener visibilityChangeListener;
+    protected VisibilityChangeListener visibilityChangeListener;
 
     protected final AtomicBoolean isVisible;
 
@@ -37,12 +37,12 @@ public abstract class Unit implements Renderable, Attackable, VisibilityChangeOb
     public abstract double getVisionRadius();
     protected abstract void onUnitDeath();
 
-    public Unit(LatLng startingPosition, double radius, Units type, boolean isEnemy) {
+    public Unit(LatLng startingPosition, Units type, Hostility hostility) {
         this.startingPosition = startingPosition;
         this.createdTime = new AtomicLong(SystemClock.uptimeMillis());
-        this.isEnemy = isEnemy;
-        this.isVisible = new AtomicBoolean(!isEnemy);
-        this.radius = radius;
+        this.hostility = hostility;
+        this.isVisible = new AtomicBoolean(this.hostility == Hostility.FRIENDLY);
+        this.radius = type.getCircleOptions().getRadius();
         this.type = type;
     }
 
@@ -58,8 +58,9 @@ public abstract class Unit implements Renderable, Attackable, VisibilityChangeOb
         return createdTime.get();
     }
 
-    public boolean isEnemy() {
-        return isEnemy;
+    @Override
+    public Hostility getHostility() {
+        return hostility;
     }
 
     public boolean isVisible() {
@@ -74,11 +75,16 @@ public abstract class Unit implements Renderable, Attackable, VisibilityChangeOb
     }
 
     @Override
-    public void onDeath() {
+    public void onDeath(Unit killer) {
         logger.i("%s has died.", getId());
         alive.set(false);
         onUnitDeath();
-        onDeathListener.onDeath(Unit.this);
+        onDeathListener.onDeath(Unit.this, killer);
+    }
+
+    @Override
+    public void onAttacked(Attacker attacker) {
+        this.deductHealth(attacker.getDamage());
     }
 
     public double getRadius() {

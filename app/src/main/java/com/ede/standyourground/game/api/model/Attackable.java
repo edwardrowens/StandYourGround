@@ -5,7 +5,7 @@ import com.ede.standyourground.game.api.event.observer.HealthChangeObserver;
 
 public interface Attackable extends Mortal, HealthChangeObserver {
     void onAttacked(Attacker attacker);
-    boolean isEnemy();
+    Hostility getHostility();
     double getRadius();
     boolean isAlive();
 }

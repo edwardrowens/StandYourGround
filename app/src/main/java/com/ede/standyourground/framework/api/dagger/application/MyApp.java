@@ -14,7 +14,7 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
         appComponent = DaggerAppComponent.builder()
-                .netModule(new NetModule("https://standyourground.herokuapp.com/"))
+                .netModule(new NetModule("http://192.168.0.103:8000/"))
                 .build();
     }
 

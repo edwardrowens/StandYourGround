@@ -1,19 +1,18 @@
 package com.ede.standyourground.networking.api.model;
 
-import com.google.android.gms.maps.model.LatLng;
-
 /**
  *
  */
 
 public class GooglePlaceGeometry {
-    private LatLng location;
 
-    public LatLng getLocation() {
+    private Bound location;
+
+    public Bound getLocation() {
         return location;
     }
 
-    public void setLocation(LatLng location) {
+    public void setLocation(Bound location) {
         this.location = location;
     }
 }

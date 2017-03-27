@@ -2,6 +2,7 @@ package com.ede.standyourground.app.event;
 
 import com.ede.standyourground.app.ui.api.service.HealthBarService;
 import com.ede.standyourground.app.ui.impl.component.HealthBarComponent;
+import com.ede.standyourground.app.ui.impl.component.NeutralCampListingComponent;
 import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.service.UnitService;
@@ -23,11 +24,12 @@ public class OnCameraMoveListenerFactory {
         this.healthBarService = healthBarService;
     }
 
-    public GoogleMap.OnCameraMoveListener createOnCameraMoveListener(final UnitGroupComponent unitGroupComponent, final HealthBarComponent healthBarComponent) {
+    public GoogleMap.OnCameraMoveListener createOnCameraMoveListener(final UnitGroupComponent unitGroupComponent, final HealthBarComponent healthBarComponent, final NeutralCampListingComponent neutralCampListingComponent) {
         return new GoogleMap.OnCameraMoveListener() {
             @Override
             public void onCameraMove() {
                 unitGroupComponent.clear();
+                neutralCampListingComponent.clear();
 
                 for (Unit unit : unitService.get().getUnits()) {
                     if (healthBarComponent.containsHealthBar(unit.getId())) {

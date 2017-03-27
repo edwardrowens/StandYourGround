@@ -22,12 +22,12 @@ import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.Units;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  *
@@ -39,7 +39,7 @@ public class UnitGroupComponent implements Component {
     private static final RelativeLayout.LayoutParams CONTAINER_LAYOUT_PARAMS = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
     private final Map<UUID, UnitGroupBlock> unitGroupBlocks = new ConcurrentHashMap<>();
-    private final Set<UUID> unitIds = new HashSet<>();
+    private final Set<UUID> unitIds = new ConcurrentSkipListSet<>();
     private final Activity activity;
     private final GridLayout gridLayout;
 
@@ -60,7 +60,7 @@ public class UnitGroupComponent implements Component {
 
         MyApp.getAppComponent().getUnitService().get().registerOnDeathListener(new OnDeathListener() {
             @Override
-            public void onDeath(final Unit mortal) {
+            public void onDeath(final Unit mortal, Unit killer) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -102,7 +102,7 @@ public class UnitGroupComponent implements Component {
         if (gridLayout.getVisibility() != View.VISIBLE) {
             setVisibility(View.VISIBLE);
         }
-        unitIds.add(unitGroupBlockHealthBar.getUnitIds().get(0));
+        unitIds.addAll(unitGroupBlockHealthBar.getUnitIds());
         unitGroupBlocks.put(unitGroupBlockHealthBar.getComponentElementId(), unitGroupBlockHealthBar);
         if (index == null) {
             gridLayout.addView(unitGroupBlockHealthBar.getContainer());
@@ -187,6 +187,7 @@ public class UnitGroupComponent implements Component {
     }
 
     private void setVisibility(int visibility) {
+        gridLayout.bringToFront();
         gridLayout.setVisibility(visibility);
         for (UnitGroupBlock unitGroupBlock : unitGroupBlocks.values()) {
             unitGroupBlock.setVisibility(visibility);
@@ -194,12 +195,13 @@ public class UnitGroupComponent implements Component {
     }
 
     private void removeView(UUID componentElementId) {
-        unitGroupBlocks.get(componentElementId).clear();
-        unitIds.removeAll(unitGroupBlocks.get(componentElementId).getUnitIds());
-        gridLayout.removeView(unitGroupBlocks.get(componentElementId).getContainer());
-        unitGroupBlocks.remove(componentElementId);
-        if (unitGroupBlocks.size() == 0) {
-            setVisibility(View.GONE);
+        if (unitGroupBlocks.get(componentElementId) != null) {
+            unitGroupBlocks.get(componentElementId).clear();
+            gridLayout.removeView(unitGroupBlocks.get(componentElementId).getContainer());
+            unitGroupBlocks.remove(componentElementId);
+            if (unitGroupBlocks.size() == 0) {
+                setVisibility(View.GONE);
+            }
         }
     }
 }

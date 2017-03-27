@@ -38,25 +38,21 @@ public class UnitGroupBlockCount extends UnitGroupBlock implements FinalDecremen
         super(componentElementId, unitIds, activity, units);
         this.count = new AtomicInteger(count);
         this.activity = activity;
-        this.countContainer = (TextView) LayoutInflater.from(activity).inflate(R.layout.unit_group_block_count, null);
+        this.countContainer = (TextView) LayoutInflater.from(activity).inflate(R.layout.text_view_component, null);
 
         countContainer.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         countContainer.setText(activity.getResources().getString(R.string.unitGroupCountText, count));
         container.addView(countContainer);
         unitService.get().registerOnDeathListener(new OnDeathListener() {
             @Override
-            public void onDeath(final Unit mortal) {
-                if (unitIds.contains(mortal.getId())) {
+            public void onDeath(final Unit mortal, final Unit killer) {
+                if (unitIds.remove(mortal.getId())) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
                             decrementCount();
-                            if (UnitGroupBlockCount.this.count.get() == 1) {
-                                for (Unit unit : unitService.get().getUnits()) {
-                                    if (!unit.isEnemy() && unit.getType().equals(mortal.getType())) {
-                                        finalDecrementListener.onFinalDecrement(unit);
-                                    }
-                                }
+                            if (getUnitIds().size() == 1) {
+                                finalDecrementListener.onFinalDecrement(unitService.get().getUnit(getUnitIds().iterator().next()));
                             }
                         }
                     });

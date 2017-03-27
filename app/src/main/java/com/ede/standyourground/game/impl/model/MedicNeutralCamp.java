@@ -1,17 +1,19 @@
 package com.ede.standyourground.game.impl.model;
 
-
 import com.ede.standyourground.game.api.model.Hostility;
-import com.ede.standyourground.game.api.model.Unit;
+import com.ede.standyourground.game.api.model.NeutralCamp;
 import com.ede.standyourground.game.api.model.Units;
 import com.google.android.gms.maps.model.LatLng;
 
-public class Base extends Unit {
+/**
+ *
+ */
+
+public class MedicNeutralCamp extends NeutralCamp {
     private static final int HEALTH = 100;
 
-    public Base(LatLng position, Hostility hostility) {
-        super(position, Units.BASE, hostility);
-        isVisible.set(true);
+    public MedicNeutralCamp(LatLng startingPosition, String name, String photoReference, Hostility hostility) {
+        super(startingPosition, Units.MEDIC_NEUTRAL_CAMP, name, photoReference, hostility);
     }
 
     @Override
@@ -21,15 +23,6 @@ public class Base extends Unit {
 
     @Override
     public double getVisionRadius() {
-        return 1000; //.1 miles
-    }
-
-    @Override
-    protected void onUnitDeath() {
-    }
-
-    @Override
-    public boolean isVisible() {
-        return true;
+        return 0;
     }
 }
