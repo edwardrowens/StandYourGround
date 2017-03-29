@@ -56,6 +56,14 @@
                     android:layout_height="match_parent"
                     android:onClick="onSelectUnit"
                     android:text="@string/marauder" />
+
+                <Button
+                    android:id="@+id/medicButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:onClick="onSelectUnit"
+                    android:text="@string/medic"
+                    android:visibility="gone"/>
             </LinearLayout>
         </HorizontalScrollView>
     </RelativeLayout>

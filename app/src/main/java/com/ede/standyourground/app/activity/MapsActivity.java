@@ -37,6 +37,7 @@ import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.Units;
 import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.UnitService;
+import com.ede.standyourground.game.impl.model.MedicNeutralCamp;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -62,6 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // VIEWS
     private HorizontalScrollView unitChoicesScrollView;
     private Button confirmRouteButton;
+    private Button medicUnitButton;
 
     private static GoogleMap googleMap;
     private List<Marker> waypoints = new ArrayList<>();
@@ -187,13 +189,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         unitService.registerOnDeathListener(new OnDeathListener() {
             @Override
-            public void onDeath(final Unit mortal, Unit killer) {
+            public void onDeath(final Unit mortal, final Unit killer) {
                 MapsActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Circle circle = circles.get(mortal.getId());
                         if (circle != null) {
                             removeCircle(mortal.getId());
+                        }
+                        if (mortal instanceof MedicNeutralCamp && killer.getHostility() == Hostility.FRIENDLY) {
+                            medicUnitButton.setVisibility(View.VISIBLE);
                         }
                     }
                 });
@@ -234,6 +239,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         confirmRouteButton = (Button) findViewById(R.id.confirmRouteButton);
         unitChoicesScrollView = (HorizontalScrollView) findViewById(R.id.unitChoicesScrollView);
+        medicUnitButton = (Button) findViewById(R.id.medicButton);
     }
 
     public void onRoute(View view) {
@@ -271,6 +277,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 break;
             case R.id.marauder:
                 selectedUnit = Units.MARAUDER;
+                break;
+            case R.id.medicButton:
+                selectedUnit = Units.MEDIC;
                 break;
         }
 

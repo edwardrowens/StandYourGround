@@ -9,6 +9,7 @@ import com.ede.standyourground.game.api.model.Units;
 import com.ede.standyourground.game.impl.model.Base;
 import com.ede.standyourground.game.impl.model.FootSoldier;
 import com.ede.standyourground.game.impl.model.Marauder;
+import com.ede.standyourground.game.impl.model.Medic;
 import com.ede.standyourground.game.impl.model.MedicNeutralCamp;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -52,6 +53,10 @@ public class UnitFactory {
             case MARAUDER:
                 Path pathM = new Path(route, routeService.get().getDistanceOfSteps(route, position));
                 unit = new Marauder(route, position, pathM, hostility);
+                break;
+            case MEDIC:
+                Path medicPath = new Path(route, routeService.get().getDistanceOfSteps(route, position));
+                unit = new Medic(route, position, medicPath, hostility);
                 break;
             default:
                 throw new IllegalArgumentException("Units " + type.toString() + " is not currently supported.");

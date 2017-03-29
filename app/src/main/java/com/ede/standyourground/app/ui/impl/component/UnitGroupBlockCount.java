@@ -46,11 +46,10 @@ public class UnitGroupBlockCount extends UnitGroupBlock implements FinalDecremen
         unitService.get().registerOnDeathListener(new OnDeathListener() {
             @Override
             public void onDeath(final Unit mortal, final Unit killer) {
-                if (unitIds.remove(mortal.getId())) {
+                if (getUnitIds().remove(mortal.getId())) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            decrementCount();
                             if (getUnitIds().size() == 1) {
                                 finalDecrementListener.onFinalDecrement(unitService.get().getUnit(getUnitIds().iterator().next()));
                             }

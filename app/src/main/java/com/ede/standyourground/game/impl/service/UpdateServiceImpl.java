@@ -7,6 +7,8 @@ import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.framework.api.service.RouteService;
 import com.ede.standyourground.game.api.model.Attacker;
+import com.ede.standyourground.game.api.model.Healable;
+import com.ede.standyourground.game.api.model.Healer;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Unit;
@@ -93,9 +95,9 @@ public class UpdateServiceImpl implements UpdateService {
             if (deadTargets.get(i, -1) == i || !unit.isAlive()) {
                 continue;
             }
-            Unit attackTarget = null;
+            Unit interactionTarget = null;
             int j = 0;
-            for (; j < units.size() && attackTarget == null; ++j) {
+            for (; j < units.size() && interactionTarget == null; ++j) {
                 Unit target = units.get(j);
                 if (deadTargets.get(j, -1) == j || !target.isAlive()) {
                     continue;
@@ -105,15 +107,25 @@ public class UpdateServiceImpl implements UpdateService {
                 double distance = latLngService.get().calculateDistance(unitPosition, targetPosition);
                 if (unit instanceof Attacker) {
                     if (((Attacker) unit).canAttack(target, distance)) {
-                        attackTarget = target;
+                        interactionTarget = target;
                         ((Attacker) unit).combat(target);
+                    }
+                } else if (unit instanceof Healer) {
+                    if (((Healer) unit).canHeal(target, distance)) {
+                        logger.i("%s is healing %s.", unit.getId(), target.getHostility().toString());
+                        ((Healer) unit).heal((Healable) target);
+                        interactionTarget = target;
                     }
                 }
             }
-            if (attackTarget == null && unit instanceof MovableUnit && ((MovableUnit) unit).getMph() == 0d) {
-                ((MovableUnit) unit).move();
-            } else if (attackTarget != null && !attackTarget.isAlive()) {
-                deadTargets.put(j - 1, i);
+            if (interactionTarget != null) {
+                if (!interactionTarget.isAlive()) {
+                    deadTargets.put(j - 1, i);
+                }
+            } else {
+                if (unit instanceof MovableUnit && ((MovableUnit) unit).getMph() == 0d) {
+                    ((MovableUnit) unit).move();
+                }
             }
         }
 

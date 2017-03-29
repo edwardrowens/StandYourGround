@@ -2,6 +2,8 @@ package com.ede.standyourground.game.impl.model;
 
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.game.api.model.Attackable;
+import com.ede.standyourground.game.api.model.Attacker;
+import com.ede.standyourground.game.api.model.Healable;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Path;
@@ -10,7 +12,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
-public class FootSoldier extends MovableUnit {
+public class FootSoldier extends MovableUnit implements Attacker, Healable {
 
     private static final Logger logger = new Logger(FootSoldier.class);
 
@@ -80,5 +82,10 @@ public class FootSoldier extends MovableUnit {
     @Override
     protected void onUnitDeath() {
 
+    }
+
+    @Override
+    public void incrementHealth(int value) {
+        deductHealth(-value);
     }
 }

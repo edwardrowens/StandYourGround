@@ -4,4 +4,6 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="neutral_camp_listing_component_width">22dp</dimen>
+    <dimen name="icon_width">25dp</dimen>
+    <dimen name="icon_height">25dp</dimen>
 </resources>

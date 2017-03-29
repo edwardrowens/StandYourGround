@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-public abstract class MovableUnit extends Unit implements Attacker, PositionChangeObserver {
+public abstract class MovableUnit extends Unit implements PositionChangeObserver {
 
     private static final Logger logger = new Logger(MovableUnit.class);
 

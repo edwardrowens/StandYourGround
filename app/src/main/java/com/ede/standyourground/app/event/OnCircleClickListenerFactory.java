@@ -73,7 +73,7 @@ public class OnCircleClickListenerFactory {
                         unitsOnPosition.add(unit);
                         bag.put(unit.getType(), bag.containsKey(unit.getType()) ? bag.get(unit.getType()) + 1 : 1);
                     }
-                    if (unit.getHostility() == Hostility.NEUTRAL && samePosition) {
+                    if (unit instanceof NeutralCamp && samePosition) {
                         neutralUnit = unit;
                     }
                 }
@@ -110,16 +110,12 @@ public class OnCircleClickListenerFactory {
                     }
                 }
                 if (neutralUnit != null) {
-                    if (neutralUnit instanceof NeutralCamp) {
+                    Projection projection = googleMapProvider.get().getGoogleMap().getProjection();
+                    Point center = projection.toScreenLocation(circle.getCenter());
+                    Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(circle.getCenter(), circle.getRadius(), 0d));
+                    double lineDistance = mathService.get().calculateLinearDistance(center, edge);
 
-                        Projection projection = googleMapProvider.get().getGoogleMap().getProjection();
-                        Point center = projection.toScreenLocation(circle.getCenter());
-                        Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(circle.getCenter(), circle.getRadius(), 0d));
-                        double lineDistance = mathService.get().calculateLinearDistance(center, edge);
-
-                        neutralCampListingComponent.setTextAndPhoto(((NeutralCamp) neutralUnit).getName(), ((NeutralCamp) neutralUnit).getPhotoReference(), center, lineDistance);
-                    }
-
+                    neutralCampListingComponent.setTextAndPhoto(((NeutralCamp) neutralUnit).getName(), ((NeutralCamp) neutralUnit).getPhotoReference(), center, lineDistance);
                 }
             }
         };

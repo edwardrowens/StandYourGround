@@ -2,6 +2,8 @@ package com.ede.standyourground.game.impl.model;
 
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.game.api.model.Attackable;
+import com.ede.standyourground.game.api.model.Attacker;
+import com.ede.standyourground.game.api.model.Healable;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Path;
@@ -10,7 +12,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
-public class Marauder extends MovableUnit {
+public class Marauder extends MovableUnit implements Attacker, Healable {
     private static final Logger logger = new Logger(Marauder.class);
 
     private static final double STARTING_MPH = 200;
@@ -78,5 +80,10 @@ public class Marauder extends MovableUnit {
     @Override
     protected double startingMph() {
         return STARTING_MPH;
+    }
+
+    @Override
+    public void incrementHealth(int value) {
+        deductHealth(-value);
     }
 }

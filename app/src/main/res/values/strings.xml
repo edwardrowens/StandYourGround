@@ -14,5 +14,6 @@
     <string name="problem_connecting">There was a problem with connecting. please try again.</string>
     <string name="footSoldier">Foot Soldier</string>
     <string name="marauder">Marauder</string>
+    <string name="medic">Medic</string>
     <string name="unitGroupCountText">x%1$d</string>
 </resources>

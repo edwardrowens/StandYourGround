@@ -7,7 +7,8 @@ public enum Units {
     BASE(R.drawable.base, UnitsOptions.CIRCLE_OPTIONS.radius(85), R.color.blue, R.color.red),
     FOOT_SOLDIER(R.drawable.foot_soldier, UnitsOptions.CIRCLE_OPTIONS, R.color.magenta, R.color.red),
     MARAUDER(R.drawable.marauder, UnitsOptions.CIRCLE_OPTIONS.radius(60), R.color.cyan, R.color.red),
-    MEDIC_NEUTRAL_CAMP(R.drawable.neutral_medic_camp, UnitsOptions.CIRCLE_OPTIONS, R.color.friendlyMedicGreen, R.color.enemyMedicGreen);
+    MEDIC_NEUTRAL_CAMP(R.drawable.neutral_medic_camp, UnitsOptions.CIRCLE_OPTIONS, R.color.friendlyMedicNeutralCampGreen, R.color.enemyMedicNeutralCampGreen),
+    MEDIC(R.drawable.medic, UnitsOptions.CIRCLE_OPTIONS, R.color.medicPink, R.color.red);
 
     private final int drawableId;
     private final int friendlyColor;

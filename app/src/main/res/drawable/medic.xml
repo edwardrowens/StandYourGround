@@ -6,7 +6,7 @@
         android:width="@dimen/icon_width"
         android:height="@dimen/icon_height"/>
     <solid
-        android:color="@color/magenta"/>
+        android:color="@color/medicPink"/>
     <stroke
         android:width="5dp"
         android:color="#00000000"/>
