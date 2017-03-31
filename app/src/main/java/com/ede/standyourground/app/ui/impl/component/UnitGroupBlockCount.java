@@ -19,7 +19,6 @@ import com.ede.standyourground.game.api.model.Units;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -31,33 +30,38 @@ public class UnitGroupBlockCount extends UnitGroupBlock implements FinalDecremen
 
     private final TextView countContainer;
     private final Activity activity;
-    private final AtomicInteger count;
+    private final OnDeathListener onDeathListener;
+
     private FinalDecrementListener finalDecrementListener;
 
-    public UnitGroupBlockCount(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units, final int count) {
+    public UnitGroupBlockCount(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units) {
         super(componentElementId, unitIds, activity, units);
-        this.count = new AtomicInteger(count);
         this.activity = activity;
         this.countContainer = (TextView) LayoutInflater.from(activity).inflate(R.layout.text_view_component, null);
 
         countContainer.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        countContainer.setText(activity.getResources().getString(R.string.unitGroupCountText, count));
+        countContainer.setText(activity.getResources().getString(R.string.unitGroupCountText, getUnitIds().size()));
         container.addView(countContainer);
-        unitService.get().registerOnDeathListener(new OnDeathListener() {
+
+        onDeathListener = new OnDeathListener() {
             @Override
             public void onDeath(final Unit mortal, final Unit killer) {
-                if (getUnitIds().remove(mortal.getId())) {
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
+                logger.e("on death called! %s", mortal.getId());
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getUnitIds().remove(mortal.getId())) {
+                            refreshText();
                             if (getUnitIds().size() == 1) {
                                 finalDecrementListener.onFinalDecrement(unitService.get().getUnit(getUnitIds().iterator().next()));
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
-        });
+        };
+
+        unitService.get().registerOnDeathListener(onDeathListener);
     }
 
     @Override
@@ -67,6 +71,7 @@ public class UnitGroupBlockCount extends UnitGroupBlock implements FinalDecremen
 
     @Override
     protected void clearViews() {
+        unitService.get().removeOnDeathListener(onDeathListener);
         countContainer.setVisibility(View.GONE);
     }
 
@@ -91,9 +96,8 @@ public class UnitGroupBlockCount extends UnitGroupBlock implements FinalDecremen
         this.finalDecrementListener = finalDecrementListener;
     }
 
-    private int decrementCount() {
-        count.decrementAndGet();
-        countContainer.setText(activity.getResources().getString(R.string.unitGroupCountText, count.get()));
-        return count.get();
+    private int refreshText() {
+        countContainer.setText(activity.getResources().getString(R.string.unitGroupCountText, getUnitIds().size()));
+        return getUnitIds().size();
     }
 }

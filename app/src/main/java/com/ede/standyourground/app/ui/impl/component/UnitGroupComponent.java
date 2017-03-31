@@ -113,26 +113,21 @@ public class UnitGroupComponent implements Component {
         return unitGroupBlockHealthBar.getComponentElementId();
     }
 
-    public UUID createUnitGroupBlockCount(List<UUID> unitIds, Units units, int count) {
+    public UUID createUnitGroupBlockCount(List<UUID> unitIds, Units units) {
         if (gridLayout.getVisibility() != View.VISIBLE) {
             setVisibility(View.VISIBLE);
         }
         this.unitIds.addAll(unitIds);
         UUID unitGroupBlockId = UUID.randomUUID();
-        final UnitGroupBlockCount unitGroupBlockCount = new UnitGroupBlockCount(unitGroupBlockId, unitIds, activity, units, count);
+        final UnitGroupBlockCount unitGroupBlockCount = new UnitGroupBlockCount(unitGroupBlockId, unitIds, activity, units);
 
         unitGroupBlockCount.registerFinalDecrementListener(new FinalDecrementListener() {
             @Override
             public void onFinalDecrement(final Unit unit) {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        int index = gridLayout.indexOfChild(unitGroupBlockCount.getContainer());
-                        removeView(unitGroupBlockCount.getComponentElementId());
-                        UnitGroupBlockHealthBar unitGroupBlockHealthBar = createUnitGroupBlockHealthBar(unit.getId(), unit.getType(), unit.getHealth() / (float) unit.getMaxHealth());
-                        addUnitGroupBlockHealthBar(unitGroupBlockHealthBar, index);
-                    }
-                });
+                int index = gridLayout.indexOfChild(unitGroupBlockCount.getContainer());
+                removeView(unitGroupBlockCount.getComponentElementId());
+                UnitGroupBlockHealthBar unitGroupBlockHealthBar = createUnitGroupBlockHealthBar(unit.getId(), unit.getType(), unit.getHealth() / (float) unit.getMaxHealth());
+                addUnitGroupBlockHealthBar(unitGroupBlockHealthBar, index);
             }
         });
 

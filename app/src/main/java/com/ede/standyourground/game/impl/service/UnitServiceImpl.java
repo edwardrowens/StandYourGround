@@ -92,6 +92,11 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
+    public void removeOnDeathListener(OnDeathListener onDeathListener) {
+        onDeathListeners.remove(onDeathListener);
+    }
+
+    @Override
     public void registerHealthChangeListener(HealthChangeListener healthChangeListener) {
         healthChangeListeners.add(healthChangeListener);
     }
@@ -139,6 +144,7 @@ public class UnitServiceImpl implements UnitService {
                 } else {
                     logger.w("Unit %s was not contained within the game.", mortal.getId());
                 }
+
                 for (OnDeathListener onDeathListener : onDeathListeners) {
                     onDeathListener.onDeath(unit, killer);
                 }

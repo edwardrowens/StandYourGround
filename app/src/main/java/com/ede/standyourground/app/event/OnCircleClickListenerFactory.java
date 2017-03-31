@@ -105,7 +105,7 @@ public class OnCircleClickListenerFactory {
                                     unitIds.add(u.getId());
                                 }
                             }
-                            unitGroupComponent.createUnitGroupBlockCount(unitIds, e.getKey(), e.getValue());
+                            unitGroupComponent.createUnitGroupBlockCount(unitIds, e.getKey());
                         }
                     }
                 }

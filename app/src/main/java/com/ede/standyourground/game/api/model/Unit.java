@@ -41,7 +41,8 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
         this.startingPosition = startingPosition;
         this.createdTime = new AtomicLong(SystemClock.uptimeMillis());
         this.hostility = hostility;
-        this.isVisible = new AtomicBoolean(this.hostility == Hostility.FRIENDLY);
+//        this.isVisible = new AtomicBoolean(this.hostility == Hostility.FRIENDLY);
+        this.isVisible = new AtomicBoolean(true);
         this.radius = type.getCircleOptions().getRadius();
         this.type = type;
     }
@@ -68,10 +69,10 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
     }
 
     public void setIsVisible(boolean isVisible) {
-        if (isVisible != this.isVisible.get()) {
-            this.isVisible.set(isVisible);
-            visibilityChangeListener.onVisibilityChange(this);
-        }
+//        if (isVisible != this.isVisible.get()) {
+//            this.isVisible.set(isVisible);
+//            visibilityChangeListener.onVisibilityChange(this);
+//        }
     }
 
     @Override
@@ -79,7 +80,7 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
         logger.i("%s has died.", getId());
         alive.set(false);
         onUnitDeath();
-        onDeathListener.onDeath(Unit.this, killer);
+        onDeathListener.onDeath(this, killer);
     }
 
     @Override

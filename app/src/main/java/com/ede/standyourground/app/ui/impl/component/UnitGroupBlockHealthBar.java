@@ -28,6 +28,7 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
     private static final Logger logger = new Logger(UnitGroupBlockHealthBar.class);
 
     private final RelativeLayout healthBarContainer;
+    private final OnDeathListener onDeathListener;
 
     public UnitGroupBlockHealthBar(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units, final HealthBar healthBar) {
         super(componentElementId, unitIds, activity, units);
@@ -37,7 +38,7 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
         this.healthBarContainer.addView(healthBar);
         this.container.addView(healthBarContainer);
 
-        MyApp.getAppComponent().getUnitService().get().registerOnDeathListener(new OnDeathListener() {
+        onDeathListener = new OnDeathListener() {
             @Override
             public void onDeath(final Unit mortal, final Unit killer) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -49,7 +50,9 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
                     }
                 });
             }
-        });
+        };
+
+        MyApp.getAppComponent().getUnitService().get().registerOnDeathListener(onDeathListener);
     }
 
     @Override
@@ -71,6 +74,7 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
 
     @Override
     protected void clearViews() {
+        unitService.get().removeOnDeathListener(onDeathListener);
         healthBarContainer.removeAllViews();
         healthBarContainer.setVisibility(View.GONE);
     }
