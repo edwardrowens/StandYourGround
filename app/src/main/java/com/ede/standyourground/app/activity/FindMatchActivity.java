@@ -34,9 +34,8 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.SphericalUtil;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -91,11 +90,6 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         faceAiButton = (Button) findViewById(R.id.faceAiButton);
 
         standYourGroundResultReceiver.setReceiver(this);
-        List<Integer> ints = new ArrayList<>();
-        ints.add(1);
-        ints.add(5);
-        ints.add(4);
-        logger.d("%d", latLngService.sumTo(ints, 3));
         playerId = UUID.randomUUID();
         getLocation();
     }
@@ -296,8 +290,10 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         FindMatchRequest findMatchRequest = new FindMatchRequest();
         findMatchRequest.setId(UUID.randomUUID());
         findMatchRequest.setRadius(5);
-        findMatchRequest.setLat(34.170805);
-        findMatchRequest.setLng(-118.229919);
+        LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        LatLng opponentLocation = SphericalUtil.computeOffset(currentLatLng, 3218, 180);
+        findMatchRequest.setLat(opponentLocation.latitude);
+        findMatchRequest.setLng(opponentLocation.longitude);
 
         Call<FindMatchResponse> findMatchCall = matchMakingApi.findMatch(findMatchRequest);
 

@@ -46,7 +46,12 @@ public class NeutralCampServiceImpl implements NeutralCampService {
             LatLng position = new LatLng(googlePlaceResult.getGeometry().getLocation().getLat(), googlePlaceResult.getGeometry().getLocation().getLng());
             boolean foundValidType = false;
             for (int i = 0; i < googlePlaceResult.getTypes().size() && !foundValidType; ++i) {
-                Units unitType = convertGooglePlacesTypeToNeutralCamp(GooglePlacesType.valueOf(googlePlaceResult.getTypes().get(i).toUpperCase()));
+                Units unitType = null;
+                try {
+                    unitType = convertGooglePlacesTypeToNeutralCamp(GooglePlacesType.valueOf(googlePlaceResult.getTypes().get(i).toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    logger.i("%s is not a supported type", googlePlaceResult.getTypes().get(i), e);
+                }
                 if (unitType != null) {
                     foundValidType = true;
                     String name = googlePlaceResult.getName();

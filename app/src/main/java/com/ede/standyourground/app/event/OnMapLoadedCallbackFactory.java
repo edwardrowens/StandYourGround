@@ -9,7 +9,7 @@ import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.game.api.model.Units;
 import com.ede.standyourground.game.api.service.NeutralCampService;
 import com.ede.standyourground.game.api.service.UnitService;
-import com.ede.standyourground.networking.api.exchange.payload.response.GooglePlacesResponsePayload;
+import com.ede.standyourground.networking.api.event.GooglePlacesResponseCallback;
 import com.ede.standyourground.networking.api.model.GooglePlaceResult;
 import com.ede.standyourground.networking.api.service.GooglePlacesNearbySearchService;
 import com.google.android.gms.maps.CameraUpdate;
@@ -24,9 +24,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import dagger.Lazy;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class OnMapLoadedCallbackFactory {
@@ -65,55 +62,55 @@ public class OnMapLoadedCallbackFactory {
                 final LatLngBounds latLngBounds = LatLngBounds.builder().include(opponentLocation).include(playerLocation).build();
                 final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, CAMERA_PADDING);
 
-                googlePlacesNearbySearchService.get().nearbySearch(playerLocation, opponentLocation, new Callback<GooglePlacesResponsePayload>() {
+                googlePlacesNearbySearchService.get().nearbySearch(playerLocation, opponentLocation, new GooglePlacesResponseCallback() {
                     @Override
-                    public void onResponse(Call<GooglePlacesResponsePayload> call, Response<GooglePlacesResponsePayload> response) {
-
-                        if (response.code() != 200) {
-                            logger.e("Received response code %d. Could not initialize neutral camps.", response.code());
+                    public void onResponse(List<GooglePlaceResult> results, int statusCode) {
+                        if (statusCode != 200) {
+                            logger.e("Received response code %d. Could not initialize neutral camps.", statusCode);
                         } else {
-                            List<GooglePlaceResult> filteredGooglePlaceResults = neutralCampService.get().filterNeutralCamps(response.body().getResults(), playerLocation, opponentLocation);
+                            List<GooglePlaceResult> filteredGooglePlaceResults = neutralCampService.get().filterNeutralCamps(results, playerLocation, opponentLocation);
                             neutralCampService.get().createNeutralCamps(filteredGooglePlaceResults);
                         }
-
-                        googleMapProvider.get().getGoogleMap().animateCamera(cameraUpdate, new GoogleMap.CancelableCallback() {
-                            @Override
-                            public void onFinish() {
-                                float zoom = googleMapProvider.get().getGoogleMap().getCameraPosition().zoom;
-                                CameraPosition cameraPosition = CameraPosition.builder()
-                                        .target(latLngService.get().midpoint(playerLocation, opponentLocation))
-                                        .bearing((float) latLngService.get().bearing(playerLocation, opponentLocation))
-                                        .zoom(zoom)
-                                        .build();
-                                googleMapProvider.get().getGoogleMap().animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), new GoogleMap.CancelableCallback() {
-                                    @Override
-                                    public void onFinish() {
-                                        googleMapProvider.get().getGoogleMap().getUiSettings().setRotateGesturesEnabled(false);
-                                        unitService.get().createFriendlyUnit(null, playerLocation, Units.BASE);
-
-                                        // TODO DELETE
-                                        unitService.get().createEnemyUnit(null, opponentLocation, Units.BASE);
-                                        // TODO END OF DELETE
-                                    }
-
-                                    @Override
-                                    public void onCancel() {
-                                    }
-                                });
-                            }
-
-                            @Override
-                            public void onCancel() {
-                            }
-                        });
+                        animateCamera(cameraUpdate, playerLocation, opponentLocation);
                     }
 
                     @Override
-                    public void onFailure(Call<GooglePlacesResponsePayload> call, Throwable t) {
+                    public void onFailure(Throwable t) {
                         logger.e("Could not initialize the neutral camps", t);
+                        animateCamera(cameraUpdate, playerLocation, opponentLocation);
                     }
                 });
             }
         };
+    }
+
+    private void animateCamera(CameraUpdate cameraUpdate, final LatLng playerLocation, final LatLng opponentLocation) {
+        googleMapProvider.get().getGoogleMap().animateCamera(cameraUpdate, new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                float zoom = googleMapProvider.get().getGoogleMap().getCameraPosition().zoom;
+                CameraPosition cameraPosition = CameraPosition.builder()
+                        .target(latLngService.get().midpoint(playerLocation, opponentLocation))
+                        .bearing((float) latLngService.get().bearing(playerLocation, opponentLocation))
+                        .zoom(zoom)
+                        .build();
+                googleMapProvider.get().getGoogleMap().animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), new GoogleMap.CancelableCallback() {
+                    @Override
+                    public void onFinish() {
+                        googleMapProvider.get().getGoogleMap().getUiSettings().setRotateGesturesEnabled(false);
+                        unitService.get().createFriendlyUnit(null, playerLocation, Units.BASE);
+                        unitService.get().createEnemyUnit(null, opponentLocation, Units.BASE);
+                    }
+
+                    @Override
+                    public void onCancel() {
+                    }
+                });
+            }
+
+            @Override
+            public void onCancel() {
+            }
+        });
     }
 }
