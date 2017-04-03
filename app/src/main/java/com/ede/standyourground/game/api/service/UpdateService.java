@@ -10,4 +10,5 @@ public interface UpdateService {
     void determineVisibility(Unit unit);
     void determinePosition(Unit unit);
     void processCombat(List<Unit> units);
+    void calculateResourceAccrual();
 }

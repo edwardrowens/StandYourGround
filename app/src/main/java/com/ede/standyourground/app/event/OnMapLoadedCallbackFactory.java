@@ -6,7 +6,7 @@ import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.framework.api.service.LatLngService;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.NeutralCampService;
 import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.networking.api.event.GooglePlacesResponseCallback;
@@ -37,18 +37,21 @@ public class OnMapLoadedCallbackFactory {
     private final Lazy<GoogleMapProvider> googleMapProvider;
     private final Lazy<GooglePlacesNearbySearchService> googlePlacesNearbySearchService;
     private final Lazy<NeutralCampService> neutralCampService;
+    private final Lazy<GameService> gameService;
 
     @Inject
     OnMapLoadedCallbackFactory(Lazy<UnitService> unitService,
                                Lazy<LatLngService> latLngService,
                                Lazy<GoogleMapProvider> googleMapProvider,
                                Lazy<GooglePlacesNearbySearchService> googlePlacesNearbySearchService,
-                               Lazy<NeutralCampService> neutralCampService) {
+                               Lazy<NeutralCampService> neutralCampService,
+                               Lazy<GameService> gameService) {
         this.unitService = unitService;
         this.latLngService = latLngService;
         this.googleMapProvider = googleMapProvider;
         this.googlePlacesNearbySearchService = googlePlacesNearbySearchService;
         this.neutralCampService = neutralCampService;
+        this.gameService = gameService;
     }
 
     public GoogleMap.OnMapLoadedCallback createOnMapLoadedCallback(final LatLng playerLocation, final LatLng opponentLocation, final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent) {
@@ -98,8 +101,7 @@ public class OnMapLoadedCallbackFactory {
                     @Override
                     public void onFinish() {
                         googleMapProvider.get().getGoogleMap().getUiSettings().setRotateGesturesEnabled(false);
-                        unitService.get().createFriendlyUnit(null, playerLocation, Units.BASE);
-                        unitService.get().createEnemyUnit(null, opponentLocation, Units.BASE);
+                        gameService.get().startGame(playerLocation, opponentLocation);
                     }
 
                     @Override

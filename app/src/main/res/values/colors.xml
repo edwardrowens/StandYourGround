@@ -10,4 +10,6 @@
     <color name="friendlyMedicNeutralCampGreen">#FF42f456</color>
     <color name="enemyMedicNeutralCampGreen">#FF2ba839</color>
     <color name="medicPink">#FFff0098</color>
+    <color name="friendlyBankNeutralCampGold">#FFD700</color>
+    <color name="enemyBankNeutralCampGold">#FFdaa520</color>
 </resources>

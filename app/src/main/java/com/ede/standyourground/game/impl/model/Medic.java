@@ -54,7 +54,7 @@ public class Medic extends MovableUnit implements Healer {
         this.stop();
         if ((System.currentTimeMillis() - lastHealTime) > (1000 / HEALS_PER_SECOND)) {
             int missingHealth = healable.getMaxHealth() - healable.getHealth();
-            int healAmount = missingHealth >= HEAL_AMOUNT ? HEAL_AMOUNT : HEAL_AMOUNT - missingHealth;
+            int healAmount = missingHealth >= HEAL_AMOUNT ? HEAL_AMOUNT : missingHealth;
             healable.incrementHealth(healAmount);
             lastHealTime = System.currentTimeMillis();
             return true;

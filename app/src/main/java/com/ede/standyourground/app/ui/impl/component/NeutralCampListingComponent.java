@@ -12,7 +12,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.ui.api.component.Component;
@@ -117,11 +116,10 @@ public class NeutralCampListingComponent implements Component {
                 public void onError() {
                     logger.e("Could not load photo for %s", textView.getText());
                     container.removeView(progressBar);
-                    Toast.makeText(activity, String.format("Could not load photo for %s", textView.getText()), Toast.LENGTH_SHORT).show();
                 }
             });
         } else {
-            Toast.makeText(activity, String.format("No photos found for %s", textView.getText()), Toast.LENGTH_SHORT).show();
+            logger.i("No photos found for %s", textView.getText());
         }
     }
 

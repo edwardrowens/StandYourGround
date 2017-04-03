@@ -1,8 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/mapActivityContainer"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    android:orientation="vertical">
+                android:id="@+id/mapActivityContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/mapContainer"
@@ -18,7 +18,34 @@
             android:layout_height="match_parent"
             tools:context=".app.activity.MapsActivity">
         </fragment>
+
+        <LinearLayout
+            android:id="@+id/resourcesLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_alignParentRight="true"
+            android:gravity="center">
+            <ImageView
+                android:id="@+id/coinImage"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/goldcoin"
+                />
+
+            <TextView
+                android:id="@+id/coins"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="5dp"
+                android:text="200"
+                android:textColor="@color/cast_expanded_controller_background_color"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
     </RelativeLayout>
+
     <RelativeLayout
         android:id="@+id/bottomLayout"
         android:layout_width="match_parent"
@@ -31,7 +58,7 @@
             android:layout_height="wrap_content"
             android:onClick="onRoute"
             android:text="Confirm Route"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <HorizontalScrollView
             android:id="@+id/unitChoicesScrollView"
@@ -44,18 +71,18 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/footSoldier"
+                    android:id="@+id/footSoldierButton"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:onClick="onSelectUnit"
-                    android:text="@string/footSoldier" />
+                    android:text="@string/footSoldier"/>
 
                 <Button
-                    android:id="@+id/marauder"
+                    android:id="@+id/marauderButton"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:onClick="onSelectUnit"
-                    android:text="@string/marauder" />
+                    android:text="@string/marauder"/>
 
                 <Button
                     android:id="@+id/medicButton"

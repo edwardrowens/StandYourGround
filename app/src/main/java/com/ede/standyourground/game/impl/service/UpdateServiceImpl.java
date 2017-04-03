@@ -12,6 +12,8 @@ import com.ede.standyourground.game.api.model.Healer;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Unit;
+import com.ede.standyourground.game.api.service.PlayerService;
+import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.game.api.service.UpdateService;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
@@ -29,21 +31,24 @@ public class UpdateServiceImpl implements UpdateService {
 
     private final Lazy<RouteService> routeService;
     private final Lazy<LatLngService> latLngService;
-    private final Lazy<UnitServiceImpl> worldManager;
+    private final Lazy<UnitService> unitService;
+    private final Lazy<PlayerService> playerService;
 
     @Inject
     UpdateServiceImpl(Lazy<RouteService> routeService,
                       Lazy<LatLngService> latLngService,
-                      Lazy<UnitServiceImpl> worldManager) {
+                      Lazy<UnitService> unitService,
+                      Lazy<PlayerService> playerService) {
         this.routeService = routeService;
         this.latLngService = latLngService;
-        this.worldManager = worldManager;
+        this.unitService = unitService;
+        this.playerService = playerService;
     }
 
     @Override
     public void determineVisibility(Unit unit) {
         if (unit.getHostility() != Hostility.FRIENDLY) {
-            List<Unit> units = worldManager.get().getUnits();
+            List<Unit> units = unitService.get().getUnits();
             boolean visible = false;
             for (int i = 0; i < units.size() && !visible; ++i) {
                 Unit target = units.get(i);
@@ -54,7 +59,7 @@ public class UpdateServiceImpl implements UpdateService {
                     visible = latLngService.get().withinDistance(unitPosition, targetPosition, target.getVisionRadius() + unit.getRadius());
                 }
             }
-            worldManager.get().getUnit(unit.getId()).setIsVisible(visible);
+            unitService.get().getUnit(unit.getId()).setIsVisible(visible);
         }
     }
 
@@ -133,6 +138,15 @@ public class UpdateServiceImpl implements UpdateService {
             int deadUnit = deadTargets.keyAt(i);
             int killingUnit = deadTargets.valueAt(i);
             units.get(deadUnit).onDeath(units.get(killingUnit));
+        }
+    }
+
+    @Override
+    public void calculateResourceAccrual() {
+        long lastResourceAccrual = playerService.get().getLastResourceAccrual();
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastResourceAccrual >= 10000) {
+            playerService.get().accrueIncome();
         }
     }
 }

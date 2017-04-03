@@ -1,13 +1,21 @@
 package com.ede.standyourground.app.activity;
 
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ede.standyourground.R;
@@ -25,7 +33,9 @@ import com.ede.standyourground.framework.api.dagger.application.MyApp;
 import com.ede.standyourground.framework.api.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.framework.api.service.DrawRouteService;
+import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener;
 import com.ede.standyourground.game.api.event.listener.GameEndListener;
+import com.ede.standyourground.game.api.event.listener.IncomeAccruedListener;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
 import com.ede.standyourground.game.api.event.listener.PositionChangeListener;
 import com.ede.standyourground.game.api.event.listener.UnitCreatedListener;
@@ -36,7 +46,9 @@ import com.ede.standyourground.game.api.model.NeutralCamp;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.Units;
 import com.ede.standyourground.game.api.service.GameService;
+import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
+import com.ede.standyourground.game.impl.model.BankNeutralCamp;
 import com.ede.standyourground.game.impl.model.MedicNeutralCamp;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -64,6 +76,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private HorizontalScrollView unitChoicesScrollView;
     private Button confirmRouteButton;
     private Button medicUnitButton;
+    private Button footSoldierButton;
+    private Button marauderButton;
+    private TextView coins;
 
     private static GoogleMap googleMap;
     private List<Marker> waypoints = new ArrayList<>();
@@ -73,15 +88,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final Map<Class<? extends Component>, Component> componentMap = new ConcurrentHashMap<>();
     private static final Map<UUID, Circle> circles = new ConcurrentHashMap<>();
 
-    @Inject GoogleMapProvider googleMapProvider;
-    @Inject GameSessionIdProvider gameSessionIdProvider;
-    @Inject DrawRouteService drawRouteService;
-    @Inject GameService gameService;
-    @Inject UnitService unitService;
-    @Inject OnCircleClickListenerFactory onCircleClickListenerFactory;
-    @Inject HealthBarComponentFactory healthBarComponentFactory;
-    @Inject OnMapLoadedCallbackFactory onMapLoadedCallbackFactory;
-    @Inject OnCameraMoveListenerFactory onCameraMoveListenerFactory;
+    @Inject
+    GoogleMapProvider googleMapProvider;
+    @Inject
+    GameSessionIdProvider gameSessionIdProvider;
+    @Inject
+    DrawRouteService drawRouteService;
+    @Inject
+    GameService gameService;
+    @Inject
+    UnitService unitService;
+    @Inject
+    OnCircleClickListenerFactory onCircleClickListenerFactory;
+    @Inject
+    HealthBarComponentFactory healthBarComponentFactory;
+    @Inject
+    OnMapLoadedCallbackFactory onMapLoadedCallbackFactory;
+    @Inject
+    OnCameraMoveListenerFactory onCameraMoveListenerFactory;
+    @Inject
+    PlayerService playerService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +115,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         MyApp.getAppComponent().inject(this);
 
         UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0, 0));
-        NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0,0), "SUCK MY WEINERRRRRR");
+        NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0, 0), "SUCK MY WEINERRRRRR");
         componentMap.put(UnitGroupComponent.class, unitGroupComponent);
         componentMap.put(HealthBarComponent.class, healthBarComponentFactory.createHealthBarComponent(this));
         componentMap.put(NeutralCampListingComponent.class, neutralCampListingComponent);
@@ -235,16 +261,106 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        gameService.startGame();
+        gameService.registerCoinBalanceChangeListener(new CoinBalanceChangeListener() {
+            @Override
+            public void onCoinBalanceChange(final int oldBalance, final int newBalance) {
+                MapsActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ValueAnimator valueAnimator = new ValueAnimator();
+
+                        // TODO this is very chatty
+                        if (playerService.checkFunds(Units.MEDIC.getCost())) {
+                            medicUnitButton.setEnabled(true);
+                        } else {
+                            medicUnitButton.setEnabled(false);
+                        }
+                        if (playerService.checkFunds(Units.FOOT_SOLDIER.getCost())) {
+                            footSoldierButton.setEnabled(true);
+                        } else {
+                            footSoldierButton.setEnabled(false);
+                        }
+                        if (playerService.checkFunds(Units.MARAUDER.getCost())) {
+                            marauderButton.setEnabled(true);
+                        } else {
+                            marauderButton.setEnabled(false);
+                        }
+
+                        valueAnimator.setObjectValues(oldBalance, newBalance);
+                        valueAnimator.setDuration(500);
+                        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                            @Override
+                            public void onAnimationUpdate(ValueAnimator animation) {
+                                coins.setText(Integer.toString((int) animation.getAnimatedValue()));
+                            }
+                        });
+                        valueAnimator.start();
+                    }
+                });
+            }
+        });
+
+        playerService.registerIncomeAccruedListener(new IncomeAccruedListener() {
+            @Override
+            public void onIncomeAccrued() {
+                MapsActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (Unit unit : unitService.getUnits()) {
+                            if (unit instanceof BankNeutralCamp && unit.getHostility() == Hostility.FRIENDLY) {
+                                Point point = googleMap.getProjection().toScreenLocation(unit.getStartingPosition());
+                                Animation animation = new TranslateAnimation(point.x, point.x, point.y, point.y - 50);
+                                animation.setDuration(1000);
+                                animation.setFillAfter(true);
+                                final TextView textView = new TextView(MapsActivity.this);
+                                FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                                logger.e("%s", point);
+                                layoutParams.topMargin = point.y;
+                                layoutParams.leftMargin = point.x;
+                                textView.setLayoutParams(layoutParams);
+                                textView.setText(Integer.toString(((BankNeutralCamp) unit).getProvidedIncome()));
+                                textView.setTypeface(null, Typeface.BOLD);
+                                textView.setTextColor(getResources().getColor(R.color.cast_expanded_controller_background_color));
+                                textView.setAnimation(animation);
+                                animation.setAnimationListener(new Animation.AnimationListener() {
+                                    @Override
+                                    public void onAnimationStart(Animation animation) {
+
+                                    }
+
+                                    @Override
+                                    public void onAnimationEnd(Animation animation) {
+                                        ((ViewGroup) textView.getParent()).removeView(textView);
+                                    }
+
+                                    @Override
+                                    public void onAnimationRepeat(Animation animation) {
+
+                                    }
+                                });
+                                ((ViewGroup) findViewById(R.id.mapContainer)).addView(textView);
+                                textView.animate();
+                            }
+                        }
+                    }
+                });
+            }
+        });
 
         confirmRouteButton = (Button) findViewById(R.id.confirmRouteButton);
         unitChoicesScrollView = (HorizontalScrollView) findViewById(R.id.unitChoicesScrollView);
         medicUnitButton = (Button) findViewById(R.id.medicButton);
+        footSoldierButton = (Button) findViewById(R.id.footSoldierButton);
+        marauderButton = (Button) findViewById(R.id.marauderButton);
+        coins = (TextView) findViewById(R.id.coins);
+        LinearLayout resourcesLayout = (LinearLayout) findViewById(R.id.resourcesLayout);
+        resourcesLayout.setZ(1f);
     }
 
     public void onRoute(View view) {
         logger.i("On route clicked");
         drawRouteService.drawRoutesForUnit(selectedUnit, waypoints, playerLocation, opponentLocation);
+        playerService.makePurchase(selectedUnit.getCost());
 
         // TODO DELETE
         logger.i("Creating enemy unit.");
@@ -272,10 +388,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         unitChoicesScrollView.setVisibility(View.GONE);
         confirmRouteButton.setVisibility(View.VISIBLE);
         switch (view.getId()) {
-            case R.id.footSoldier:
+            case R.id.footSoldierButton:
                 selectedUnit = Units.FOOT_SOLDIER;
                 break;
-            case R.id.marauder:
+            case R.id.marauderButton:
                 selectedUnit = Units.MARAUDER;
                 break;
             case R.id.medicButton:

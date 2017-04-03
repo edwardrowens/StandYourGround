@@ -75,6 +75,9 @@ public class NeutralCampServiceImpl implements NeutralCampService {
             case HOSPITAL:
                 units = Units.MEDIC_NEUTRAL_CAMP;
                 break;
+            case BANK:
+                units = Units.BANK_NEUTRAL_CAMP;
+                break;
         }
 
         return units;
@@ -83,7 +86,6 @@ public class NeutralCampServiceImpl implements NeutralCampService {
     @Override
     public List<GooglePlaceResult> filterNeutralCamps(List<GooglePlaceResult> googlePlaceResults, LatLng player, LatLng opponent) {
         List<GooglePlaceResult> toReturn = new ArrayList<>();
-        List<GooglePlaceResult> filtered = new ArrayList<>();
         LatLngBounds latLngBounds = latLngService.get().createBounds(player, opponent);
 
         List<Unit> units = unitService.get().getUnits();

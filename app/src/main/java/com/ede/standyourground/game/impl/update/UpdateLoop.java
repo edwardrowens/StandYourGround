@@ -67,6 +67,7 @@ public class UpdateLoop implements Runnable {
             long p = System.currentTimeMillis();
             updateService.get().determineVisibility(unit);
             visibility += System.currentTimeMillis() - p;
+            updateService.get().calculateResourceAccrual();
         }
         long m = System.currentTimeMillis();
         updateService.get().processCombat(units);

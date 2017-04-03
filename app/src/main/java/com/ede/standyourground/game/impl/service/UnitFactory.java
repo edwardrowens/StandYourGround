@@ -6,6 +6,7 @@ import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.Path;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.impl.model.BankNeutralCamp;
 import com.ede.standyourground.game.impl.model.Base;
 import com.ede.standyourground.game.impl.model.FootSoldier;
 import com.ede.standyourground.game.impl.model.Marauder;
@@ -70,6 +71,9 @@ public class UnitFactory {
         switch(type) {
             case MEDIC_NEUTRAL_CAMP:
                 unit = new MedicNeutralCamp(position, name, photoReference, hostility);
+                break;
+            case BANK_NEUTRAL_CAMP:
+                unit = new BankNeutralCamp(position, name, photoReference, hostility);
                 break;
             default:
                 throw new IllegalArgumentException("Units " + type.toString() + " is not currently supported.");
