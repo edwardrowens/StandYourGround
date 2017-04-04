@@ -102,6 +102,7 @@ public class OnMapLoadedCallbackFactory {
                     public void onFinish() {
                         googleMapProvider.get().getGoogleMap().getUiSettings().setRotateGesturesEnabled(false);
                         gameService.get().startGame(playerLocation, opponentLocation);
+                        googleMapProvider.get().getGoogleMap().getUiSettings().setAllGesturesEnabled(true);
                     }
 
                     @Override
