@@ -2,6 +2,7 @@ package com.ede.standyourground.game.impl.service;
 
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.providers.GameSessionIdProvider;
+import com.ede.standyourground.game.api.event.listener.BankNeutralCampIncomeListener;
 import com.ede.standyourground.game.api.event.listener.GameEndListener;
 import com.ede.standyourground.game.api.event.listener.HealthChangeListener;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
@@ -12,7 +13,9 @@ import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
+import com.ede.standyourground.game.impl.model.BankNeutralCamp;
 import com.ede.standyourground.game.impl.model.Base;
 import com.ede.standyourground.game.impl.model.FootSoldier;
 import com.ede.standyourground.networking.api.NetworkingHandler;
@@ -40,6 +43,7 @@ public class UnitServiceImpl implements UnitService {
     private final Lazy<UnitFactory> unitCreator;
     private final Lazy<NetworkingHandler> networkingManager;
     private final Lazy<GameSessionIdProvider> gameSessionIdProvider;
+    private final Lazy<PlayerService> playerService;
 
     // Listeners
     private final List<OnDeathListener> onDeathListeners = new CopyOnWriteArrayList<>();
@@ -48,14 +52,17 @@ public class UnitServiceImpl implements UnitService {
     private final List<UnitCreatedListener> unitCreatedListeners = new CopyOnWriteArrayList<>();
     private final List<PositionChangeListener> positionChangeListeners = new CopyOnWriteArrayList<>();
     private final List<VisibilityChangeListener> visibilityChangeListeners = new CopyOnWriteArrayList<>();
+    private final List<BankNeutralCampIncomeListener> bankNeutralCampIncomeListeners = new CopyOnWriteArrayList<>();
 
     @Inject
     UnitServiceImpl(Lazy<UnitFactory> unitFactory,
                     Lazy<NetworkingHandler> networkingManager,
-                    Lazy<GameSessionIdProvider> gameSessionIdProvider) {
+                    Lazy<GameSessionIdProvider> gameSessionIdProvider,
+                    Lazy<PlayerService> playerService) {
         this.unitCreator = unitFactory;
         this.networkingManager = networkingManager;
         this.gameSessionIdProvider = gameSessionIdProvider;
+        this.playerService = playerService;
     }
 
     @Override
@@ -121,6 +128,11 @@ public class UnitServiceImpl implements UnitService {
         visibilityChangeListeners.add(visibilityChangeListener);
     }
 
+    @Override
+    public void registerBankNeutralCampIncomeListener(BankNeutralCampIncomeListener bankNeutralCampIncomeListener) {
+        bankNeutralCampIncomeListeners.add(bankNeutralCampIncomeListener);
+    }
+
     private void addPlayerUnit(final Unit unit) {
         sendCreateUnitRequest(unit);
         addUnit(unit);
@@ -176,6 +188,19 @@ public class UnitServiceImpl implements UnitService {
                 }
             });
         }
+        if (unit instanceof BankNeutralCamp && unit.getHostility() == Hostility.FRIENDLY) {
+            playerService.get().registerIncomeAccruedListener((BankNeutralCamp) unit);
+            ((BankNeutralCamp) unit).registerBankNeutralCampIncomeListener(new BankNeutralCampIncomeListener() {
+                @Override
+                public void onBankNeutralCampIncome(BankNeutralCamp bank) {
+                    for (BankNeutralCampIncomeListener bankNeutralCampIncomeListener : bankNeutralCampIncomeListeners) {
+                        bankNeutralCampIncomeListener.onBankNeutralCampIncome(bank);
+                    }
+                }
+            });
+        }
+
+
         units.put(unit.getId(), unit);
         logger.i("Added unit. %d units managed", units.size());
 

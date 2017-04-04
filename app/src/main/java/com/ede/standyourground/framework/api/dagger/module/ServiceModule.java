@@ -4,13 +4,17 @@ import com.ede.standyourground.app.ui.api.service.HealthBarService;
 import com.ede.standyourground.app.ui.impl.service.HealthBarServiceImpl;
 import com.ede.standyourground.framework.api.service.DirectionsService;
 import com.ede.standyourground.framework.api.service.DrawRouteService;
+import com.ede.standyourground.framework.api.service.GraphicService;
 import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.framework.api.service.MathService;
+import com.ede.standyourground.framework.api.service.ProjectionService;
 import com.ede.standyourground.framework.api.service.RouteService;
 import com.ede.standyourground.framework.impl.service.DirectionsServiceImpl;
 import com.ede.standyourground.framework.impl.service.DrawRouteServiceImpl;
+import com.ede.standyourground.framework.impl.service.GraphicServiceImpl;
 import com.ede.standyourground.framework.impl.service.LatLngServiceImpl;
 import com.ede.standyourground.framework.impl.service.MathServiceImpl;
+import com.ede.standyourground.framework.impl.service.ProjectionServiceImpl;
 import com.ede.standyourground.framework.impl.service.RouteServiceImpl;
 import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.NeutralCampService;
@@ -62,4 +66,8 @@ public abstract class ServiceModule {
     @Binds public abstract NeutralCampService bindNeutralCampService(NeutralCampServiceImpl neutralCampService);
 
     @Binds public abstract PlayerService bindPlayerService(PlayerServiceImpl playerService);
+
+    @Binds public abstract ProjectionService bindProjectionService(ProjectionServiceImpl projectionService);
+
+    @Binds public abstract GraphicService bindGraphicService(GraphicServiceImpl graphicService);
 }

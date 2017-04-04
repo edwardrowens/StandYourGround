@@ -3,6 +3,7 @@ package com.ede.standyourground.app.activity;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -33,9 +34,10 @@ import com.ede.standyourground.framework.api.dagger.application.MyApp;
 import com.ede.standyourground.framework.api.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.framework.api.service.DrawRouteService;
+import com.ede.standyourground.framework.api.service.GraphicService;
+import com.ede.standyourground.game.api.event.listener.BankNeutralCampIncomeListener;
 import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener;
 import com.ede.standyourground.game.api.event.listener.GameEndListener;
-import com.ede.standyourground.game.api.event.listener.IncomeAccruedListener;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
 import com.ede.standyourground.game.api.event.listener.PositionChangeListener;
 import com.ede.standyourground.game.api.event.listener.UnitCreatedListener;
@@ -52,6 +54,7 @@ import com.ede.standyourground.game.impl.model.BankNeutralCamp;
 import com.ede.standyourground.game.impl.model.MedicNeutralCamp;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -108,6 +111,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     OnCameraMoveListenerFactory onCameraMoveListenerFactory;
     @Inject
     PlayerService playerService;
+    @Inject
+    GraphicService graphicService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -300,48 +305,50 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        playerService.registerIncomeAccruedListener(new IncomeAccruedListener() {
+        unitService.registerBankNeutralCampIncomeListener(new BankNeutralCampIncomeListener() {
             @Override
-            public void onIncomeAccrued() {
+            public void onBankNeutralCampIncome(final BankNeutralCamp bank) {
                 MapsActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        for (Unit unit : unitService.getUnits()) {
-                            if (unit instanceof BankNeutralCamp && unit.getHostility() == Hostility.FRIENDLY) {
-                                Point point = googleMap.getProjection().toScreenLocation(unit.getStartingPosition());
-                                Animation animation = new TranslateAnimation(point.x, point.x, point.y, point.y - 50);
-                                animation.setDuration(1000);
-                                animation.setFillAfter(true);
-                                final TextView textView = new TextView(MapsActivity.this);
-                                FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                                logger.e("%s", point);
-                                layoutParams.topMargin = point.y;
-                                layoutParams.leftMargin = point.x;
-                                textView.setLayoutParams(layoutParams);
-                                textView.setText(Integer.toString(((BankNeutralCamp) unit).getProvidedIncome()));
-                                textView.setTypeface(null, Typeface.BOLD);
-                                textView.setTextColor(getResources().getColor(R.color.cast_expanded_controller_background_color));
-                                textView.setAnimation(animation);
-                                animation.setAnimationListener(new Animation.AnimationListener() {
-                                    @Override
-                                    public void onAnimationStart(Animation animation) {
+                        Projection projection = googleMap.getProjection();
+                        final Point unitCenter = projection.toScreenLocation(bank.getStartingPosition());
+                        String text = Integer.toString(bank.getProvidedIncome());
 
-                                    }
-
-                                    @Override
-                                    public void onAnimationEnd(Animation animation) {
-                                        ((ViewGroup) textView.getParent()).removeView(textView);
-                                    }
-
-                                    @Override
-                                    public void onAnimationRepeat(Animation animation) {
-
-                                    }
-                                });
-                                ((ViewGroup) findViewById(R.id.mapContainer)).addView(textView);
-                                textView.animate();
+                        final TextView textView = new TextView(MapsActivity.this);
+                        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                        layoutParams.topMargin = unitCenter.y;
+                        layoutParams.leftMargin = unitCenter.x;
+                        textView.setLayoutParams(layoutParams);
+                        textView.setText(text);
+                        textView.setTypeface(null, Typeface.BOLD);
+                        textView.setTextColor(getResources().getColor(R.color.cast_expanded_controller_background_color));
+                        Rect rect = new Rect();
+                        textView.getPaint().getTextBounds(text, 0, text.length(), rect);
+                        float x = unitCenter.x - rect.width() / 2;
+                        float y = unitCenter.y - rect.height() * 2;
+                        Animation animation = new TranslateAnimation(x, x, y, y - rect.height());
+                        animation.setDuration(1000);
+                        animation.setFillAfter(true);
+                        textView.setAnimation(animation);
+                        animation.setAnimationListener(new Animation.AnimationListener() {
+                            @Override
+                            public void onAnimationStart(Animation animation) {
                             }
-                        }
+
+                            @Override
+                            public void onAnimationEnd(Animation animation) {
+                                ((ViewGroup) textView.getParent()).removeView(textView);
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animation animation) {
+
+                            }
+                        });
+                        textView.animate();
+
+                        ((ViewGroup) findViewById(R.id.mapContainer)).addView(textView);
                     }
                 });
             }

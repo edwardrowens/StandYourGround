@@ -1,5 +1,6 @@
 package com.ede.standyourground.game.api.service;
 
+import com.ede.standyourground.game.api.event.observer.BankNeutralCampIncomeObserver;
 import com.ede.standyourground.game.api.event.observer.DeathObserver;
 import com.ede.standyourground.game.api.event.observer.GameEndObserver;
 import com.ede.standyourground.game.api.event.observer.HealthChangeObserver;
@@ -17,7 +18,7 @@ import java.util.UUID;
 /**
  *
  */
-public interface UnitService extends DeathObserver, HealthChangeObserver, GameEndObserver, UnitCreatedObserver, PositionChangeObserver, VisibilityChangeObserver {
+public interface UnitService extends DeathObserver, HealthChangeObserver, GameEndObserver, UnitCreatedObserver, PositionChangeObserver, VisibilityChangeObserver, BankNeutralCampIncomeObserver {
     void createEnemyUnit(List<LatLng> route, LatLng position, Units units);
     void createFriendlyUnit(List<LatLng> route, LatLng position, Units units);
     void createNeutralUnit(LatLng position, Units units, String name, String photoReference, Hostility hostility);

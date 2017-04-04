@@ -7,11 +7,11 @@ import com.ede.standyourground.app.ui.api.service.HealthBarService;
 import com.ede.standyourground.app.ui.impl.component.HealthBar;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.framework.api.service.MathService;
+import com.ede.standyourground.framework.api.service.ProjectionService;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Unit;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.maps.android.SphericalUtil;
 
 import javax.inject.Inject;
 
@@ -25,12 +25,15 @@ public class HealthBarServiceImpl implements HealthBarService {
 
     private final Lazy<GoogleMapProvider> googleMapProvider;
     private final Lazy<MathService> mathService;
+    private final Lazy<ProjectionService> projectionService;
 
     @Inject
     HealthBarServiceImpl(Lazy<GoogleMapProvider> googleMapProvider,
-                         Lazy<MathService> mathService) {
+                         Lazy<MathService> mathService,
+                         Lazy<ProjectionService> projectionService) {
         this.googleMapProvider = googleMapProvider;
         this.mathService = mathService;
+        this.projectionService = projectionService;
     }
 
     @Override
@@ -38,8 +41,7 @@ public class HealthBarServiceImpl implements HealthBarService {
         Projection projection = googleMapProvider.get().getGoogleMap().getProjection();
         LatLng unitPosition = unit instanceof MovableUnit ? ((MovableUnit) unit).getCurrentPosition() : unit.getStartingPosition();
         Point center = projection.toScreenLocation(unitPosition);
-        Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(unitPosition, unit.getRadius(), 0d));
-        double lineDistance = mathService.get().calculateLinearDistance(center, edge);
+        double lineDistance = projectionService.get().calculateUnitPixelRadius(projection, unit);
 
         float healthBarHeight = (float) lineDistance * .75f;
         float healthBarWidth = (float) lineDistance * 2;
