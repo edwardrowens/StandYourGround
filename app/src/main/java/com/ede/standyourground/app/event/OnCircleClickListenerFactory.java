@@ -2,7 +2,9 @@ package com.ede.standyourground.app.event;
 
 import android.graphics.Point;
 
+import com.ede.standyourground.app.ui.api.component.UnitChoicesComponentFactory;
 import com.ede.standyourground.app.ui.impl.component.NeutralCampListingComponent;
+import com.ede.standyourground.app.ui.impl.component.UnitChoicesComponent;
 import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
@@ -14,6 +16,7 @@ import com.ede.standyourground.game.api.model.NeutralCamp;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.Units;
 import com.ede.standyourground.game.api.service.UnitService;
+import com.ede.standyourground.game.impl.model.Base;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.Circle;
@@ -44,19 +47,22 @@ public class OnCircleClickListenerFactory {
     private final Lazy<MathService> mathService;
     private final Lazy<UnitService> unitService;
     private final Lazy<LatLngService> latLngService;
+    private final Lazy<UnitChoicesComponentFactory> unitChoicesComponentFactory;
 
     @Inject
     OnCircleClickListenerFactory(Lazy<GoogleMapProvider> googleMapProvider,
                                  Lazy<MathService> mathService,
                                  Lazy<UnitService> unitService,
-                                 Lazy<LatLngService> latLngService) {
+                                 Lazy<LatLngService> latLngService,
+                                 Lazy<UnitChoicesComponentFactory> unitChoicesComponentFactory) {
         this.googleMapProvider = googleMapProvider;
         this.mathService = mathService;
         this.unitService = unitService;
         this.latLngService = latLngService;
+        this.unitChoicesComponentFactory = unitChoicesComponentFactory;
     }
 
-    public GoogleMap.OnCircleClickListener createOnCircleClickedListener(final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent) {
+    public GoogleMap.OnCircleClickListener createOnCircleClickedListener(final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent, final UnitChoicesComponent unitChoicesComponent) {
         return new GoogleMap.OnCircleClickListener() {
             @Override
             public void onCircleClick(Circle circle) {
@@ -65,7 +71,9 @@ public class OnCircleClickListenerFactory {
 
                 Map<Units, Integer> bag = new HashMap<>();
                 List<Unit> unitsOnPosition = new ArrayList<>();
-                Unit neutralUnit = null;
+                Unit unitClicked = null;
+
+                // Find what unit was clicked or if multiple units were clicked
                 for (Unit unit : unitService.get().getUnits()) {
                     LatLng unitPosition = unit instanceof MovableUnit ? ((MovableUnit) unit).getCurrentPosition() : unit.getStartingPosition();
                     boolean samePosition = latLngService.get().withinDistance(unitPosition, circle.getCenter(), EQUAL_DISTANCE_TOLERANCE);
@@ -74,7 +82,9 @@ public class OnCircleClickListenerFactory {
                         bag.put(unit.getType(), bag.containsKey(unit.getType()) ? bag.get(unit.getType()) + 1 : 1);
                     }
                     if (unit instanceof NeutralCamp && samePosition) {
-                        neutralUnit = unit;
+                        unitClicked = unit;
+                    } else if (unit instanceof Base && samePosition) {
+                        unitClicked = unit;
                     }
                 }
 
@@ -109,13 +119,16 @@ public class OnCircleClickListenerFactory {
                         }
                     }
                 }
-                if (neutralUnit != null) {
+                if (unitClicked != null) {
                     Projection projection = googleMapProvider.get().getGoogleMap().getProjection();
                     Point center = projection.toScreenLocation(circle.getCenter());
                     Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(circle.getCenter(), circle.getRadius(), 0d));
                     double lineDistance = mathService.get().calculateLinearDistance(center, edge);
-
-                    neutralCampListingComponent.setTextAndPhoto(((NeutralCamp) neutralUnit).getName(), ((NeutralCamp) neutralUnit).getPhotoReference(), center, lineDistance);
+                    if (unitClicked instanceof NeutralCamp) {
+                        neutralCampListingComponent.setTextAndPhoto(((NeutralCamp) unitClicked).getName(), ((NeutralCamp) unitClicked).getPhotoReference(), center, lineDistance);
+                    } else {
+                        unitChoicesComponent.realign(center, lineDistance);
+                    }
                 }
             }
         };

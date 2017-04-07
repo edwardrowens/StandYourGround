@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+                      android:id="@+id/unitChoicesScrollView"
+                      android:layout_width="@dimen/unit_choice_scroll_width"
+                      android:layout_height="wrap_content"
+                      android:background="@drawable/border"
+                      android:paddingLeft="5dp"
+                      android:paddingRight="5dp"
+                      android:visibility="invisible">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="5dp">
+
+        <LinearLayout
+            android:id="@+id/foot_soldier_choice_container"
+            android:layout_width="@dimen/unit_choice_width"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/foot_soldier_choice_icon_and_cost_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/foot_soldier_choice_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/foot_soldier"/>
+
+                <TextView
+                    android:id="@+id/foot_soldier_choice_cost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentTop="true"
+                    android:text="@integer/foot_soldier_cost"
+                    android:textSize="@dimen/unit_choice_cost_size"/>
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/foot_soldier_choice_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/footSoldier"
+                android:textSize="@dimen/unit_choice_title_size"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/marauder_choice_container"
+            android:layout_width="@dimen/unit_choice_width"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/marauder_choice_icon_and_cost_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/marauder_choice_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/marauder"/>
+
+                <TextView
+                    android:id="@+id/marauder_choice_cost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentTop="true"
+                    android:text="@integer/marauder_cost"
+                    android:textSize="@dimen/unit_choice_cost_size"/>
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/marauder_choice_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/marauder"
+                android:textSize="@dimen/unit_choice_title_size"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/medic_choice_container"
+            android:layout_width="@dimen/unit_choice_width"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/medic_choice_icon_and_cost_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/medic_choice_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/medic"/>
+
+                <TextView
+                    android:id="@+id/medic_choice_cost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentTop="true"
+                    android:text="@integer/medic_cost"
+                    android:textSize="@dimen/unit_choice_cost_size"/>
+
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/medic_choice_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/medic"
+                android:textSize="@dimen/unit_choice_title_size"/>
+        </LinearLayout>
+    </LinearLayout>
+</HorizontalScrollView>

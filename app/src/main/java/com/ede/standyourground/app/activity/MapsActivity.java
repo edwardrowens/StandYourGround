@@ -2,6 +2,7 @@ package com.ede.standyourground.app.activity;
 
 import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -26,8 +27,10 @@ import com.ede.standyourground.app.event.OnCircleClickListenerFactory;
 import com.ede.standyourground.app.event.OnMapLoadedCallbackFactory;
 import com.ede.standyourground.app.ui.api.component.Component;
 import com.ede.standyourground.app.ui.api.component.HealthBarComponentFactory;
+import com.ede.standyourground.app.ui.api.component.UnitChoicesComponentFactory;
 import com.ede.standyourground.app.ui.impl.component.HealthBarComponent;
 import com.ede.standyourground.app.ui.impl.component.NeutralCampListingComponent;
+import com.ede.standyourground.app.ui.impl.component.UnitChoicesComponent;
 import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
@@ -75,12 +78,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final Logger logger = new Logger(MapsActivity.class);
 
+    public static Resources resources;
+
     // VIEWS
     private HorizontalScrollView unitChoicesScrollView;
     private Button confirmRouteButton;
-    private Button medicUnitButton;
-    private Button footSoldierButton;
-    private Button marauderButton;
+    private LinearLayout medicUnitButton;
+    private LinearLayout footSoldierButton;
+    private LinearLayout marauderButton;
     private TextView coins;
 
     private static GoogleMap googleMap;
@@ -113,23 +118,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     PlayerService playerService;
     @Inject
     GraphicService graphicService;
+    @Inject
+    UnitChoicesComponentFactory unitChoicesComponentFactory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         MyApp.getAppComponent().inject(this);
 
-        UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0, 0));
-        NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0, 0), "SUCK MY WEINERRRRRR");
-        componentMap.put(UnitGroupComponent.class, unitGroupComponent);
-        componentMap.put(HealthBarComponent.class, healthBarComponentFactory.createHealthBarComponent(this));
-        componentMap.put(NeutralCampListingComponent.class, neutralCampListingComponent);
-
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        resources = getResources();
 
         playerLocation = (LatLng) getIntent().getExtras().get(FindMatchActivity.PLAYER_LOCATION);
         opponentLocation = (LatLng) getIntent().getExtras().get(FindMatchActivity.OPPONENT_LOCATION);
@@ -171,14 +174,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setCompassEnabled(false);
 
-        UnitGroupComponent unitGroupComponent = (UnitGroupComponent) componentMap.get(UnitGroupComponent.class);
-        HealthBarComponent healthBarComponent = (HealthBarComponent) componentMap.get(HealthBarComponent.class);
-        NeutralCampListingComponent neutralCampListingComponent = (NeutralCampListingComponent) componentMap.get(NeutralCampListingComponent.class);
+        UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0, 0));
+        NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0, 0), "");
+        final UnitChoicesComponent unitChoicesComponent = unitChoicesComponentFactory.createUnitChoicesComponent(this, (ViewGroup) findViewById(R.id.mapContainer));
+        final HealthBarComponent healthBarComponent = healthBarComponentFactory.createHealthBarComponent(this);
+
+        componentMap.put(UnitGroupComponent.class, unitGroupComponent);
+        componentMap.put(HealthBarComponent.class, healthBarComponent);
+        componentMap.put(NeutralCampListingComponent.class, neutralCampListingComponent);
+        componentMap.put(UnitChoicesComponent.class, unitChoicesComponent);
 
         // Create map listeners
-        googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, healthBarComponent, neutralCampListingComponent));
+        googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, healthBarComponent, neutralCampListingComponent, unitChoicesComponent));
         googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(playerLocation, opponentLocation, unitGroupComponent, neutralCampListingComponent));
-        googleMap.setOnCircleClickListener(onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent));
+        googleMap.setOnCircleClickListener(onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesComponent));
 
         // Register listeners for game events
         gameService.registerGameEndListener(new GameEndListener() {
@@ -274,22 +283,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void run() {
                         ValueAnimator valueAnimator = new ValueAnimator();
-
                         // TODO this is very chatty
                         if (playerService.checkFunds(Units.MEDIC.getCost())) {
-                            medicUnitButton.setEnabled(true);
+                            logger.e("SETTING MEDIC TO VISIBLE");
+                            unitChoicesComponent.setVisibility(Units.MEDIC, View.VISIBLE);
                         } else {
-                            medicUnitButton.setEnabled(false);
+                            logger.e("SETTING MEDIC TO INVISIBLE");
+                            unitChoicesComponent.setVisibility(Units.MEDIC, View.INVISIBLE);
                         }
                         if (playerService.checkFunds(Units.FOOT_SOLDIER.getCost())) {
-                            footSoldierButton.setEnabled(true);
+                            logger.e("SETTING FOOT SOLDIER TO VISIBLE");
+                            unitChoicesComponent.setVisibility(Units.FOOT_SOLDIER, View.VISIBLE);
                         } else {
-                            footSoldierButton.setEnabled(false);
+                            unitChoicesComponent.setVisibility(Units.FOOT_SOLDIER, View.INVISIBLE);
+                            logger.e("SETTING FOOT SOLDIER TO INVISIBLE");
                         }
                         if (playerService.checkFunds(Units.MARAUDER.getCost())) {
-                            marauderButton.setEnabled(true);
+                            logger.e("SETTING MARAUDER TO VISIBLE");
+                            unitChoicesComponent.setVisibility(Units.MARAUDER, View.VISIBLE);
                         } else {
-                            marauderButton.setEnabled(false);
+                            logger.e("SETTING MARAUDER TO INVISIBLE");
+                            unitChoicesComponent.setVisibility(Units.MARAUDER, View.INVISIBLE);
                         }
 
                         valueAnimator.setObjectValues(oldBalance, newBalance);
@@ -355,12 +369,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        confirmRouteButton = (Button) findViewById(R.id.confirmRouteButton);
         unitChoicesScrollView = (HorizontalScrollView) findViewById(R.id.unitChoicesScrollView);
-        medicUnitButton = (Button) findViewById(R.id.medicButton);
-        footSoldierButton = (Button) findViewById(R.id.footSoldierButton);
-        marauderButton = (Button) findViewById(R.id.marauderButton);
         coins = (TextView) findViewById(R.id.coins);
+
+        medicUnitButton = (LinearLayout) findViewById(R.id.medic_choice_container);
+        footSoldierButton = (LinearLayout) findViewById(R.id.foot_soldier_choice_container);
+        marauderButton = (LinearLayout) findViewById(R.id.marauder_choice_container);
+
         LinearLayout resourcesLayout = (LinearLayout) findViewById(R.id.resourcesLayout);
         resourcesLayout.setZ(1f);
     }
@@ -388,24 +403,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         confirmRouteButton.setVisibility(View.GONE);
         unitChoicesScrollView.setVisibility(View.VISIBLE);
         UnitGroupComponent unitGroupComponent = (UnitGroupComponent) componentMap.get(UnitGroupComponent.class);
+        UnitChoicesComponent unitChoicesComponent = (UnitChoicesComponent) componentMap.get(UnitChoicesComponent.class);
         NeutralCampListingComponent neutralCampListingComponent = (NeutralCampListingComponent) componentMap.get(NeutralCampListingComponent.class);
-        googleMap.setOnCircleClickListener(onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent));
+        googleMap.setOnCircleClickListener(onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesComponent));
     }
 
     public void onSelectUnit(View view) {
         unitChoicesScrollView.setVisibility(View.GONE);
         confirmRouteButton.setVisibility(View.VISIBLE);
-        switch (view.getId()) {
-            case R.id.footSoldierButton:
-                selectedUnit = Units.FOOT_SOLDIER;
-                break;
-            case R.id.marauderButton:
-                selectedUnit = Units.MARAUDER;
-                break;
-            case R.id.medicButton:
-                selectedUnit = Units.MEDIC;
-                break;
-        }
 
         googleMap.setOnCircleClickListener(new GoogleMap.OnCircleClickListener() {
             @Override
