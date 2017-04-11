@@ -1,0 +1,100 @@
+package com.ede.standyourground.app.ui.impl.component;
+
+import android.app.Activity;
+import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
+
+import com.ede.standyourground.app.ui.api.component.Component;
+import com.ede.standyourground.app.ui.api.event.ConfirmRouteListener;
+import com.ede.standyourground.app.ui.api.event.ConfirmRouteObserver;
+import com.ede.standyourground.app.ui.api.event.RouteCancelListener;
+import com.ede.standyourground.app.ui.api.event.RouteCancelObserver;
+import com.ede.standyourground.app.ui.api.event.UnitSelectedListener;
+import com.ede.standyourground.app.ui.api.event.UnitSelectedObserver;
+import com.ede.standyourground.game.api.model.Units;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+/**
+ *
+ */
+
+public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver, UnitSelectedObserver, RouteCancelObserver {
+
+    private final Activity activity;
+    private final HorizontalScrollView unitChoices;
+    private final LinearLayout unitChoicesMenu;
+    private final LinearLayout routeUnitChoice;
+
+    // Listeners
+    private final List<ConfirmRouteListener> confirmRouteListeners = new CopyOnWriteArrayList<>();
+    private final List<UnitSelectedListener> unitSelectedListeners = new CopyOnWriteArrayList<>();
+    private final List<RouteCancelListener> routeCancelListeners = new CopyOnWriteArrayList<>();
+
+    private Units selectedUnit;
+
+    public UnitChoicesMenuComponent(Activity activity, LinearLayout unitChoicesMenu, LinearLayout routeUnitChoice, HorizontalScrollView unitChoices) {
+        this.activity = activity;
+        this.unitChoices = unitChoices;
+        this.unitChoicesMenu = unitChoicesMenu;
+        this.routeUnitChoice = routeUnitChoice;
+    }
+
+    public HorizontalScrollView getUnitChoices() {
+        return unitChoices;
+    }
+
+    public LinearLayout getUnitChoicesMenu() {
+        return unitChoicesMenu;
+    }
+
+    public LinearLayout getRouteUnitChoice() {
+        return  routeUnitChoice;
+    }
+
+    @Override
+    public Activity getActivity() {
+        return activity;
+    }
+
+    @Override
+    public void drawComponentElements() {
+
+    }
+
+    @Override
+    public void registerRouteCancelListener(RouteCancelListener routeCancelListener) {
+        routeCancelListeners.add(routeCancelListener);
+    }
+
+    @Override
+    public void registerConfirmRouteListener(ConfirmRouteListener confirmRouteListener) {
+        confirmRouteListeners.add(confirmRouteListener);
+    }
+
+    @Override
+    public void registerUnitSelectedListener(UnitSelectedListener unitSelectedListener) {
+        unitSelectedListeners.add(unitSelectedListener);
+    }
+
+    public Units getSelectedUnit() {
+        return selectedUnit;
+    }
+
+    public void setSelectedUnit(Units selectedUnit) {
+        this.selectedUnit = selectedUnit;
+    }
+
+    public List<RouteCancelListener> getRouteCancelListeners() {
+        return routeCancelListeners;
+    }
+
+    public List<ConfirmRouteListener> getConfirmRouteListeners() {
+        return confirmRouteListeners;
+    }
+
+    public List<UnitSelectedListener> getUnitSelectedListeners() {
+        return unitSelectedListeners;
+    }
+}

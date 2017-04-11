@@ -13,9 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,10 +25,13 @@ import com.ede.standyourground.app.event.OnCircleClickListenerFactory;
 import com.ede.standyourground.app.event.OnMapLoadedCallbackFactory;
 import com.ede.standyourground.app.ui.api.component.Component;
 import com.ede.standyourground.app.ui.api.component.HealthBarComponentFactory;
-import com.ede.standyourground.app.ui.api.component.UnitChoicesComponentFactory;
-import com.ede.standyourground.app.ui.impl.component.HealthBarComponent;
+import com.ede.standyourground.app.ui.api.component.UnitChoicesMenuComponentFactory;
+import com.ede.standyourground.app.ui.api.event.ConfirmRouteListener;
+import com.ede.standyourground.app.ui.api.event.RouteCancelListener;
+import com.ede.standyourground.app.ui.api.event.UnitSelectedListener;
+import com.ede.standyourground.app.ui.api.service.UnitChoicesMenuService;
 import com.ede.standyourground.app.ui.impl.component.NeutralCampListingComponent;
-import com.ede.standyourground.app.ui.impl.component.UnitChoicesComponent;
+import com.ede.standyourground.app.ui.impl.component.UnitChoicesMenuComponent;
 import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
@@ -80,17 +81,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public static Resources resources;
 
+    // Listeners
+    private GoogleMap.OnCircleClickListener onCircleClickListener;
+
     // VIEWS
-    private HorizontalScrollView unitChoicesScrollView;
-    private Button confirmRouteButton;
-    private LinearLayout medicUnitButton;
-    private LinearLayout footSoldierButton;
-    private LinearLayout marauderButton;
     private TextView coins;
 
     private static GoogleMap googleMap;
     private List<Marker> waypoints = new ArrayList<>();
-    private Units selectedUnit;
     private LatLng playerLocation;
     private LatLng opponentLocation;
     private static final Map<Class<? extends Component>, Component> componentMap = new ConcurrentHashMap<>();
@@ -119,7 +117,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Inject
     GraphicService graphicService;
     @Inject
-    UnitChoicesComponentFactory unitChoicesComponentFactory;
+    UnitChoicesMenuComponentFactory unitChoicesMenuComponentFactory;
+    @Inject
+    UnitChoicesMenuService unitChoicesMenuService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,18 +176,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0, 0));
         NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0, 0), "");
-        final UnitChoicesComponent unitChoicesComponent = unitChoicesComponentFactory.createUnitChoicesComponent(this, (ViewGroup) findViewById(R.id.mapContainer));
-        final HealthBarComponent healthBarComponent = healthBarComponentFactory.createHealthBarComponent(this);
+        final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer));
 
         componentMap.put(UnitGroupComponent.class, unitGroupComponent);
-        componentMap.put(HealthBarComponent.class, healthBarComponent);
         componentMap.put(NeutralCampListingComponent.class, neutralCampListingComponent);
-        componentMap.put(UnitChoicesComponent.class, unitChoicesComponent);
+        componentMap.put(UnitChoicesMenuComponent.class, unitChoicesMenuComponent);
 
         // Create map listeners
-        googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, healthBarComponent, neutralCampListingComponent, unitChoicesComponent));
+        onCircleClickListener = onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent);
+        googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent,  neutralCampListingComponent, unitChoicesMenuComponent));
         googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(playerLocation, opponentLocation, unitGroupComponent, neutralCampListingComponent));
-        googleMap.setOnCircleClickListener(onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesComponent));
+        googleMap.setOnCircleClickListener(onCircleClickListener);
 
         // Register listeners for game events
         gameService.registerGameEndListener(new GameEndListener() {
@@ -239,7 +238,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             removeCircle(mortal.getId());
                         }
                         if (mortal instanceof MedicNeutralCamp && killer.getHostility() == Hostility.FRIENDLY) {
-                            medicUnitButton.setVisibility(View.VISIBLE);
+                            unitChoicesMenuService.setVisibility(unitChoicesMenuComponent, Units.MEDIC, View.VISIBLE);
                         }
                     }
                 });
@@ -283,29 +282,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void run() {
                         ValueAnimator valueAnimator = new ValueAnimator();
-                        // TODO this is very chatty
-                        if (playerService.checkFunds(Units.MEDIC.getCost())) {
-                            logger.e("SETTING MEDIC TO VISIBLE");
-                            unitChoicesComponent.setVisibility(Units.MEDIC, View.VISIBLE);
-                        } else {
-                            logger.e("SETTING MEDIC TO INVISIBLE");
-                            unitChoicesComponent.setVisibility(Units.MEDIC, View.INVISIBLE);
-                        }
-                        if (playerService.checkFunds(Units.FOOT_SOLDIER.getCost())) {
-                            logger.e("SETTING FOOT SOLDIER TO VISIBLE");
-                            unitChoicesComponent.setVisibility(Units.FOOT_SOLDIER, View.VISIBLE);
-                        } else {
-                            unitChoicesComponent.setVisibility(Units.FOOT_SOLDIER, View.INVISIBLE);
-                            logger.e("SETTING FOOT SOLDIER TO INVISIBLE");
-                        }
-                        if (playerService.checkFunds(Units.MARAUDER.getCost())) {
-                            logger.e("SETTING MARAUDER TO VISIBLE");
-                            unitChoicesComponent.setVisibility(Units.MARAUDER, View.VISIBLE);
-                        } else {
-                            logger.e("SETTING MARAUDER TO INVISIBLE");
-                            unitChoicesComponent.setVisibility(Units.MARAUDER, View.INVISIBLE);
-                        }
-
                         valueAnimator.setObjectValues(oldBalance, newBalance);
                         valueAnimator.setDuration(500);
                         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -369,64 +345,59 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        unitChoicesScrollView = (HorizontalScrollView) findViewById(R.id.unitChoicesScrollView);
-        coins = (TextView) findViewById(R.id.coins);
+        unitChoicesMenuComponent.registerUnitSelectedListener(new UnitSelectedListener() {
+            @Override
+            public void onUnitSelected(Units units) {
+                googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                    @Override
+                    public void onMapClick(LatLng latLng) {
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(latLng);
+                        waypoints.add(googleMap.addMarker(markerOptions));
+                    }
+                });
+            }
+        });
 
-        medicUnitButton = (LinearLayout) findViewById(R.id.medic_choice_container);
-        footSoldierButton = (LinearLayout) findViewById(R.id.foot_soldier_choice_container);
-        marauderButton = (LinearLayout) findViewById(R.id.marauder_choice_container);
+        unitChoicesMenuComponent.registerRouteCancelListener(new RouteCancelListener() {
+            @Override
+            public void onRouteCancelled() {
+                for (Marker marker : waypoints) {
+                    marker.remove();
+                }
+                waypoints.clear();
+            }
+        });
+
+        unitChoicesMenuComponent.registerConfirmRouteListener(new ConfirmRouteListener() {
+            @Override
+            public void onConfirmRoute(Units selectedUnit) {
+                logger.i("On route clicked");
+                playerService.makePurchase(selectedUnit.getCost());
+                drawRouteService.drawRoutesForUnit(selectedUnit, waypoints, playerLocation, opponentLocation);
+
+                // TODO DELETE
+                logger.i("Creating enemy unit.");
+                drawRouteService.drawRoutesForEnemyUnit(Units.MARAUDER, new ArrayList<Marker>(), playerLocation, opponentLocation);
+                // TODO END OF DELETE
+
+                googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                    @Override
+                    public void onMapClick(LatLng latLng) {
+                    }
+                });
+
+                for (Marker marker : waypoints) {
+                    marker.remove();
+                }
+                waypoints.clear();
+            }
+        });
+
+        coins = (TextView) findViewById(R.id.coins);
 
         LinearLayout resourcesLayout = (LinearLayout) findViewById(R.id.resourcesLayout);
         resourcesLayout.setZ(1f);
-    }
-
-    public void onRoute(View view) {
-        logger.i("On route clicked");
-        drawRouteService.drawRoutesForUnit(selectedUnit, waypoints, playerLocation, opponentLocation);
-        playerService.makePurchase(selectedUnit.getCost());
-
-        // TODO DELETE
-        logger.i("Creating enemy unit.");
-        drawRouteService.drawRoutesForEnemyUnit(Units.MARAUDER, new ArrayList<Marker>(), playerLocation, opponentLocation);
-        // TODO END OF DELETE
-
-        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-            }
-        });
-
-        for (Marker marker : waypoints) {
-            marker.remove();
-        }
-        waypoints.clear();
-        confirmRouteButton.setVisibility(View.GONE);
-        unitChoicesScrollView.setVisibility(View.VISIBLE);
-        UnitGroupComponent unitGroupComponent = (UnitGroupComponent) componentMap.get(UnitGroupComponent.class);
-        UnitChoicesComponent unitChoicesComponent = (UnitChoicesComponent) componentMap.get(UnitChoicesComponent.class);
-        NeutralCampListingComponent neutralCampListingComponent = (NeutralCampListingComponent) componentMap.get(NeutralCampListingComponent.class);
-        googleMap.setOnCircleClickListener(onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesComponent));
-    }
-
-    public void onSelectUnit(View view) {
-        unitChoicesScrollView.setVisibility(View.GONE);
-        confirmRouteButton.setVisibility(View.VISIBLE);
-
-        googleMap.setOnCircleClickListener(new GoogleMap.OnCircleClickListener() {
-            @Override
-            public void onCircleClick(Circle circle) {
-
-            }
-        });
-
-        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(latLng);
-                waypoints.add(googleMap.addMarker(markerOptions));
-            }
-        });
     }
 
     private void removeCircle(UUID unitId) {

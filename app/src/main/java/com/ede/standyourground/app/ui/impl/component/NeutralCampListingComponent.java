@@ -57,17 +57,15 @@ public class NeutralCampListingComponent implements Component {
             }
         });
 
-        this.textView = (TextView) LayoutInflater.from(activity).inflate(R.layout.text_view_component, null);
-        textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        this.textView = (TextView) LayoutInflater.from(activity).inflate(R.layout.text_view_component, container).findViewById(R.id.textViewComponent);
         textView.setText(neutralCampName);
-        container.addView(textView);
 
-        this.progressBar = (ProgressBar) LayoutInflater.from(activity).inflate(R.layout.small_progress_bar, null);
-        progressBar.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        this.progressBar = (ProgressBar) LayoutInflater.from(activity).inflate(R.layout.small_progress_bar, container).findViewById(R.id.smallProgressBar);
 
         imageView = new ImageView(activity);
         imageView.setAdjustViewBounds(true);
         imageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        container.addView(imageView);
     }
 
     @Override
@@ -101,21 +99,21 @@ public class NeutralCampListingComponent implements Component {
     }
 
     private void setPhoto(String photoReference) {
-        container.removeView(imageView);
+        imageView.setImageDrawable(null);
         if (photoReference != null) {
-            container.addView(progressBar);
+            progressBar.setVisibility(View.VISIBLE);
             String googlePlacePhotoUrl = googlePlacesService.generatePhotoUrl(photoReference, width);
             Picasso.with(activity.getApplicationContext()).load(googlePlacePhotoUrl).into(imageView, new Callback() {
                 @Override
                 public void onSuccess() {
-                    container.removeView(progressBar);
-                    container.addView(imageView);
+                    progressBar.setVisibility(View.GONE);
+                    imageView.setVisibility(View.VISIBLE);
                 }
 
                 @Override
                 public void onError() {
                     logger.e("Could not load photo for %s", textView.getText());
-                    container.removeView(progressBar);
+                    progressBar.setVisibility(View.GONE);
                 }
             });
         } else {

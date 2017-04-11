@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/routeUnitChoice"
+              android:layout_width="match_parent"
+              android:layout_height="115dp"
+              android:layout_gravity="center"
+              android:gravity="center"
+              android:orientation="vertical"
+              android:padding="5dp"
+              android:visibility="gone">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Route your unit"/>
+
+    <ImageView
+        android:id="@+id/routeUnitChoiceIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:src="@drawable/marauder"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/routeUnitChoiceDoneButton"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:width="70dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="Done"
+            android:textSize="12sp"/>
+
+        <Button
+            android:id="@+id/routeUnitChoiceCancelButton"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:width="70dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="Cancel"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+</LinearLayout>

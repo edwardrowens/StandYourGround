@@ -13,7 +13,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -29,15 +31,27 @@ public class NeutralCampServiceImpl implements NeutralCampService {
 
     private static final double CAMPS_PER_KM = 1;
     private static final double RESTRICTING_DISTANCE = 500; // in meters
+    private static final Map<GooglePlacesType, Integer> TYPE_MAX = new HashMap<>();
+    private static final int MAX_PHARMACIES = 3;
+    private static final int MAX_HOSPITALS = 1;
+    private static final int MAX_BANKS = 3;
 
     private final Lazy<UnitService> unitService;
     private final Lazy<LatLngService> latLngService;
+    private final Map<GooglePlacesType, Integer> typeCounts = new HashMap<>();
 
     @Inject
     NeutralCampServiceImpl(Lazy<UnitService> unitService,
                            Lazy<LatLngService> latLngService) {
         this.unitService = unitService;
         this.latLngService = latLngService;
+        TYPE_MAX.put(GooglePlacesType.PHARMACY, MAX_PHARMACIES);
+        TYPE_MAX.put(GooglePlacesType.HOSPITAL, MAX_HOSPITALS);
+        TYPE_MAX.put(GooglePlacesType.BANK, MAX_BANKS);
+
+        typeCounts.put(GooglePlacesType.PHARMACY, 0);
+        typeCounts.put(GooglePlacesType.HOSPITAL, 0);
+        typeCounts.put(GooglePlacesType.BANK, 0);
     }
 
     @Override
@@ -47,12 +61,16 @@ public class NeutralCampServiceImpl implements NeutralCampService {
             boolean foundValidType = false;
             for (int i = 0; i < googlePlaceResult.getTypes().size() && !foundValidType; ++i) {
                 Units unitType = null;
+                GooglePlacesType googlePlacesType = null;
                 try {
-                    unitType = convertGooglePlacesTypeToNeutralCamp(GooglePlacesType.valueOf(googlePlaceResult.getTypes().get(i).toUpperCase()));
+                    googlePlacesType = GooglePlacesType.valueOf(googlePlaceResult.getTypes().get(i).toUpperCase());
+                    unitType = convertGooglePlacesTypeToNeutralCamp(googlePlacesType);
+
                 } catch (IllegalArgumentException e) {
                     logger.i("%s is not a supported type", googlePlaceResult.getTypes().get(i), e);
                 }
-                if (unitType != null) {
+                if (unitType != null && typeCounts.get(googlePlacesType) < TYPE_MAX.get(googlePlacesType)) {
+                    typeCounts.put(googlePlacesType, typeCounts.get(googlePlacesType) + 1);
                     foundValidType = true;
                     String name = googlePlaceResult.getName();
                     String photoReference = null;

@@ -1,7 +1,9 @@
 package com.ede.standyourground.framework.api.dagger.module;
 
 import com.ede.standyourground.app.ui.api.service.HealthBarService;
+import com.ede.standyourground.app.ui.api.service.UnitChoicesMenuService;
 import com.ede.standyourground.app.ui.impl.service.HealthBarServiceImpl;
+import com.ede.standyourground.app.ui.impl.service.UnitChoicesMenuServiceImpl;
 import com.ede.standyourground.framework.api.service.DirectionsService;
 import com.ede.standyourground.framework.api.service.DrawRouteService;
 import com.ede.standyourground.framework.api.service.GraphicService;
@@ -70,4 +72,6 @@ public abstract class ServiceModule {
     @Binds public abstract ProjectionService bindProjectionService(ProjectionServiceImpl projectionService);
 
     @Binds public abstract GraphicService bindGraphicService(GraphicServiceImpl graphicService);
+
+    @Binds public abstract UnitChoicesMenuService bindUnitChoicesMenuService(UnitChoicesMenuServiceImpl unitChoicesMenuService);
 }

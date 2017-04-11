@@ -2,9 +2,9 @@ package com.ede.standyourground.app.event;
 
 import android.graphics.Point;
 
-import com.ede.standyourground.app.ui.api.component.UnitChoicesComponentFactory;
+import com.ede.standyourground.app.ui.api.service.UnitChoicesMenuService;
 import com.ede.standyourground.app.ui.impl.component.NeutralCampListingComponent;
-import com.ede.standyourground.app.ui.impl.component.UnitChoicesComponent;
+import com.ede.standyourground.app.ui.impl.component.UnitChoicesMenuComponent;
 import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
@@ -47,22 +47,22 @@ public class OnCircleClickListenerFactory {
     private final Lazy<MathService> mathService;
     private final Lazy<UnitService> unitService;
     private final Lazy<LatLngService> latLngService;
-    private final Lazy<UnitChoicesComponentFactory> unitChoicesComponentFactory;
+    private final Lazy<UnitChoicesMenuService> unitChoicesMenuService;
 
     @Inject
     OnCircleClickListenerFactory(Lazy<GoogleMapProvider> googleMapProvider,
                                  Lazy<MathService> mathService,
                                  Lazy<UnitService> unitService,
                                  Lazy<LatLngService> latLngService,
-                                 Lazy<UnitChoicesComponentFactory> unitChoicesComponentFactory) {
+                                 Lazy<UnitChoicesMenuService> unitChoicesMenuService) {
         this.googleMapProvider = googleMapProvider;
         this.mathService = mathService;
         this.unitService = unitService;
         this.latLngService = latLngService;
-        this.unitChoicesComponentFactory = unitChoicesComponentFactory;
+        this.unitChoicesMenuService = unitChoicesMenuService;
     }
 
-    public GoogleMap.OnCircleClickListener createOnCircleClickedListener(final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent, final UnitChoicesComponent unitChoicesComponent) {
+    public GoogleMap.OnCircleClickListener createOnCircleClickedListener(final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent, final UnitChoicesMenuComponent unitChoicesMenuComponent) {
         return new GoogleMap.OnCircleClickListener() {
             @Override
             public void onCircleClick(Circle circle) {
@@ -127,7 +127,7 @@ public class OnCircleClickListenerFactory {
                     if (unitClicked instanceof NeutralCamp) {
                         neutralCampListingComponent.setTextAndPhoto(((NeutralCamp) unitClicked).getName(), ((NeutralCamp) unitClicked).getPhotoReference(), center, lineDistance);
                     } else {
-                        unitChoicesComponent.realign(center, lineDistance);
+                        unitChoicesMenuService.get().realign(unitChoicesMenuComponent, center, lineDistance);
                     }
                 }
             }
