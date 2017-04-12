@@ -12,6 +12,6 @@ import java.util.List;
  * assets.
  */
 public interface DrawRouteService {
-    void drawRoutesForUnit(Units toCreate, List<Marker> markers, LatLng playerLocation, LatLng opponentLocation);
-    void drawRoutesForEnemyUnit(Units toCreate, List<Marker> markers, LatLng playerLocation, LatLng opponentLocation);
+    void createRoutesForUnit(Units toCreate, List<Marker> markers, LatLng playerLocation, LatLng opponentLocation);
+    void createRoutesForEnemyUnit(Units toCreate, List<Marker> markers, LatLng playerLocation, LatLng opponentLocation);
 }

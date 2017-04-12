@@ -62,12 +62,19 @@ import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.Dot;
+import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PatternItem;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -78,6 +85,13 @@ import javax.inject.Inject;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private static final Logger logger = new Logger(MapsActivity.class);
+
+    private static final int PATTERN_GAP_LENGTH_PX = 20;
+    private static final PatternItem DOT = new Dot();
+    private static final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
+    private static final int METERS_TO_TRAVEL = 100;
+
+    private static final List<PatternItem> DOTTED_POLYLINE = Arrays.asList(GAP, DOT);
 
     public static Resources resources;
 
@@ -93,6 +107,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng opponentLocation;
     private static final Map<Class<? extends Component>, Component> componentMap = new ConcurrentHashMap<>();
     private static final Map<UUID, Circle> circles = new ConcurrentHashMap<>();
+    private static final Map<UUID, Polyline> polylines = new ConcurrentHashMap<>();
 
     @Inject
     GoogleMapProvider googleMapProvider;
@@ -184,7 +199,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Create map listeners
         onCircleClickListener = onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent);
-        googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent,  neutralCampListingComponent, unitChoicesMenuComponent));
+        googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent));
         googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(playerLocation, opponentLocation, unitGroupComponent, neutralCampListingComponent));
         googleMap.setOnCircleClickListener(onCircleClickListener);
 
@@ -220,6 +235,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         } else {
                             int color = ContextCompat.getColor(MapsActivity.this, unit.getType().getFriendlyColor());
                             addCircle(unit.getId(), unit.getType().getCircleOptions().center(unit.getStartingPosition()).fillColor(color));
+                            if (unit instanceof MovableUnit) {
+                                polylines.put(unit.getId(), drawRoute(((MovableUnit) unit).getPath().getPoints(), color));
+                            }
                         }
                         circles.get(unit.getId()).setVisible(unit.isVisible());
                     }
@@ -234,6 +252,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void run() {
                         Circle circle = circles.get(mortal.getId());
+                        Polyline polyline = polylines.get(mortal.getId());
+                        if (polyline != null) {
+                            polyline.remove();
+                            polylines.remove(mortal.getId());
+                        }
                         if (circle != null) {
                             removeCircle(mortal.getId());
                         }
@@ -270,6 +293,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void run() {
                         circles.get(movableUnit.getId()).setCenter(movableUnit.getCurrentPosition());
+                        if (movableUnit.getHostility() == Hostility.FRIENDLY) {
+                            Polyline polyLine = polylines.get(movableUnit.getId());
+                            List<LatLng> waypoints = new LinkedList<>(movableUnit.getWaypoints());
+
+                            logger.e("current target!!! %d", movableUnit.getCurrentTarget() + 1);
+                            waypoints = waypoints.subList(movableUnit.getCurrentTarget() + 1, movableUnit.getWaypoints().size());
+
+                            waypoints.add(0, movableUnit.getCurrentPosition());
+                            polyLine.setPoints(waypoints);
+                        }
                     }
                 });
             }
@@ -374,11 +407,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onConfirmRoute(Units selectedUnit) {
                 logger.i("On route clicked");
                 playerService.makePurchase(selectedUnit.getCost());
-                drawRouteService.drawRoutesForUnit(selectedUnit, waypoints, playerLocation, opponentLocation);
+                drawRouteService.createRoutesForUnit(selectedUnit, waypoints, playerLocation, opponentLocation);
 
                 // TODO DELETE
                 logger.i("Creating enemy unit.");
-                drawRouteService.drawRoutesForEnemyUnit(Units.MARAUDER, new ArrayList<Marker>(), playerLocation, opponentLocation);
+                drawRouteService.createRoutesForEnemyUnit(Units.MARAUDER, new ArrayList<Marker>(), playerLocation, opponentLocation);
                 // TODO END OF DELETE
 
                 googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -414,5 +447,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void addCircle(UUID unitId, CircleOptions circleOptions) {
         logger.d("Creating circle for unit %s", unitId);
         circles.put(unitId, googleMap.addCircle(circleOptions));
+    }
+
+    private Polyline drawRoute(List<LatLng> route, int color) {
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions = polylineOptions.addAll(route)
+                .width(40)
+                .pattern(DOTTED_POLYLINE)
+                .color(color);
+        logger.i("drawing route");
+        return googleMap.addPolyline(polylineOptions);
     }
 }
