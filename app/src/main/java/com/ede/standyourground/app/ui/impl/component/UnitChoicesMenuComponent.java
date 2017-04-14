@@ -12,6 +12,7 @@ import com.ede.standyourground.app.ui.api.event.RouteCancelObserver;
 import com.ede.standyourground.app.ui.api.event.UnitSelectedListener;
 import com.ede.standyourground.app.ui.api.event.UnitSelectedObserver;
 import com.ede.standyourground.game.api.model.Units;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,19 +27,23 @@ public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver
     private final HorizontalScrollView unitChoices;
     private final LinearLayout unitChoicesMenu;
     private final LinearLayout routeUnitChoice;
+    private final LatLng centerPointReference;
+    private final double radiusReference;
 
     // Listeners
     private final List<ConfirmRouteListener> confirmRouteListeners = new CopyOnWriteArrayList<>();
     private final List<UnitSelectedListener> unitSelectedListeners = new CopyOnWriteArrayList<>();
-    private final List<RouteCancelListener> routeCancelListeners = new CopyOnWriteArrayList<>();
 
+    private final List<RouteCancelListener> routeCancelListeners = new CopyOnWriteArrayList<>();
     private Units selectedUnit;
 
-    public UnitChoicesMenuComponent(Activity activity, LinearLayout unitChoicesMenu, LinearLayout routeUnitChoice, HorizontalScrollView unitChoices) {
+    public UnitChoicesMenuComponent(Activity activity, LinearLayout unitChoicesMenu, LinearLayout routeUnitChoice, HorizontalScrollView unitChoices, LatLng centerPointReference, double radiusReference) {
         this.activity = activity;
         this.unitChoices = unitChoices;
         this.unitChoicesMenu = unitChoicesMenu;
         this.routeUnitChoice = routeUnitChoice;
+        this.centerPointReference = centerPointReference;
+        this.radiusReference = radiusReference;
     }
 
     public HorizontalScrollView getUnitChoices() {
@@ -96,5 +101,13 @@ public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver
 
     public List<UnitSelectedListener> getUnitSelectedListeners() {
         return unitSelectedListeners;
+    }
+
+    public LatLng getCenterPointReference() {
+        return centerPointReference;
+    }
+
+    public double getRadiusReference() {
+        return radiusReference;
     }
 }

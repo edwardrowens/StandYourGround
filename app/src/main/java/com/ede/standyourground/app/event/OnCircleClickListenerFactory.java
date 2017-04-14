@@ -127,7 +127,7 @@ public class OnCircleClickListenerFactory {
                     if (unitClicked instanceof NeutralCamp) {
                         neutralCampListingComponent.setTextAndPhoto(((NeutralCamp) unitClicked).getName(), ((NeutralCamp) unitClicked).getPhotoReference(), center, lineDistance);
                     } else {
-                        unitChoicesMenuService.get().realign(unitChoicesMenuComponent, center, lineDistance);
+                        unitChoicesMenuService.get().realign(unitChoicesMenuComponent);
                     }
                 }
             }

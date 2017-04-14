@@ -12,8 +12,13 @@ import com.ede.standyourground.app.ui.api.event.UnitSelectedListener;
 import com.ede.standyourground.app.ui.api.service.UnitChoicesMenuService;
 import com.ede.standyourground.app.ui.impl.component.UnitChoicesMenuComponent;
 import com.ede.standyourground.framework.api.Logger;
+import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
+import com.ede.standyourground.framework.api.service.MathService;
 import com.ede.standyourground.game.api.model.Units;
 import com.ede.standyourground.game.api.service.PlayerService;
+import com.google.android.gms.maps.Projection;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.SphericalUtil;
 
 import javax.inject.Inject;
 
@@ -24,20 +29,27 @@ public class UnitChoicesMenuServiceImpl implements UnitChoicesMenuService {
     private static final Logger logger = new Logger(UnitChoicesMenuServiceImpl.class);
 
     private final Lazy<PlayerService> playerService;
+    private final Lazy<GoogleMapProvider> googleMapProvider;
+    private final Lazy<MathService> mathService;
 
     @Inject
-    UnitChoicesMenuServiceImpl(Lazy<PlayerService> playerService) {
+    UnitChoicesMenuServiceImpl(Lazy<PlayerService> playerService,
+                               Lazy<GoogleMapProvider> googleMapProvider,
+                               Lazy<MathService> mathService) {
         this.playerService = playerService;
+        this.googleMapProvider = googleMapProvider;
+        this.mathService = mathService;
     }
 
     @Override
     public void onUnitSelected(final UnitChoicesMenuComponent unitChoicesMenuComponent, Units units) {
-        unitChoicesMenuComponent.getUnitChoices().setVisibility(View.GONE);
         ImageView routeUnitChoiceIcon = (ImageView) unitChoicesMenuComponent.getRouteUnitChoice().findViewById(R.id.routeUnitChoiceIcon);
         routeUnitChoiceIcon.setImageDrawable(unitChoicesMenuComponent.getActivity().getDrawable(units.getDrawableId()));
-        unitChoicesMenuComponent.getRouteUnitChoice().setVisibility(View.VISIBLE);
         unitChoicesMenuComponent.setSelectedUnit(units);
+        unitChoicesMenuComponent.getUnitChoices().setVisibility(View.GONE);
+        unitChoicesMenuComponent.getRouteUnitChoice().setVisibility(View.VISIBLE);
 
+        realign(unitChoicesMenuComponent);
         for (UnitSelectedListener unitSelectedListener : unitChoicesMenuComponent.getUnitSelectedListeners()) {
             unitSelectedListener.onUnitSelected(units);
         }
@@ -45,6 +57,7 @@ public class UnitChoicesMenuServiceImpl implements UnitChoicesMenuService {
 
     @Override
     public void onRouteCancelled(UnitChoicesMenuComponent unitChoicesMenuComponent) {
+        realign(unitChoicesMenuComponent);
         unitChoicesMenuComponent.getRouteUnitChoice().setVisibility(View.GONE);
         unitChoicesMenuComponent.getUnitChoices().setVisibility(View.VISIBLE);
         for (RouteCancelListener routeCancelListener : unitChoicesMenuComponent.getRouteCancelListeners()) {
@@ -82,12 +95,27 @@ public class UnitChoicesMenuServiceImpl implements UnitChoicesMenuService {
     }
 
     @Override
-    public void realign(UnitChoicesMenuComponent unitChoicesMenuComponent, Point center, double lineDistance) {
+    public void realign(final UnitChoicesMenuComponent unitChoicesMenuComponent) {
+        LatLng centerPointReference = unitChoicesMenuComponent.getCenterPointReference();
+        double radiusReference = unitChoicesMenuComponent.getRadiusReference();
+        
+        Projection projection = googleMapProvider.get().getGoogleMap().getProjection();
+        final Point center = projection.toScreenLocation(centerPointReference);
+        Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(centerPointReference, radiusReference, 0d));
+        final double lineDistance = mathService.get().calculateLinearDistance(center, edge);
+
         int pixelWidth = (int)unitChoicesMenuComponent.getActivity().getResources().getDimension(R.dimen.unit_choice_scroll_width);
         int x = center.x - pixelWidth / 2;
-        int y = (int) (center.y - lineDistance) - unitChoicesMenuComponent.getUnitChoicesMenu().getMeasuredHeight() - 5;
+
+        unitChoicesMenuComponent.getUnitChoicesMenu().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                int y = (int) (center.y - lineDistance) - unitChoicesMenuComponent.getUnitChoicesMenu().getMeasuredHeight() - 5;
+                unitChoicesMenuComponent.getUnitChoicesMenu().setY(y);
+            }
+        });
         unitChoicesMenuComponent.getUnitChoicesMenu().setX(x);
-        unitChoicesMenuComponent.getUnitChoicesMenu().setY(y);
+
 
         if (playerService.get().checkFunds(Units.MEDIC.getCost())) {
             setVisibility(unitChoicesMenuComponent, Units.MEDIC, View.VISIBLE);
@@ -106,7 +134,6 @@ public class UnitChoicesMenuServiceImpl implements UnitChoicesMenuService {
         }
 
         unitChoicesMenuComponent.getUnitChoicesMenu().setVisibility(View.VISIBLE);
-        unitChoicesMenuComponent.getUnitChoices().invalidate();
     }
 
     @Override

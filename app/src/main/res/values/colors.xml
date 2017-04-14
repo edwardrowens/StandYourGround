@@ -12,4 +12,5 @@
     <color name="medicPink">#FFff0098</color>
     <color name="friendlyBankNeutralCampGold">#FFD700</color>
     <color name="enemyBankNeutralCampGold">#FFdaa520</color>
+    <color name="friendlyKingdomBlue">#3274a4f2</color>
 </resources>

@@ -11,6 +11,7 @@ import com.ede.standyourground.R;
 import com.ede.standyourground.app.ui.api.service.UnitChoicesMenuService;
 import com.ede.standyourground.app.ui.impl.component.UnitChoicesMenuComponent;
 import com.ede.standyourground.game.api.model.Units;
+import com.google.android.gms.maps.model.LatLng;
 
 import javax.inject.Inject;
 
@@ -29,14 +30,14 @@ public class UnitChoicesMenuComponentFactory {
         this.unitChoicesMenuService = unitChoicesMenuService;
     }
 
-    public UnitChoicesMenuComponent createUnitChoicesMenuComponent(Activity activity, ViewGroup parent) {
+    public UnitChoicesMenuComponent createUnitChoicesMenuComponent(Activity activity, ViewGroup parent, LatLng centerPoint, double radiusReference) {
         final ViewGroup unitChoicesMenuParent = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.unit_choices_menu, parent);
         LinearLayout unitChoicesMenu = (LinearLayout) unitChoicesMenuParent.findViewById(R.id.unitChoicesMenu);
         unitChoicesMenu.setZ(1f);
         HorizontalScrollView unitChoices = (HorizontalScrollView) LayoutInflater.from(activity).inflate(R.layout.unit_choices, unitChoicesMenu).findViewById(R.id.unitChoicesScrollView);
         LinearLayout routeUnitChoice = (LinearLayout) LayoutInflater.from(activity).inflate(R.layout.route_unit_choice, unitChoicesMenu).findViewById(R.id.routeUnitChoice);
 
-        final UnitChoicesMenuComponent unitChoicesMenuComponent = new UnitChoicesMenuComponent(activity, unitChoicesMenu, routeUnitChoice, unitChoices);
+        final UnitChoicesMenuComponent unitChoicesMenuComponent = new UnitChoicesMenuComponent(activity, unitChoicesMenu, routeUnitChoice, unitChoices, centerPoint, radiusReference);
 
         unitChoices.findViewById(R.id.medic_choice_container).setOnClickListener(new View.OnClickListener() {
             @Override

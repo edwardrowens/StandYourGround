@@ -39,6 +39,7 @@ import com.ede.standyourground.framework.api.dagger.providers.GameSessionIdProvi
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.framework.api.service.DrawRouteService;
 import com.ede.standyourground.framework.api.service.GraphicService;
+import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.game.api.event.listener.BankNeutralCampIncomeListener;
 import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener;
 import com.ede.standyourground.game.api.event.listener.GameEndListener;
@@ -69,12 +70,14 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PatternItem;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -89,7 +92,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int PATTERN_GAP_LENGTH_PX = 20;
     private static final PatternItem DOT = new Dot();
     private static final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
-    private static final int METERS_TO_TRAVEL = 100;
 
     private static final List<PatternItem> DOTTED_POLYLINE = Arrays.asList(GAP, DOT);
 
@@ -135,6 +137,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     UnitChoicesMenuComponentFactory unitChoicesMenuComponentFactory;
     @Inject
     UnitChoicesMenuService unitChoicesMenuService;
+    @Inject
+    LatLngService latLngService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,9 +193,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setCompassEnabled(false);
 
+        final double distance = Units.BASE.getCircleOptions().getRadius() * 2;
+        LatLng p1 = SphericalUtil.computeOffset(playerLocation, distance, 0);
+        LatLng p2 = SphericalUtil.computeOffset(playerLocation, distance, 90);
+        LatLng p3 = SphericalUtil.computeOffset(playerLocation, distance, 180);
+        LatLng p4 = SphericalUtil.computeOffset(playerLocation, distance, 270);
+        final Polygon polygon = googleMap.addPolygon(new PolygonOptions().add(p1, p2, p3, p4).fillColor(getResources().getColor(R.color.friendlyKingdomBlue)));
+
         UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0, 0));
         NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0, 0), "");
-        final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer));
+        final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer), playerLocation, Units.BASE.getCircleOptions().getRadius());
 
         componentMap.put(UnitGroupComponent.class, unitGroupComponent);
         componentMap.put(NeutralCampListingComponent.class, neutralCampListingComponent);
@@ -237,6 +248,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             addCircle(unit.getId(), unit.getType().getCircleOptions().center(unit.getStartingPosition()).fillColor(color));
                             if (unit instanceof MovableUnit) {
                                 polylines.put(unit.getId(), drawRoute(((MovableUnit) unit).getPath().getPoints(), color));
+                            } else if (unit instanceof NeutralCamp) {
+                                LatLng p1 = SphericalUtil.computeOffset(unit.getStartingPosition(), distance, 0);
+                                LatLng p2 = SphericalUtil.computeOffset(unit.getStartingPosition(), distance, 90);
+                                LatLng p3 = SphericalUtil.computeOffset(unit.getStartingPosition(), distance, 180);
+                                LatLng p4 = SphericalUtil.computeOffset(unit.getStartingPosition(), distance, 270);
+                                googleMap.addPolygon(new PolygonOptions().addAll(polygon.getPoints()).add(p1,p2,p3,p4).fillColor(getResources().getColor(R.color.friendlyKingdomBlue)));
                             }
                         }
                         circles.get(unit.getId()).setVisible(unit.isVisible());
@@ -293,16 +310,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void run() {
                         circles.get(movableUnit.getId()).setCenter(movableUnit.getCurrentPosition());
-                        if (movableUnit.getHostility() == Hostility.FRIENDLY) {
-                            Polyline polyLine = polylines.get(movableUnit.getId());
-                            List<LatLng> waypoints = new LinkedList<>(movableUnit.getWaypoints());
-
-                            logger.e("current target!!! %d", movableUnit.getCurrentTarget() + 1);
-                            waypoints = waypoints.subList(movableUnit.getCurrentTarget() + 1, movableUnit.getWaypoints().size());
-
-                            waypoints.add(0, movableUnit.getCurrentPosition());
-                            polyLine.setPoints(waypoints);
-                        }
                     }
                 });
             }

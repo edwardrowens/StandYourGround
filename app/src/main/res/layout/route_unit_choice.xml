@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:id="@+id/routeUnitChoice"
-              android:layout_width="match_parent"
+              android:layout_width="@dimen/unit_choice_scroll_width"
               android:layout_height="115dp"
               android:layout_gravity="center"
               android:gravity="center"
