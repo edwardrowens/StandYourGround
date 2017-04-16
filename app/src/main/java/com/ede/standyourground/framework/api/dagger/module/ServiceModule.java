@@ -23,11 +23,13 @@ import com.ede.standyourground.game.api.service.NeutralCampService;
 import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.game.api.service.UpdateService;
+import com.ede.standyourground.game.api.service.WorldGridService;
 import com.ede.standyourground.game.impl.service.GameServiceImpl;
 import com.ede.standyourground.game.impl.service.NeutralCampServiceImpl;
 import com.ede.standyourground.game.impl.service.PlayerServiceImpl;
 import com.ede.standyourground.game.impl.service.UnitServiceImpl;
 import com.ede.standyourground.game.impl.service.UpdateServiceImpl;
+import com.ede.standyourground.game.impl.service.WorldGridServiceImpl;
 import com.ede.standyourground.networking.api.NetworkingHandler;
 import com.ede.standyourground.networking.api.service.GooglePlacesNearbySearchService;
 import com.ede.standyourground.networking.api.service.GooglePlacesService;
@@ -74,4 +76,6 @@ public abstract class ServiceModule {
     @Binds public abstract GraphicService bindGraphicService(GraphicServiceImpl graphicService);
 
     @Binds public abstract UnitChoicesMenuService bindUnitChoicesMenuService(UnitChoicesMenuServiceImpl unitChoicesMenuService);
+
+    @Binds public abstract WorldGridService bindWorldGridService(WorldGridServiceImpl worldGridService);
 }

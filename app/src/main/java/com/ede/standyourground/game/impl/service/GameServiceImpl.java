@@ -1,6 +1,7 @@
 package com.ede.standyourground.game.impl.service;
 
 import com.ede.standyourground.framework.api.Logger;
+import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener;
 import com.ede.standyourground.game.api.event.listener.GameEndListener;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
@@ -9,6 +10,7 @@ import com.ede.standyourground.game.api.model.NeutralCamp;
 import com.ede.standyourground.game.api.model.Player;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.WorldGrid;
 import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
@@ -31,18 +33,24 @@ public class GameServiceImpl implements GameService {
     private final Lazy<UpdateLoop> updateLoop;
     private final Lazy<UnitService> unitService;
     private final Lazy<PlayerService> playerService;
+    private final Lazy<LatLngService> latLngService;
+    private WorldGrid worldGrid;
 
     @Inject
     GameServiceImpl(Lazy<UpdateLoop> updateLoop,
                     Lazy<UnitService> unitService,
-                    Lazy<PlayerService> playerService) {
+                    Lazy<PlayerService> playerService,
+                    Lazy<LatLngService> latLngService) {
         this.updateLoop = updateLoop;
         this.unitService = unitService;
         this.playerService = playerService;
+        this.latLngService = latLngService;
     }
 
     @Override
     public void startGame(final LatLng playerLocation, LatLng opponentLocation) {
+        worldGrid = new WorldGrid(latLngService.get().midpoint(playerLocation, opponentLocation));
+
         unitService.get().registerOnDeathListener(new OnDeathListener() {
             @Override
             public void onDeath(Unit mortal, Unit killer) {
@@ -84,5 +92,10 @@ public class GameServiceImpl implements GameService {
     @Override
     public void registerCoinBalanceChangeListener(CoinBalanceChangeListener coinBalanceChangeListener) {
         playerService.get().registerCoinBalanceChangeListener(coinBalanceChangeListener);
+    }
+
+    @Override
+    public WorldGrid getWorldGrid() {
+        return worldGrid;
     }
 }
