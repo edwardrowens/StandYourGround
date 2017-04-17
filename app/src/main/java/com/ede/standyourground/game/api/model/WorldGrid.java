@@ -13,7 +13,7 @@ public class WorldGrid {
 
     public static final int CELL_LENGTH = 500;
 
-    private final Map<Coordinate, List<Unit>> grid = new ConcurrentHashMap<>();
+    private final Map<Cell, List<Unit>> grid = new ConcurrentHashMap<>();
     private final LatLng referencePosition;
 
     public WorldGrid(LatLng referencePosition) {
@@ -24,7 +24,7 @@ public class WorldGrid {
         return referencePosition;
     }
 
-    public Map<Coordinate, List<Unit>> getGrid() {
+    public Map<Cell, List<Unit>> getGrid() {
         return grid;
     }
 }

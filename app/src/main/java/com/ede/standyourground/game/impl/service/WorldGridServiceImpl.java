@@ -1,6 +1,6 @@
 package com.ede.standyourground.game.impl.service;
 
-import com.ede.standyourground.game.api.model.Coordinate;
+import com.ede.standyourground.game.api.model.Cell;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.WorldGrid;
 import com.ede.standyourground.game.api.service.GameService;
@@ -30,7 +30,7 @@ public class WorldGridServiceImpl implements WorldGridService {
     }
 
     @Override
-    public Coordinate calculateCoordinatePosition(LatLng position) {
+    public Cell calculateCellPosition(LatLng position) {
         LatLng referencePosition = gameService.get().getWorldGrid().getReferencePosition();
         double heading = SphericalUtil.computeHeading(referencePosition, position);
         double headingAbsolute = Math.abs(heading);
@@ -45,32 +45,62 @@ public class WorldGridServiceImpl implements WorldGridService {
         x = heading > 0 ? x : -x;
         y = headingAbsolute < 90 ? y : -y;
 
-        return new Coordinate(x, y);
+        return new Cell(x, y);
     }
 
     @Override
-    public void removeUnitAtCoordinate(Coordinate coordinate, Unit unit) {
+    public void removeUnitAtCell(Cell cell, Unit unit) {
         WorldGrid worldGrid = gameService.get().getWorldGrid();
-        List<Unit> unitsAtCoordinate = worldGrid.getGrid().get(coordinate);
+        List<Unit> unitsAtCoordinate = worldGrid.getGrid().get(cell);
         if (unitsAtCoordinate != null && unitsAtCoordinate.contains(unit)) {
             unitsAtCoordinate.remove(unit);
         }
     }
 
     @Override
-    public void addUnitAtCoordinate(Coordinate coordinate, Unit unit) {
+    public void addUnitAtCell(Cell cell, Unit unit) {
         WorldGrid worldGrid = gameService.get().getWorldGrid();
-        List<Unit> unitsAtCoordinate = worldGrid.getGrid().get(coordinate);
+        List<Unit> unitsAtCoordinate = worldGrid.getGrid().get(cell);
         if (unitsAtCoordinate != null) {
             unitsAtCoordinate.add(unit);
         } else {
-            worldGrid.getGrid().put(coordinate, new LinkedList<>(Collections.singletonList(unit)));
+            worldGrid.getGrid().put(cell, new LinkedList<>(Collections.singletonList(unit)));
         }
     }
 
     @Override
-    public List<Unit> retrieveUnitsAtCoordinate(Coordinate coordinate) {
-        WorldGrid worldGrid = gameService.get().getWorldGrid();
-        return worldGrid.getGrid().get(coordinate);
+    public List<Unit> retrieveUnitsAtCell(Cell cell) {
+        List<Unit> toReturn = gameService.get().getWorldGrid().getGrid().get(cell);
+        return toReturn == null ? new LinkedList<Unit>() : toReturn;
+    }
+
+    @Override
+    public List<Unit> retrieveUnitsInCellRange(Cell cell, double distance) {
+        int range = (int) Math.ceil(distance / WorldGrid.CELL_LENGTH);
+        List<Unit> unitsInRange = new LinkedList<>();
+        unitsInRange.addAll(retrieveUnitsAtCell(cell));
+
+        for (int x = 1; x <= range; ++x) {
+            for (int y = 1; y <= range; ++y) {
+                // Q1
+                unitsInRange.addAll(retrieveUnitsAtCell(new Cell(cell.getX() + x, cell.getY() + y)));
+                // Q2
+                unitsInRange.addAll(retrieveUnitsAtCell(new Cell(cell.getX() - x, cell.getY() + y)));
+                // Q3
+                unitsInRange.addAll(retrieveUnitsAtCell(new Cell(cell.getX() - x, cell.getY() - y)));
+                // Q4
+                unitsInRange.addAll(retrieveUnitsAtCell(new Cell(cell.getX() + x, cell.getY() - y)));
+            }
+            // (+) y-axis
+            unitsInRange.addAll(retrieveUnitsAtCell(new Cell(cell.getX(), cell.getY() + x)));
+            // (-) y-axis
+            unitsInRange.addAll(retrieveUnitsAtCell(new Cell(cell.getX(), cell.getY() - x)));
+            // (+) x-axis
+            unitsInRange.addAll(retrieveUnitsAtCell(new Cell(cell.getX() + x, cell.getY())));
+            // (-) x-axis
+            unitsInRange.addAll(retrieveUnitsAtCell(new Cell(cell.getX() - x, cell.getY())));
+        }
+
+        return unitsInRange;
     }
 }
