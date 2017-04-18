@@ -49,6 +49,12 @@ public class WorldGridServiceImpl implements WorldGridService {
     }
 
     @Override
+    public void moveUnitCell(Cell fromCell, Cell toCell, Unit unit) {
+        removeUnitAtCell(fromCell, unit);
+        addUnitAtCell(toCell, unit);
+    }
+
+    @Override
     public void removeUnitAtCell(Cell cell, Unit unit) {
         WorldGrid worldGrid = gameService.get().getWorldGrid();
         List<Unit> unitsAtCoordinate = worldGrid.getGrid().get(cell);

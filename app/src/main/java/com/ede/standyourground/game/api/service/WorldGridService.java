@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface WorldGridService {
     Cell calculateCellPosition(LatLng position);
+    void moveUnitCell(Cell fromCell, Cell toCell, Unit unit);
     void removeUnitAtCell(Cell cell, Unit unit);
     void addUnitAtCell(Cell cell, Unit unit);
     List<Unit> retrieveUnitsAtCell(Cell cell);

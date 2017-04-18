@@ -1,5 +1,6 @@
 package com.ede.standyourground.game.impl.model;
 
+import com.ede.standyourground.game.api.model.Cell;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.NeutralCamp;
 import com.ede.standyourground.game.api.model.Units;
@@ -12,8 +13,8 @@ import com.google.android.gms.maps.model.LatLng;
 public class MedicNeutralCamp extends NeutralCamp {
     private static final int HEALTH = 100;
 
-    public MedicNeutralCamp(LatLng startingPosition, String name, String photoReference, Hostility hostility) {
-        super(startingPosition, Units.MEDIC_NEUTRAL_CAMP, name, photoReference, hostility);
+    public MedicNeutralCamp(LatLng startingPosition, String name, String photoReference, Hostility hostility, Cell cell) {
+        super(startingPosition, Units.MEDIC_NEUTRAL_CAMP, name, photoReference, hostility, cell);
     }
 
     @Override

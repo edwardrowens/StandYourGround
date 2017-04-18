@@ -58,6 +58,7 @@ public class OnMapLoadedCallbackFactory {
         return new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
+                gameService.get().startGame(playerLocation, opponentLocation);
                 unitGroupComponent.initialize(R.id.mapContainer);
                 neutralCampListingComponent.initialize(R.id.mapContainer);
 
@@ -101,7 +102,6 @@ public class OnMapLoadedCallbackFactory {
                     @Override
                     public void onFinish() {
                         googleMapProvider.get().getGoogleMap().getUiSettings().setRotateGesturesEnabled(false);
-                        gameService.get().startGame(playerLocation, opponentLocation);
                         googleMapProvider.get().getGoogleMap().getUiSettings().setAllGesturesEnabled(true);
                     }
 

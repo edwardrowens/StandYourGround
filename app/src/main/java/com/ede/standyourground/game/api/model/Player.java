@@ -18,6 +18,8 @@ public class Player implements CoinBalanceChangeObserver {
     private int coins;
     private long lastResourceAccrual;
     private int income;
+    private int bankNeutralCampCount;
+    private int medicNeutralCampCount;
 
     public Player(int coins) {
         this.coins = coins;
@@ -65,5 +67,29 @@ public class Player implements CoinBalanceChangeObserver {
 
     public void updateIncome(int updateAmount) {
         this.income += updateAmount;
+    }
+
+    public int incrementBankNeutralCampCount() {
+        return ++bankNeutralCampCount;
+    }
+
+    public int decrementBankNeutralCampCount() {
+        return --bankNeutralCampCount;
+    }
+
+    public int incrementMedicNeutralCampCount() {
+        return ++medicNeutralCampCount;
+    }
+
+    public int decrementMedicNeutralCampCount() {
+        return --medicNeutralCampCount;
+    }
+
+    public int getBankNeutralCampCount() {
+        return bankNeutralCampCount;
+    }
+
+    public int getMedicNeutralCampCount() {
+        return medicNeutralCampCount;
     }
 }

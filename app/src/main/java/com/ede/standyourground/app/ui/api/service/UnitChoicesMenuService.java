@@ -14,4 +14,5 @@ public interface UnitChoicesMenuService {
     void setVisibility(UnitChoicesMenuComponent unitChoicesMenuComponent, Units units, int visibility);
     void realign(UnitChoicesMenuComponent unitChoicesMenuComponent);
     void clear(UnitChoicesMenuComponent unitChoicesMenuComponent);
+    void checkUnitsAvailableForPurchase(UnitChoicesMenuComponent unitChoicesMenuComponent);
 }

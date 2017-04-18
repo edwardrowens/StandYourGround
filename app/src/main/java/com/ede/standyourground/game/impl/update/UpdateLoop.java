@@ -8,7 +8,9 @@ import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.service.UpdateService;
 import com.ede.standyourground.game.impl.service.UnitServiceImpl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
@@ -20,7 +22,7 @@ import dagger.Lazy;
 public class UpdateLoop implements Runnable {
 
     private static final Logger logger = new Logger(UpdateLoop.class);
-    private static final long LOOP_DELAY = 16;
+    private static final long LOOP_DELAY = 32; //30 p/s
 
     private final AtomicBoolean loop = new AtomicBoolean();
 
@@ -55,13 +57,24 @@ public class UpdateLoop implements Runnable {
     @Override
     public void run() {
         List<Unit> units = unitService.get().getUnits();
+        Map<Unit, Unit> affectedUnits = new HashMap<>();
         for (Unit unit : units) {
-
             updateService.get().determinePosition(unit);
-            updateService.get().determineVisibility(unit);
             updateService.get().calculateResourceAccrual();
         }
-        updateService.get().processCombat(units);
+        for (Unit unit : units) {
+            updateService.get().determineVisibility(unit);
+            Unit affectedUnit = updateService.get().processCombat(unit);
+            if (affectedUnit != null) {
+                affectedUnits.put(affectedUnit, unit);
+            }
+        }
+
+        for (Map.Entry<Unit, Unit> affectedUnitEntry : affectedUnits.entrySet()) {
+            if (!affectedUnitEntry.getKey().isAlive()) {
+                affectedUnitEntry.getKey().onDeath(affectedUnitEntry.getValue());
+            }
+        }
 
         if (loop.get()) {
             handler.postDelayed(this, LOOP_DELAY);

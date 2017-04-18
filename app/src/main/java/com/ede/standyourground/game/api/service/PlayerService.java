@@ -16,4 +16,6 @@ public interface PlayerService extends CoinBalanceChangeObserver, IncomeAccruedO
     long getLastResourceAccrual();
     boolean checkFunds(int amountToCheck);
     int getCurrentBalance();
+    int getMedicNeutralCampCount();
+    int getBankNeutralCampCount();
 }

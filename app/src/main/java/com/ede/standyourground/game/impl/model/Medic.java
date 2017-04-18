@@ -1,5 +1,6 @@
 package com.ede.standyourground.game.impl.model;
 
+import com.ede.standyourground.game.api.model.Cell;
 import com.ede.standyourground.game.api.model.Healable;
 import com.ede.standyourground.game.api.model.Healer;
 import com.ede.standyourground.game.api.model.Hostility;
@@ -24,8 +25,8 @@ public class Medic extends MovableUnit implements Healer {
 
     private long lastHealTime;
 
-    public Medic(List<LatLng> waypoints, LatLng startingPosition, Path path, Hostility hostility) {
-        super(waypoints, startingPosition, path, Units.MEDIC, hostility);
+    public Medic(List<LatLng> waypoints, LatLng startingPosition, Path path, Hostility hostility, Cell cell) {
+        super(waypoints, startingPosition, path, Units.MEDIC, hostility, cell);
         healRange = getRadius() * 2;
     }
 
@@ -69,5 +70,10 @@ public class Medic extends MovableUnit implements Healer {
                 && unit.isAlive()
                 && isAlive()
                 && unit instanceof Healable;
+    }
+
+    @Override
+    public double getHealRange() {
+        return healRange;
     }
 }

@@ -13,9 +13,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Unit implements Attackable, VisibilityChangeObserver {
-
     private static final Logger logger = new Logger(Unit.class);
 
     private final AtomicInteger health = new AtomicInteger(getMaxHealth());
@@ -26,6 +26,8 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
     private final Hostility hostility;
     private final double radius;
     private final Units type;
+    private final AtomicReference<Cell> cell;
+
     // Listeners
     private OnDeathListener onDeathListener;
     private HealthChangeListener healthChangeListener;
@@ -37,7 +39,7 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
     public abstract double getVisionRadius();
     protected abstract void onUnitDeath();
 
-    public Unit(LatLng startingPosition, Units type, Hostility hostility) {
+    public Unit(LatLng startingPosition, Units type, Hostility hostility, Cell cell) {
         this.startingPosition = startingPosition;
         this.createdTime = new AtomicLong(SystemClock.uptimeMillis());
         this.hostility = hostility;
@@ -45,6 +47,7 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
         this.isVisible = new AtomicBoolean(true);
         this.radius = type.getCircleOptions().getRadius();
         this.type = type;
+        this.cell = new AtomicReference<>(cell);
     }
 
     public LatLng getStartingPosition() {
@@ -123,5 +126,57 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
     @Override
     public void registerVisibilityChangeListener(VisibilityChangeListener visibilityChangeListener) {
         this.visibilityChangeListener = visibilityChangeListener;
+    }
+
+    public Cell getCell() {
+        return cell.get();
+    }
+
+    public void setCell(Cell cell) {
+        this.cell.set(cell);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Unit unit = (Unit) o;
+
+        if (Double.compare(unit.radius, radius) != 0) return false;
+        if (!health.equals(unit.health)) return false;
+        if (!createdTime.equals(unit.createdTime)) return false;
+        if (!alive.equals(unit.alive)) return false;
+        if (!startingPosition.equals(unit.startingPosition)) return false;
+        if (!id.equals(unit.id)) return false;
+        if (hostility != unit.hostility) return false;
+        if (type != unit.type) return false;
+        if (!cell.equals(unit.cell)) return false;
+        if (!onDeathListener.equals(unit.onDeathListener)) return false;
+        if (!healthChangeListener.equals(unit.healthChangeListener)) return false;
+        if (!visibilityChangeListener.equals(unit.visibilityChangeListener)) return false;
+        return isVisible.equals(unit.isVisible);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        result = health.hashCode();
+        result = 31 * result + createdTime.hashCode();
+        result = 31 * result + alive.hashCode();
+        result = 31 * result + startingPosition.hashCode();
+        result = 31 * result + id.hashCode();
+        result = 31 * result + hostility.hashCode();
+        temp = Double.doubleToLongBits(radius);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + type.hashCode();
+        result = 31 * result + cell.hashCode();
+        result = 31 * result + onDeathListener.hashCode();
+        result = 31 * result + healthChangeListener.hashCode();
+        result = 31 * result + visibilityChangeListener.hashCode();
+        result = 31 * result + isVisible.hashCode();
+        return result;
     }
 }

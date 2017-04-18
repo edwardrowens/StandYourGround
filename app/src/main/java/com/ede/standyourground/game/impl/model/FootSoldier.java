@@ -3,6 +3,7 @@ package com.ede.standyourground.game.impl.model;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.game.api.model.Attackable;
 import com.ede.standyourground.game.api.model.Attacker;
+import com.ede.standyourground.game.api.model.Cell;
 import com.ede.standyourground.game.api.model.Healable;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
@@ -24,8 +25,8 @@ public class FootSoldier extends MovableUnit implements Attacker, Healable {
 
     private long lastAttackTime;
 
-    public FootSoldier(List<LatLng> waypoints, LatLng position, Path path, Hostility hostility) {
-        super(waypoints, position, path, Units.FOOT_SOLDIER, hostility);
+    public FootSoldier(List<LatLng> waypoints, LatLng position, Path path, Hostility hostility, Cell cell) {
+        super(waypoints, position, path, Units.FOOT_SOLDIER, hostility, cell);
         this.lastAttackTime = 0;
         this.attackRange = getRadius() * 2;
     }

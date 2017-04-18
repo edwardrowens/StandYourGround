@@ -3,6 +3,7 @@ package com.ede.standyourground.game.impl.model;
 import com.ede.standyourground.game.api.event.listener.BankNeutralCampIncomeListener;
 import com.ede.standyourground.game.api.event.listener.IncomeAccruedListener;
 import com.ede.standyourground.game.api.event.observer.BankNeutralCampIncomeObserver;
+import com.ede.standyourground.game.api.model.Cell;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.NeutralCamp;
 import com.ede.standyourground.game.api.model.Units;
@@ -18,8 +19,8 @@ public class BankNeutralCamp extends NeutralCamp implements BankNeutralCampIncom
 
     private BankNeutralCampIncomeListener bankNeutralCampIncomeListener;
 
-    public BankNeutralCamp(LatLng startingPosition, String name, String photoReference, Hostility hostility) {
-        super(startingPosition, Units.BANK_NEUTRAL_CAMP, name, photoReference, hostility);
+    public BankNeutralCamp(LatLng startingPosition, String name, String photoReference, Hostility hostility, Cell cell) {
+        super(startingPosition, Units.BANK_NEUTRAL_CAMP, name, photoReference, hostility, cell);
     }
 
     @Override

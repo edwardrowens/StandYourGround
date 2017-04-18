@@ -96,6 +96,7 @@ public class UnitChoicesMenuServiceImpl implements UnitChoicesMenuService {
 
     @Override
     public void realign(final UnitChoicesMenuComponent unitChoicesMenuComponent) {
+        checkUnitsAvailableForPurchase(unitChoicesMenuComponent);
         LatLng centerPointReference = unitChoicesMenuComponent.getCenterPointReference();
         double radiusReference = unitChoicesMenuComponent.getRadiusReference();
         
@@ -116,28 +117,32 @@ public class UnitChoicesMenuServiceImpl implements UnitChoicesMenuService {
         });
         unitChoicesMenuComponent.getUnitChoicesMenu().setX(x);
 
-
-        if (playerService.get().checkFunds(Units.MEDIC.getCost())) {
-            setVisibility(unitChoicesMenuComponent, Units.MEDIC, View.VISIBLE);
-        } else {
-            setVisibility(unitChoicesMenuComponent, Units.MEDIC, View.GONE);
-        }
-        if (playerService.get().checkFunds(Units.FOOT_SOLDIER.getCost())) {
-            setVisibility(unitChoicesMenuComponent, Units.FOOT_SOLDIER, View.VISIBLE);
-        } else {
-            setVisibility(unitChoicesMenuComponent, Units.FOOT_SOLDIER, View.GONE);
-        }
-        if (playerService.get().checkFunds(Units.MARAUDER.getCost())) {
-            setVisibility(unitChoicesMenuComponent, Units.MARAUDER, View.VISIBLE);
-        } else {
-            setVisibility(unitChoicesMenuComponent, Units.MARAUDER, View.GONE);
-        }
-
         unitChoicesMenuComponent.getUnitChoicesMenu().setVisibility(View.VISIBLE);
     }
 
     @Override
     public void clear(UnitChoicesMenuComponent unitChoicesMenuComponent) {
         unitChoicesMenuComponent.getUnitChoicesMenu().setVisibility(View.GONE);
+    }
+
+    @Override
+    public void checkUnitsAvailableForPurchase(UnitChoicesMenuComponent unitChoicesMenuComponent) {
+        ViewGroup unitChoices = unitChoicesMenuComponent.getUnitChoices();
+        int medicNeutralCampCount = playerService.get().getMedicNeutralCampCount();
+        if (playerService.get().checkFunds(Units.MEDIC.getCost()) && medicNeutralCampCount > 0) {
+            setVisibility(unitChoicesMenuComponent, Units.MEDIC, View.VISIBLE);
+        } else {
+            setVisibility(unitChoicesMenuComponent, Units.MEDIC, View.GONE);
+        }
+        if (playerService.get().checkFunds(Units.FOOT_SOLDIER.getCost())) {
+            unitChoices.findViewById(R.id.foot_soldier_choice_container).setClickable(true);
+        } else {
+            unitChoices.findViewById(R.id.foot_soldier_choice_container).setClickable(false);
+        }
+        if (playerService.get().checkFunds(Units.MARAUDER.getCost())) {
+            unitChoices.findViewById(R.id.marauder_choice_container).setClickable(true);
+        } else {
+            unitChoices.findViewById(R.id.marauder_choice_container).setClickable(false);
+        }
     }
 }

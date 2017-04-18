@@ -79,6 +79,16 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
+    public int getMedicNeutralCampCount() {
+        return player.getMedicNeutralCampCount();
+    }
+
+    @Override
+    public int getBankNeutralCampCount() {
+        return player.getBankNeutralCampCount();
+    }
+
+    @Override
     public void registerCoinBalanceChangeListener(CoinBalanceChangeListener coinBalanceChangeListener) {
         coinBalanceChangeListeners.add(coinBalanceChangeListener);
     }

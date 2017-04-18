@@ -27,8 +27,8 @@ public abstract class MovableUnit extends Unit implements PositionChangeObserver
 
     protected abstract double startingMph();
 
-    public MovableUnit(List<LatLng> waypoints, LatLng startingPosition, Path path, Units type, Hostility hostility) {
-        super(startingPosition, type, hostility);
+    public MovableUnit(List<LatLng> waypoints, LatLng startingPosition, Path path, Units type, Hostility hostility, Cell cell) {
+        super(startingPosition, type, hostility, cell);
         this.path = path;
         currentTarget = 0;
         this.currentPosition = new AtomicReference<>(startingPosition);
