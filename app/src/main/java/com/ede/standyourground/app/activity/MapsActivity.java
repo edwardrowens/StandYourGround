@@ -33,6 +33,7 @@ import com.ede.standyourground.app.ui.api.service.UnitChoicesMenuService;
 import com.ede.standyourground.app.ui.impl.component.NeutralCampListingComponent;
 import com.ede.standyourground.app.ui.impl.component.UnitChoicesMenuComponent;
 import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
+import com.ede.standyourground.framework.QuickHullLatLng;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
 import com.ede.standyourground.framework.api.dagger.providers.GameSessionIdProvider;
@@ -96,9 +97,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final List<PatternItem> DOTTED_POLYLINE = Arrays.asList(GAP, DOT);
 
     public static Resources resources;
-
-    // Listeners
-    private GoogleMap.OnCircleClickListener onCircleClickListener;
 
     // VIEWS
     private TextView coins;
@@ -209,7 +207,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         componentMap.put(UnitChoicesMenuComponent.class, unitChoicesMenuComponent);
 
         // Create map listeners
-        onCircleClickListener = onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent);
+        GoogleMap.OnCircleClickListener onCircleClickListener = onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent);
         googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent));
         googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(playerLocation, opponentLocation, unitGroupComponent, neutralCampListingComponent));
         googleMap.setOnCircleClickListener(onCircleClickListener);
@@ -253,7 +251,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 LatLng p2 = SphericalUtil.computeOffset(unit.getStartingPosition(), distance, 90);
                                 LatLng p3 = SphericalUtil.computeOffset(unit.getStartingPosition(), distance, 180);
                                 LatLng p4 = SphericalUtil.computeOffset(unit.getStartingPosition(), distance, 270);
-                                googleMap.addPolygon(new PolygonOptions().addAll(polygon.getPoints()).add(p1,p2,p3,p4).fillColor(getResources().getColor(R.color.friendlyKingdomBlue)));
+
+                                List<LatLng> allPoints = new ArrayList<>(Arrays.asList(p1, p2, p3, p4));
+                                allPoints.addAll(polygon.getPoints());
+                                List<LatLng> hull = QuickHullLatLng.quickHull(allPoints);
+                                polygon.setPoints(hull);
                             }
                         }
                         circles.get(unit.getId()).setVisible(unit.isVisible());
