@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.maps.android.SphericalUtil;
 
 import java.util.List;
+import java.util.Random;
 
 import javax.inject.Inject;
 
@@ -59,6 +60,16 @@ public class LatLngServiceImpl implements LatLngService {
     public boolean withinDistance(LatLng position1, LatLng position2, double distance) {
         double d = SphericalUtil.computeDistanceBetween(position1, position2);
         return d <= distance;
+    }
+
+    @Override
+    public LatLng generateRandomLocation(LatLng reference, double distance) {
+        Random random = new Random();
+        final int numOfDirections = 8;
+        final int generated = random.nextInt(numOfDirections);
+        final int heading = generated * 360 / numOfDirections;
+
+        return SphericalUtil.computeOffset(reference, distance, heading);
     }
 
     @Override

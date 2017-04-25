@@ -1,12 +1,9 @@
 package com.ede.standyourground.app.activity;
 
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -24,43 +21,32 @@ import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.framework.api.transmit.Callback;
 import com.ede.standyourground.framework.api.transmit.Receiver;
 import com.ede.standyourground.framework.api.transmit.StandYourGroundResultReceiver;
+import com.ede.standyourground.game.api.model.GameMode;
 import com.ede.standyourground.networking.api.NetworkingHandler;
-import com.ede.standyourground.networking.api.exchange.api.MatchMakingApi;
 import com.ede.standyourground.networking.api.exchange.payload.request.FindMatchRequest;
 import com.ede.standyourground.networking.api.exchange.payload.response.FindMatchResponse;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.maps.android.SphericalUtil;
 
 import java.util.UUID;
 
 import javax.inject.Inject;
 
-import retrofit2.Call;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class FindMatchActivity extends AppCompatActivity implements Receiver, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
-
-    public static String FIND_MATCH_RESULT_RECEIVER = FindMatchActivity.class.getName() + ".findMatchResultReceiver";
-    public static String PLAYER_ID = FindMatchActivity.class.getName() + ".playerId";
-    public static String OPPONENT_LOCATION = FindMatchActivity.class.getName() + ".opponent";
-    public static String PLAYER_LOCATION = FindMatchActivity.class.getName() + ".location";
-    public static String GAME_SESSION_ID = FindMatchActivity.class.getName() + ".gameSessionId";
-
-    private static final long LOCATION_INTERVAL = 5000;
+public class FindMatchActivity extends AppCompatActivity implements Receiver {
 
     private static Logger logger = new Logger(FindMatchActivity.class);
 
+    public static String FIND_MATCH_RESULT_RECEIVER = FindMatchActivity.class.getName() + ".findMatchResultReceiver";
+    public static String PLAYER_ID = FindMatchActivity.class.getName() + ".playerId";
+    public static String PLAYER_LOCATION = FindMatchActivity.class.getName() + ".playerLocation";
+    public static String ENEMY_SEARCH_RADIUS = FindMatchActivity.class.getName() + ".enemySearchRadius";
+    public static String GAME_SESSION_ID = FindMatchActivity.class.getName() + ".gameSessionId";
+
     private StandYourGroundResultReceiver standYourGroundResultReceiver = new StandYourGroundResultReceiver(new Handler());
-    private GoogleApiClient googleApiClient;
-    private LocationRequest locationRequest;
-    private Location currentLocation;
     private UUID playerId;
+    private LatLng playerLocation;
+    private int enemySearchRadius;
     private boolean playerMatched = false;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -68,7 +54,6 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     private ProgressBar findingMatchProgressBar;
     private TextView findingMatchText;
     private TextView opponentFoundText;
-    private Button faceAiButton;
 
     @Inject
     LatLngService latLngService;
@@ -83,15 +68,16 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         MyApp.getAppComponent().inject(this);
         setContentView(R.layout.activity_find_match);
 
+        playerLocation = (LatLng) getIntent().getExtras().get(PLAYER_LOCATION);
+        enemySearchRadius = (int) getIntent().getExtras().get(ENEMY_SEARCH_RADIUS);
+
         onFindMatchButton = (Button) findViewById(R.id.onFindMatchButton);
         findingMatchProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         findingMatchText = (TextView) findViewById(R.id.findingMatchText);
         opponentFoundText = (TextView) findViewById(R.id.opponentFoundText);
-        faceAiButton = (Button) findViewById(R.id.faceAiButton);
 
         standYourGroundResultReceiver.setReceiver(this);
         playerId = UUID.randomUUID();
-        getLocation();
     }
 
     public void onFindMatch(View view) {
@@ -99,8 +85,6 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
 
         findingMatchText.setVisibility(View.VISIBLE);
         findingMatchProgressBar.setVisibility(View.VISIBLE);
-        faceAiButton.setVisibility(View.VISIBLE);
-        faceAiButton.setEnabled(true);
         onFindMatchButton.setVisibility(View.INVISIBLE);
 
         Intent intent = new Intent(this, FindMatchService.class);
@@ -108,9 +92,9 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
 
         FindMatchRequest findMatchRequest = new FindMatchRequest();
         findMatchRequest.setId(playerId);
-        findMatchRequest.setLat(currentLocation.getLatitude());
-        findMatchRequest.setLng(currentLocation.getLongitude());
-        findMatchRequest.setRadius(5);
+        findMatchRequest.setLat(playerLocation.latitude);
+        findMatchRequest.setLng(playerLocation.longitude);
+        findMatchRequest.setRadius((int) (enemySearchRadius * 1.60934));
 
         intent.putExtra(FindMatchService.FIND_MATCH_REQUEST, findMatchRequest);
 
@@ -136,19 +120,6 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        googleApiClient.connect();
-    }
-
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        googleApiClient.disconnect();
-    }
-
-    @Override
     protected void onDestroy() {
         FindMatchService.stopThread();
         if (!playerMatched) {
@@ -159,44 +130,6 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
             logger.d("Call made to remove player from match making");
         }
         super.onDestroy();
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        logger.i("Google API client connected");
-        try {
-            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-        } catch (SecurityException e) {
-            logger.e("Fine location permission not granted", e);
-        }
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        currentLocation = location;
-        onFindMatchButton.setEnabled(true);
-    }
-
-    private void getLocation() {
-        locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(LOCATION_INTERVAL);
-        locationRequest.setFastestInterval(LOCATION_INTERVAL);
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
     private void animateMessage(String message) {
@@ -250,7 +183,6 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
             findingMatchText.setText(R.string.find_match_connecting);
 
             playerMatched = true;
-            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
 
             networkingHandler.connect(findMatchResponse.getGameSessionId(), new Callback() {
                 @Override
@@ -261,9 +193,10 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
                             LatLng opponentLocation = new LatLng(findMatchResponse.getLat(), findMatchResponse.getLng());
 
                             Intent intent = new Intent(FindMatchActivity.this, MapsActivity.class);
-                            intent.putExtra(OPPONENT_LOCATION, opponentLocation);
-                            intent.putExtra(PLAYER_LOCATION, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
-                            intent.putExtra(GAME_SESSION_ID, findMatchResponse.getGameSessionId());
+                            intent.putExtra(MapsActivity.OPPONENT_LOCATION, opponentLocation);
+                            intent.putExtra(MapsActivity.PLAYER_LOCATION, playerLocation);
+                            intent.putExtra(MapsActivity.GAME_SESSION_ID, findMatchResponse.getGameSessionId());
+                            intent.putExtra(MapsActivity.GAME_MODE, GameMode.MULTIPLAYER);
                             FindMatchActivity.this.startActivity(intent);
                         }
                     });
@@ -282,33 +215,6 @@ public class FindMatchActivity extends AppCompatActivity implements Receiver, Go
         } else {
             logger.w("Received null opponent player in response");
         }
-    }
-
-    public void onFaceAi(View view) {
-        MatchMakingApi matchMakingApi = retrofit.create(MatchMakingApi.class);
-
-        FindMatchRequest findMatchRequest = new FindMatchRequest();
-        findMatchRequest.setId(UUID.randomUUID());
-        findMatchRequest.setRadius(5);
-        LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-        LatLng opponentLocation = SphericalUtil.computeOffset(currentLatLng, 3218, 180);
-        findMatchRequest.setLat(opponentLocation.latitude);
-        findMatchRequest.setLng(opponentLocation.longitude);
-
-        Call<FindMatchResponse> findMatchCall = matchMakingApi.findMatch(findMatchRequest);
-
-        findMatchCall.enqueue(new retrofit2.Callback<FindMatchResponse>() {
-            @Override
-            public void onResponse(Call<FindMatchResponse> call, Response<FindMatchResponse> response) {
-                logger.i("Received response %d for AI", response.code());
-            }
-
-            @Override
-            public void onFailure(Call<FindMatchResponse> call, Throwable t) {
-                logger.e("Call to add AI to matchmaking failed", t);
-            }
-        });
-
     }
 
     private void resetActivity(String messageText) {

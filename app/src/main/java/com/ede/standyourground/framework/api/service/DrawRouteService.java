@@ -1,17 +1,16 @@
 package com.ede.standyourground.framework.api.service;
 
 
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
+import com.ede.standyourground.networking.api.model.Routes;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
 import java.util.List;
 
-/**
- * This service can only be used on the main thread as it manipulates google map
- * assets.
- */
+import retrofit2.Callback;
+
 public interface DrawRouteService {
-    void createRoutesForUnit(Units toCreate, List<Marker> markers, LatLng playerLocation, LatLng opponentLocation);
-    void createRoutesForEnemyUnit(Units toCreate, List<Marker> markers, LatLng playerLocation, LatLng opponentLocation);
+    void createRoutesForUnit(LatLng start, LatLng end, List<LatLng> intermediaryPoints, Callback<Routes> callback);
+    void createRoutesForEnemyUnit(UnitType toCreate, List<Marker> markers, LatLng playerLocation, LatLng opponentLocation);
 }

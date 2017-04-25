@@ -4,7 +4,7 @@ import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.NeutralCampService;
 import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.networking.api.model.GooglePlaceResult;
@@ -60,7 +60,7 @@ public class NeutralCampServiceImpl implements NeutralCampService {
             LatLng position = new LatLng(googlePlaceResult.getGeometry().getLocation().getLat(), googlePlaceResult.getGeometry().getLocation().getLng());
             boolean foundValidType = false;
             for (int i = 0; i < googlePlaceResult.getTypes().size() && !foundValidType; ++i) {
-                Units unitType = null;
+                UnitType unitType = null;
                 GooglePlacesType googlePlacesType = null;
                 try {
                     googlePlacesType = GooglePlacesType.valueOf(googlePlaceResult.getTypes().get(i).toUpperCase());
@@ -84,21 +84,21 @@ public class NeutralCampServiceImpl implements NeutralCampService {
     }
 
     @Override
-    public Units convertGooglePlacesTypeToNeutralCamp(GooglePlacesType googlePlacesType) {
-        Units units = null;
+    public UnitType convertGooglePlacesTypeToNeutralCamp(GooglePlacesType googlePlacesType) {
+        UnitType unitType = null;
         switch (googlePlacesType) {
             case PHARMACY:
-                units = Units.MEDIC_NEUTRAL_CAMP;
+                unitType = UnitType.MEDIC_NEUTRAL_CAMP;
                 break;
             case HOSPITAL:
-                units = Units.MEDIC_NEUTRAL_CAMP;
+                unitType = UnitType.MEDIC_NEUTRAL_CAMP;
                 break;
             case BANK:
-                units = Units.BANK_NEUTRAL_CAMP;
+                unitType = UnitType.BANK_NEUTRAL_CAMP;
                 break;
         }
 
-        return units;
+        return unitType;
     }
 
     @Override

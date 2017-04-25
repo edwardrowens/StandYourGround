@@ -7,7 +7,7 @@ import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Path;
 import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public class Medic extends MovableUnit implements Healer {
     private long lastHealTime;
 
     public Medic(List<LatLng> waypoints, LatLng startingPosition, Path path, Hostility hostility, Cell cell) {
-        super(waypoints, startingPosition, path, Units.MEDIC, hostility, cell);
+        super(waypoints, startingPosition, path, UnitType.MEDIC, hostility, cell);
         healRange = getRadius() * 2;
     }
 

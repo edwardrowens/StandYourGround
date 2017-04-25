@@ -15,7 +15,7 @@ import com.ede.standyourground.app.ui.api.event.FinalDecrementObserver;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
 import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,8 +34,8 @@ public class UnitGroupBlockCount extends UnitGroupBlock implements FinalDecremen
 
     private FinalDecrementListener finalDecrementListener;
 
-    public UnitGroupBlockCount(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units) {
-        super(componentElementId, unitIds, activity, units);
+    public UnitGroupBlockCount(UUID componentElementId, final List<UUID> unitIds, Activity activity, UnitType unitType) {
+        super(componentElementId, unitIds, activity, unitType);
         this.activity = activity;
         this.countContainer = (TextView) LayoutInflater.from(activity).inflate(R.layout.text_view_component, null);
 

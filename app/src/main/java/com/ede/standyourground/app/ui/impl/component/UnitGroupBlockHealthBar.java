@@ -15,7 +15,7 @@ import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
 import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,8 +30,8 @@ public class UnitGroupBlockHealthBar extends UnitGroupBlock {
     private final RelativeLayout healthBarContainer;
     private final OnDeathListener onDeathListener;
 
-    public UnitGroupBlockHealthBar(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units, final HealthBar healthBar) {
-        super(componentElementId, unitIds, activity, units);
+    public UnitGroupBlockHealthBar(UUID componentElementId, final List<UUID> unitIds, Activity activity, UnitType unitType, final HealthBar healthBar) {
+        super(componentElementId, unitIds, activity, unitType);
         this.healthBarContainer = (RelativeLayout) LayoutInflater.from(activity).inflate(R.layout.unit_group_block_health_bar, null);
 
         healthBarContainer.setLayoutParams(new ViewGroup.LayoutParams((int) healthBar.getHealthBarBorder().width(), (int) healthBar.getHealthBarBorder().height()));

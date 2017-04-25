@@ -4,14 +4,14 @@ package com.ede.standyourground.game.impl.model;
 import com.ede.standyourground.game.api.model.Cell;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.google.android.gms.maps.model.LatLng;
 
 public class Base extends Unit {
     private static final int HEALTH = 100;
 
     public Base(LatLng position, Hostility hostility, Cell cell) {
-        super(position, Units.BASE, hostility, cell);
+        super(position, UnitType.BASE, hostility, cell);
         isVisible.set(true);
     }
 

@@ -18,12 +18,14 @@ import com.ede.standyourground.framework.impl.service.LatLngServiceImpl;
 import com.ede.standyourground.framework.impl.service.MathServiceImpl;
 import com.ede.standyourground.framework.impl.service.ProjectionServiceImpl;
 import com.ede.standyourground.framework.impl.service.RouteServiceImpl;
+import com.ede.standyourground.game.api.service.ArtificialOpponentService;
 import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.NeutralCampService;
 import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.game.api.service.UpdateService;
 import com.ede.standyourground.game.api.service.WorldGridService;
+import com.ede.standyourground.game.impl.service.ArtificialOpponentServiceImpl;
 import com.ede.standyourground.game.impl.service.GameServiceImpl;
 import com.ede.standyourground.game.impl.service.NeutralCampServiceImpl;
 import com.ede.standyourground.game.impl.service.PlayerServiceImpl;
@@ -49,7 +51,7 @@ public abstract class ServiceModule {
 
     @Binds public abstract LatLngService bindLatLngService(LatLngServiceImpl latLngServiceImpl);
 
-    @Binds public abstract NetworkingHandler bindNetworkingManager(MockNetworkingHandler networkingManager);
+    @Binds public abstract NetworkingHandler bindNetworkingHandler(MockNetworkingHandler networkingManager);
 
     @Binds public abstract MathService bindMathService(MathServiceImpl mathService);
 
@@ -78,4 +80,6 @@ public abstract class ServiceModule {
     @Binds public abstract UnitChoicesMenuService bindUnitChoicesMenuService(UnitChoicesMenuServiceImpl unitChoicesMenuService);
 
     @Binds public abstract WorldGridService bindWorldGridService(WorldGridServiceImpl worldGridService);
+
+    @Binds public abstract ArtificialOpponentService bindArtificialOpponentService(ArtificialOpponentServiceImpl artificialOpponentService);
 }

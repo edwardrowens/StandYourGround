@@ -12,12 +12,11 @@ import com.ede.standyourground.game.api.event.listener.VisibilityChangeListener;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.game.impl.model.BankNeutralCamp;
 import com.ede.standyourground.game.impl.model.Base;
-import com.ede.standyourground.game.impl.model.FootSoldier;
 import com.ede.standyourground.networking.api.NetworkingHandler;
 import com.ede.standyourground.networking.api.exchange.payload.request.CreateUnitRequest;
 import com.google.android.gms.maps.model.LatLng;
@@ -66,20 +65,20 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public void createEnemyUnit(List<LatLng> route, LatLng position, Units units) {
-        Unit unit = unitCreator.get().createEnemyUnit(route, position, units);
+    public void createEnemyUnit(List<LatLng> route, LatLng position, UnitType unitType) {
+        Unit unit = unitCreator.get().createEnemyUnit(route, position, unitType);
         addEnemyUnit(unit);
     }
 
     @Override
-    public void createFriendlyUnit(List<LatLng> route, LatLng position, Units units) {
-        Unit unit = unitCreator.get().createPlayerUnit(route, position, units);
+    public void createFriendlyUnit(List<LatLng> route, LatLng position, UnitType unitType) {
+        Unit unit = unitCreator.get().createPlayerUnit(route, position, unitType);
         addPlayerUnit(unit);
     }
 
     @Override
-    public void createNeutralUnit(LatLng position, Units units, String name, String photoReference, final Hostility hostility) {
-        Unit unit = unitCreator.get().createNeutralUnit(position, units, name, photoReference, hostility);
+    public void createNeutralUnit(LatLng position, UnitType unitType, String name, String photoReference, final Hostility hostility) {
+        Unit unit = unitCreator.get().createNeutralUnit(position, unitType, name, photoReference, hostility);
         addUnit(unit);
     }
 
@@ -217,12 +216,8 @@ public class UnitServiceImpl implements UnitService {
             createUnitRequest.setWaypoints(((MovableUnit)unit).getWaypoints());
         }
         createUnitRequest.setGameSessionId(gameSessionIdProvider.get().getGameSessionId());
+        createUnitRequest.setUnit(unit.getType());
 
-        if (unit instanceof FootSoldier) {
-            createUnitRequest.setUnit(Units.FOOT_SOLDIER);
-        } else if (unit instanceof Base) {
-            createUnitRequest.setUnit(Units.BASE);
-        }
         networkingManager.get().sendExchange(createUnitRequest);
     }
 }

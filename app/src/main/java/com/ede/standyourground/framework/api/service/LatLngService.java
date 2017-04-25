@@ -18,6 +18,8 @@ public interface LatLngService {
 
     boolean withinDistance(LatLng position1, LatLng position2, double distance);
 
+    LatLng generateRandomLocation(LatLng reference, double distance);
+
     /**
      * Calculates the linear distance between two points on a map in meters.
      *

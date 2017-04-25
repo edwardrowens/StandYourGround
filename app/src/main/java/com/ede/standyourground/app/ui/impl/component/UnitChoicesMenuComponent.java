@@ -11,7 +11,7 @@ import com.ede.standyourground.app.ui.api.event.RouteCancelListener;
 import com.ede.standyourground.app.ui.api.event.RouteCancelObserver;
 import com.ede.standyourground.app.ui.api.event.UnitSelectedListener;
 import com.ede.standyourground.app.ui.api.event.UnitSelectedObserver;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -35,7 +35,7 @@ public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver
     private final List<UnitSelectedListener> unitSelectedListeners = new CopyOnWriteArrayList<>();
 
     private final List<RouteCancelListener> routeCancelListeners = new CopyOnWriteArrayList<>();
-    private Units selectedUnit;
+    private UnitType selectedUnit;
 
     public UnitChoicesMenuComponent(Activity activity, LinearLayout unitChoicesMenu, LinearLayout routeUnitChoice, HorizontalScrollView unitChoices, LatLng centerPointReference, double radiusReference) {
         this.activity = activity;
@@ -83,11 +83,11 @@ public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver
         unitSelectedListeners.add(unitSelectedListener);
     }
 
-    public Units getSelectedUnit() {
+    public UnitType getSelectedUnit() {
         return selectedUnit;
     }
 
-    public void setSelectedUnit(Units selectedUnit) {
+    public void setSelectedUnit(UnitType selectedUnit) {
         this.selectedUnit = selectedUnit;
     }
 

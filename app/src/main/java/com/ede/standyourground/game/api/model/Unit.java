@@ -25,7 +25,7 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
     private final UUID id = UUID.randomUUID();
     private final Hostility hostility;
     private final double radius;
-    private final Units type;
+    private final UnitType type;
     private final AtomicReference<Cell> cell;
 
     // Listeners
@@ -39,7 +39,7 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
     public abstract double getVisionRadius();
     protected abstract void onUnitDeath();
 
-    public Unit(LatLng startingPosition, Units type, Hostility hostility, Cell cell) {
+    public Unit(LatLng startingPosition, UnitType type, Hostility hostility, Cell cell) {
         this.startingPosition = startingPosition;
         this.createdTime = new AtomicLong(SystemClock.uptimeMillis());
         this.hostility = hostility;
@@ -104,7 +104,7 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
         healthChangeListener.onHealthChange(this);
     }
 
-    public Units getType() {
+    public UnitType getType() {
         return type;
     }
 

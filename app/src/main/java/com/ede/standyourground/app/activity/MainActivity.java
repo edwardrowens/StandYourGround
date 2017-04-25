@@ -12,6 +12,7 @@ import android.view.View;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.framework.api.Logger;
+import com.ede.standyourground.game.api.model.GameMode;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -41,9 +42,17 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
 
-    public void startGame(View view) {
-        logger.i("Starting game");
-        Intent intent = new Intent(this, FindMatchActivity.class);
+    public void startMultiplayerGame(View view) {
+        logger.i("Starting multiplayer game");
+        Intent intent = new Intent(this, SelectLocationActivity.class);
+        intent.putExtra(SelectLocationActivity.GAME_MODE, GameMode.MULTIPLAYER);
+        startActivity(intent);
+    }
+
+    public void startSinglePlayerGame(View view) {
+        logger.i("Starting single player game");
+        Intent intent = new Intent(this, SelectLocationActivity.class);
+        intent.putExtra(SelectLocationActivity.GAME_MODE, GameMode.SINGLE_PLAYER);
         startActivity(intent);
     }
 

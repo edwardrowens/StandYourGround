@@ -14,7 +14,7 @@ import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.NeutralCamp;
 import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.game.impl.model.Base;
 import com.google.android.gms.maps.GoogleMap;
@@ -69,7 +69,7 @@ public class OnCircleClickListenerFactory {
                 unitGroupComponent.clear();
                 neutralCampListingComponent.clear();
 
-                Map<Units, Integer> bag = new HashMap<>();
+                Map<UnitType, Integer> bag = new HashMap<>();
                 List<Unit> unitsOnPosition = new ArrayList<>();
                 Unit unitClicked = null;
 
@@ -101,7 +101,7 @@ public class OnCircleClickListenerFactory {
 
                     unitGroupComponent.setPoint(point);
 
-                    for (Map.Entry<Units, Integer> e : bag.entrySet()) {
+                    for (Map.Entry<UnitType, Integer> e : bag.entrySet()) {
                         if (e.getValue() == 1) {
                             for (Unit u : unitsOnPosition) {
                                 if (u.getType().equals(e.getKey())) {

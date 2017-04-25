@@ -1,11 +1,16 @@
 <resources>
     <string name="app_name">Stand Your Ground</string>
     <string name="title_activity_maps">Map</string>
-    <string name="start_game_button">Play</string>
+    <string name="start_multiplayer_game_button">MULTIPLAYER</string>
+    <string name="start_single_player_game_button">SINGLE PLAYER</string>
     <string name="title_activity_asdsad">Map</string>
     <string name="title_activity_find_match">FindMatchActivity</string>
-    <string name="find_match_searching">Searching...</string>
-    <string name="find_match_connecting">Connecting to opponent...</string>
+    <string name="find_match_searching">Searching&#8230;</string>
+    <string name="find_match_connecting">Connecting to opponent&#8230;</string>
+    <string name="creating_game">Creating game&#8230;</string>
+    <string name="game_ready">Game ready!</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
     <string name="find_match_opponent_found">Opponent found!</string>
     <string name="find_match_opponent_lost">Could not connect to opponent</string>
     <string name="find_match_button">Find Match</string>
@@ -16,4 +21,7 @@
     <string name="marauder">Marauder</string>
     <string name="medic">Medic</string>
     <string name="unitGroupCountText">x%1$d</string>
+    <string name="title_activity_select_location">Map</string>
+    <string name="enemyRange">Find enemies within a %1$d km radius</string>
+    <string name="staticEnemyRange">Find enemies within a 2 km radius</string>
 </resources>

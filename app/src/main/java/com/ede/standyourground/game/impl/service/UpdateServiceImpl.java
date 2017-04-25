@@ -140,7 +140,7 @@ public class UpdateServiceImpl implements UpdateService {
 
     @Override
     public void calculateResourceAccrual() {
-        long lastResourceAccrual = playerService.get().getLastResourceAccrual();
+        long lastResourceAccrual = playerService.get().getLastResourceAccrual(playerService.get().getMainPlayerId());
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastResourceAccrual >= 10000) {
             playerService.get().accrueIncome();

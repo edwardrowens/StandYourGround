@@ -11,7 +11,7 @@ import com.ede.standyourground.R;
 import com.ede.standyourground.app.ui.impl.component.Icon;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.UnitService;
 
 import java.util.List;
@@ -36,7 +36,7 @@ public abstract class UnitGroupBlock implements Component {
     private final UUID componentElementId;
     protected Lazy<UnitService> unitService;
 
-    public UnitGroupBlock(UUID componentElementId, final List<UUID> unitIds, Activity activity, Units units) {
+    public UnitGroupBlock(UUID componentElementId, final List<UUID> unitIds, Activity activity, UnitType unitType) {
         unitService = MyApp.getAppComponent().getUnitService();
         this.componentElementId = componentElementId;
         this.unitIds.addAll(unitIds);
@@ -44,7 +44,7 @@ public abstract class UnitGroupBlock implements Component {
         this.container = (LinearLayout) LayoutInflater.from(activity).inflate(R.layout.unit_group_block, null);
         this.iconContainer = (RelativeLayout) LayoutInflater.from(activity).inflate(R.layout.unit_group_block_icon, null);
 
-        Icon icon = new Icon(componentElementId, activity, units);
+        Icon icon = new Icon(componentElementId, activity, unitType);
 
         container.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         iconContainer.setLayoutParams(new ViewGroup.LayoutParams(icon.getIcon().getIntrinsicWidth(), icon.getIcon().getIntrinsicHeight()));

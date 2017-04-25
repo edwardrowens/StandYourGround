@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ede.standyourground">
+          package="com.ede.standyourground">
 
     <!-- <permission -->
     <!-- android:name="com.ede.standyourground.permission.MAPS_RECEIVE" -->
@@ -16,24 +16,24 @@
          Google Maps Android API v2, but you must specify either coarse or fine
          location permissions for the 'MyLocation' functionality.
     -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
+        android:name=".framework.api.dagger.application.MyApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:name=".framework.api.dagger.application.MyApp">
+        android:theme="@style/AppTheme">
         <activity android:name=".app.activity.MainActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <!--
@@ -46,26 +46,32 @@
         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
+            android:value="@string/google_maps_key"/>
 
         <activity
             android:name=".app.activity.MapsActivity"
-            android:label="@string/title_activity_maps" />
-
+            android:label="@string/title_activity_maps"/>
         <activity
             android:name=".app.activity.FindMatchActivity"
             android:label="@string/title_activity_find_match"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"/>
 
         <service
             android:name=".app.activity.service.FindMatchService"
-            android:exported="false" />
+            android:exported="false"/>
         <service
             android:name=".app.activity.service.RemoveFromMatchMakingService"
-            android:exported="false" />
+            android:exported="false"/>
         <service
             android:name=".app.activity.service.StopGameService"
-            android:exported="false"></service>
+            android:exported="false"/>
+
+        <activity android:name=".app.activity.SettingUpMatchActivity">
+        </activity>
+        <activity
+            android:name=".app.activity.SelectLocationActivity"
+            android:label="@string/title_activity_select_location">
+        </activity>
     </application>
 
 </manifest>

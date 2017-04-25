@@ -6,7 +6,7 @@ import com.ede.standyourground.game.api.event.observer.BankNeutralCampIncomeObse
 import com.ede.standyourground.game.api.model.Cell;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.NeutralCamp;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.google.android.gms.maps.model.LatLng;
 
 /**
@@ -20,7 +20,7 @@ public class BankNeutralCamp extends NeutralCamp implements BankNeutralCampIncom
     private BankNeutralCampIncomeListener bankNeutralCampIncomeListener;
 
     public BankNeutralCamp(LatLng startingPosition, String name, String photoReference, Hostility hostility, Cell cell) {
-        super(startingPosition, Units.BANK_NEUTRAL_CAMP, name, photoReference, hostility, cell);
+        super(startingPosition, UnitType.BANK_NEUTRAL_CAMP, name, photoReference, hostility, cell);
     }
 
     @Override

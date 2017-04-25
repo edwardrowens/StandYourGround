@@ -17,7 +17,6 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:enabled="false"
         android:onClick="onFindMatch"
         android:text="@string/find_match_button" />
 
@@ -53,17 +52,6 @@
             android:layout_height="wrap_content"
             android:indeterminate="true"
             android:visibility="invisible" />
-
-        <Button
-            android:id="@+id/faceAiButton"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:onClick="onFaceAi"
-            android:text="@string/face_ai_button"
-            android:visibility="invisible"/>
-
     </LinearLayout>
 
 </RelativeLayout>

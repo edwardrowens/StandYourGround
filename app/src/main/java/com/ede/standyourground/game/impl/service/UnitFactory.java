@@ -6,7 +6,7 @@ import com.ede.standyourground.game.api.model.Cell;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.Path;
 import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.WorldGridService;
 import com.ede.standyourground.game.impl.model.BankNeutralCamp;
 import com.ede.standyourground.game.impl.model.Base;
@@ -34,19 +34,19 @@ public class UnitFactory {
         this.worldGridService = worldGridService;
     }
 
-    public Unit createPlayerUnit(final List<LatLng> route, final LatLng position, Units units) {
-        return createUnit(units, position, route, Hostility.FRIENDLY);
+    public Unit createPlayerUnit(final List<LatLng> route, final LatLng position, UnitType unitType) {
+        return createUnit(unitType, position, route, Hostility.FRIENDLY);
     }
 
-    public Unit createEnemyUnit(final List<LatLng> route, final LatLng position, Units units) {
-        return createUnit(units, position, route, Hostility.ENEMY);
+    public Unit createEnemyUnit(final List<LatLng> route, final LatLng position, UnitType unitType) {
+        return createUnit(unitType, position, route, Hostility.ENEMY);
     }
 
-    public Unit createNeutralUnit(final LatLng position, Units units, String name, String photoReference, Hostility hostility) {
-        return createNeutralUnit(units, position, name, photoReference, hostility);
+    public Unit createNeutralUnit(final LatLng position, UnitType unitType, String name, String photoReference, Hostility hostility) {
+        return createNeutralUnit(unitType, position, name, photoReference, hostility);
     }
 
-    private Unit createUnit(Units type, LatLng position, List<LatLng> route, Hostility hostility) {
+    private Unit createUnit(UnitType type, LatLng position, List<LatLng> route, Hostility hostility) {
         Unit unit;
         Cell cell = worldGridService.get().calculateCellPosition(position);
         switch (type) {
@@ -66,13 +66,13 @@ public class UnitFactory {
                 unit = new Medic(route, position, medicPath, hostility, cell);
                 break;
             default:
-                throw new IllegalArgumentException("Units " + type.toString() + " is not currently supported.");
+                throw new IllegalArgumentException("UnitType " + type.toString() + " is not currently supported.");
         }
         worldGridService.get().addUnitAtCell(cell, unit);
         return unit;
     }
 
-    private Unit createNeutralUnit(Units type, LatLng position, String name, String photoReference, Hostility hostility) {
+    private Unit createNeutralUnit(UnitType type, LatLng position, String name, String photoReference, Hostility hostility) {
         Unit unit;
         Cell cell = worldGridService.get().calculateCellPosition(position);
         switch(type) {
@@ -83,7 +83,7 @@ public class UnitFactory {
                 unit = new BankNeutralCamp(position, name, photoReference, hostility, cell);
                 break;
             default:
-                throw new IllegalArgumentException("Units " + type.toString() + " is not currently supported.");
+                throw new IllegalArgumentException("UnitType " + type.toString() + " is not currently supported.");
         }
         worldGridService.get().addUnitAtCell(cell, unit);
         return unit;

@@ -19,7 +19,7 @@ import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
 import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,12 +77,12 @@ public class UnitGroupComponent implements Component {
         setVisibility(View.INVISIBLE);
     }
 
-    public UUID createAndAddUnitGroupBlockHealthBar(final UUID unitId, Units units, float healthPercentage) {
-        UnitGroupBlockHealthBar unitGroupBlockHealthBar = createUnitGroupBlockHealthBar(unitId, units, healthPercentage);
+    public UUID createAndAddUnitGroupBlockHealthBar(final UUID unitId, UnitType unitType, float healthPercentage) {
+        UnitGroupBlockHealthBar unitGroupBlockHealthBar = createUnitGroupBlockHealthBar(unitId, unitType, healthPercentage);
         return addUnitGroupBlockHealthBar(unitGroupBlockHealthBar, null);
     }
 
-    public UnitGroupBlockHealthBar createUnitGroupBlockHealthBar(final UUID unitId, Units units, float healthPercentage) {
+    public UnitGroupBlockHealthBar createUnitGroupBlockHealthBar(final UUID unitId, UnitType unitType, float healthPercentage) {
         HealthBar healthBar = new HealthBar(unitId, activity);
         healthBar.setHealthPercentage(healthPercentage);
         healthBar.setWidth(100);
@@ -95,7 +95,7 @@ public class UnitGroupComponent implements Component {
         List<UUID> unitIds = new ArrayList<>();
         unitIds.add(unitId);
 
-        return new UnitGroupBlockHealthBar(UUID.randomUUID(), unitIds, activity, units, healthBar);
+        return new UnitGroupBlockHealthBar(UUID.randomUUID(), unitIds, activity, unitType, healthBar);
     }
 
     public UUID addUnitGroupBlockHealthBar(UnitGroupBlockHealthBar unitGroupBlockHealthBar, Integer index) {
@@ -113,13 +113,13 @@ public class UnitGroupComponent implements Component {
         return unitGroupBlockHealthBar.getComponentElementId();
     }
 
-    public UUID createUnitGroupBlockCount(List<UUID> unitIds, Units units) {
+    public UUID createUnitGroupBlockCount(List<UUID> unitIds, UnitType unitType) {
         if (gridLayout.getVisibility() != View.VISIBLE) {
             setVisibility(View.VISIBLE);
         }
         this.unitIds.addAll(unitIds);
         UUID unitGroupBlockId = UUID.randomUUID();
-        final UnitGroupBlockCount unitGroupBlockCount = new UnitGroupBlockCount(unitGroupBlockId, unitIds, activity, units);
+        final UnitGroupBlockCount unitGroupBlockCount = new UnitGroupBlockCount(unitGroupBlockId, unitIds, activity, unitType);
 
         unitGroupBlockCount.registerFinalDecrementListener(new FinalDecrementListener() {
             @Override

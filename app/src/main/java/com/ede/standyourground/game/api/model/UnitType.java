@@ -4,7 +4,7 @@ import com.ede.standyourground.R;
 import com.ede.standyourground.app.activity.MapsActivity;
 import com.google.android.gms.maps.model.CircleOptions;
 
-public enum Units {
+public enum UnitType {
     BASE(R.drawable.base, UnitsOptions.CIRCLE_OPTIONS.radius(85), R.color.blue, R.color.red, 0),
     FOOT_SOLDIER(R.drawable.foot_soldier, UnitsOptions.CIRCLE_OPTIONS, R.color.magenta, R.color.red, MapsActivity.resources.getInteger(R.integer.foot_soldier_cost)),
     MARAUDER(R.drawable.marauder, UnitsOptions.CIRCLE_OPTIONS.radius(60), R.color.cyan, R.color.red, MapsActivity.resources.getInteger(R.integer.marauder_cost)),
@@ -18,7 +18,7 @@ public enum Units {
     private final CircleOptions circleOptions;
     private final int cost;
 
-    Units(int drawableId, CircleOptions circleOptions, int friendlyColor, int enemyColor, int cost) {
+    UnitType(int drawableId, CircleOptions circleOptions, int friendlyColor, int enemyColor, int cost) {
         this.drawableId = drawableId;
         this.circleOptions = circleOptions;
         this.friendlyColor = friendlyColor;

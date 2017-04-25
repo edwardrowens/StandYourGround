@@ -6,6 +6,7 @@ import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.framework.api.service.LatLngService;
+import com.ede.standyourground.game.api.model.GameMode;
 import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.NeutralCampService;
 import com.ede.standyourground.game.api.service.UnitService;
@@ -54,11 +55,11 @@ public class OnMapLoadedCallbackFactory {
         this.gameService = gameService;
     }
 
-    public GoogleMap.OnMapLoadedCallback createOnMapLoadedCallback(final LatLng playerLocation, final LatLng opponentLocation, final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent) {
+    public GoogleMap.OnMapLoadedCallback createOnMapLoadedCallback(final GameMode gameMode, final LatLng playerLocation, final LatLng opponentLocation, final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent) {
         return new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
-                gameService.get().startGame(playerLocation, opponentLocation);
+                gameService.get().startGame(gameMode, playerLocation, opponentLocation);
                 unitGroupComponent.initialize(R.id.mapContainer);
                 neutralCampListingComponent.initialize(R.id.mapContainer);
 

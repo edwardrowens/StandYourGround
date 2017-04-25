@@ -1,7 +1,6 @@
 package com.ede.standyourground.game.api.model;
 
 import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener;
-import com.ede.standyourground.game.api.event.listener.IncomeAccruedListener;
 import com.ede.standyourground.game.api.event.observer.CoinBalanceChangeObserver;
 
 import java.util.UUID;
@@ -9,26 +8,32 @@ import java.util.UUID;
 /**
  *
  */
-
 public class Player implements CoinBalanceChangeObserver {
 
     private static final int BASE_INCOME = 15;
+    private static final int STARTING_COINS = 200;
 
-    private UUID id;
-    private int coins;
+    private final UUID id;
+    private final boolean mainPlayer;
+
     private long lastResourceAccrual;
+    private int coins;
     private int income;
     private int bankNeutralCampCount;
     private int medicNeutralCampCount;
 
-    public Player(int coins) {
-        this.coins = coins;
+    public Player(UUID id, boolean mainPlayer) {
+        this.id = id;
+        this.mainPlayer = mainPlayer;
+        this.lastResourceAccrual = System.currentTimeMillis();
+        this.coins = STARTING_COINS;
         this.income = BASE_INCOME;
+        this.bankNeutralCampCount = 0;
+        this.medicNeutralCampCount = 0;
     }
 
     // Listeners
     private CoinBalanceChangeListener coinBalanceChangeListener;
-    private IncomeAccruedListener incomeAccruedListener;
 
     public int getCoins() {
         return coins;
@@ -37,7 +42,7 @@ public class Player implements CoinBalanceChangeObserver {
     public void updateCoins(int updateAmount) {
         int oldBalance = coins;
         this.coins += updateAmount;
-        coinBalanceChangeListener.onCoinBalanceChange(oldBalance, this.coins);
+        coinBalanceChangeListener.onCoinBalanceChange(this, oldBalance, this.coins);
     }
 
     public long getLastResourceAccrual() {
@@ -50,10 +55,6 @@ public class Player implements CoinBalanceChangeObserver {
 
     public UUID getId() {
         return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     @Override
@@ -91,5 +92,9 @@ public class Player implements CoinBalanceChangeObserver {
 
     public int getMedicNeutralCampCount() {
         return medicNeutralCampCount;
+    }
+
+    public boolean isMainPlayer() {
+        return mainPlayer;
     }
 }

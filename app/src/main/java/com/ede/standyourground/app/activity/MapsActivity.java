@@ -48,11 +48,13 @@ import com.ede.standyourground.game.api.event.listener.OnDeathListener;
 import com.ede.standyourground.game.api.event.listener.PositionChangeListener;
 import com.ede.standyourground.game.api.event.listener.UnitCreatedListener;
 import com.ede.standyourground.game.api.event.listener.VisibilityChangeListener;
+import com.ede.standyourground.game.api.model.GameMode;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.NeutralCamp;
+import com.ede.standyourground.game.api.model.Player;
 import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
@@ -90,6 +92,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final Logger logger = new Logger(MapsActivity.class);
 
+    public static String GAME_MODE = MapsActivity.class.getName() + ".gameMode";
+    public static String OPPONENT_LOCATION = MapsActivity.class.getName() + ".opponent";
+    public static String PLAYER_LOCATION = MapsActivity.class.getName() + ".location";
+    public static String GAME_SESSION_ID = MapsActivity.class.getName() + ".gameSessionId";
+
     private static final int PATTERN_GAP_LENGTH_PX = 20;
     private static final PatternItem DOT = new Dot();
     private static final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
@@ -105,6 +112,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private List<Marker> waypoints = new ArrayList<>();
     private LatLng playerLocation;
     private LatLng opponentLocation;
+    private GameMode gameMode;
     private static final Map<Class<? extends Component>, Component> componentMap = new ConcurrentHashMap<>();
     private static final Map<UUID, Circle> circles = new ConcurrentHashMap<>();
     private static final Map<UUID, Polyline> polylines = new ConcurrentHashMap<>();
@@ -151,9 +159,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         resources = getResources();
 
-        playerLocation = (LatLng) getIntent().getExtras().get(FindMatchActivity.PLAYER_LOCATION);
-        opponentLocation = (LatLng) getIntent().getExtras().get(FindMatchActivity.OPPONENT_LOCATION);
-        gameSessionIdProvider.setGameSessionId(UUID.fromString((String) getIntent().getExtras().get(FindMatchActivity.GAME_SESSION_ID)));
+        playerLocation = (LatLng) getIntent().getExtras().get(PLAYER_LOCATION);
+        opponentLocation = (LatLng) getIntent().getExtras().get(OPPONENT_LOCATION);
+        gameMode = (GameMode) getIntent().getExtras().get(GAME_MODE);
+        gameSessionIdProvider.setGameSessionId(UUID.fromString((String) getIntent().getExtras().get(GAME_SESSION_ID)));
 
         logger.i("Player location is " + playerLocation.toString());
         logger.i("Opponent location is " + opponentLocation.toString());
@@ -164,7 +173,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onDestroy() {
         gameService.stopGame();
         Intent intent = new Intent(this, StopGameService.class);
-        intent.putExtra(FindMatchActivity.GAME_SESSION_ID, gameSessionIdProvider.getGameSessionId());
+        intent.putExtra(GAME_SESSION_ID, gameSessionIdProvider.getGameSessionId());
         startService(intent);
         super.onDestroy();
     }
@@ -191,7 +200,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setCompassEnabled(false);
 
-        final double distance = Units.BASE.getCircleOptions().getRadius() * 2;
+        final double distance = UnitType.BASE.getCircleOptions().getRadius() * 2;
         LatLng p1 = SphericalUtil.computeOffset(playerLocation, distance, 0);
         LatLng p2 = SphericalUtil.computeOffset(playerLocation, distance, 90);
         LatLng p3 = SphericalUtil.computeOffset(playerLocation, distance, 180);
@@ -200,7 +209,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0, 0));
         NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0, 0), "");
-        final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer), playerLocation, Units.BASE.getCircleOptions().getRadius());
+        final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer), playerLocation, UnitType.BASE.getCircleOptions().getRadius());
 
         componentMap.put(UnitGroupComponent.class, unitGroupComponent);
         componentMap.put(NeutralCampListingComponent.class, neutralCampListingComponent);
@@ -209,7 +218,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Create map listeners
         GoogleMap.OnCircleClickListener onCircleClickListener = onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent);
         googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent));
-        googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(playerLocation, opponentLocation, unitGroupComponent, neutralCampListingComponent));
+        googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(gameMode, playerLocation, opponentLocation, unitGroupComponent, neutralCampListingComponent));
         googleMap.setOnCircleClickListener(onCircleClickListener);
 
         // Register listeners for game events
@@ -280,7 +289,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             removeCircle(mortal.getId());
                         }
                         if (mortal instanceof MedicNeutralCamp && killer.getHostility() == Hostility.FRIENDLY) {
-                            unitChoicesMenuService.setVisibility(unitChoicesMenuComponent, Units.MEDIC, View.VISIBLE);
+                            unitChoicesMenuService.setVisibility(unitChoicesMenuComponent, UnitType.MEDIC, View.VISIBLE);
                         }
                     }
                 });
@@ -319,20 +328,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         gameService.registerCoinBalanceChangeListener(new CoinBalanceChangeListener() {
             @Override
-            public void onCoinBalanceChange(final int oldBalance, final int newBalance) {
+            public void onCoinBalanceChange(final Player player, final int oldBalance, final int newBalance) {
                 MapsActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ValueAnimator valueAnimator = new ValueAnimator();
-                        valueAnimator.setObjectValues(oldBalance, newBalance);
-                        valueAnimator.setDuration(500);
-                        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                            @Override
-                            public void onAnimationUpdate(ValueAnimator animation) {
-                                coins.setText(Integer.toString((int) animation.getAnimatedValue()));
-                            }
-                        });
-                        valueAnimator.start();
+                        if (player.isMainPlayer()) {
+                            ValueAnimator valueAnimator = new ValueAnimator();
+                            valueAnimator.setObjectValues(oldBalance, newBalance);
+                            valueAnimator.setDuration(500);
+                            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                                @Override
+                                public void onAnimationUpdate(ValueAnimator animation) {
+                                    coins.setText(Integer.toString((int) animation.getAnimatedValue()));
+                                }
+                            });
+                            valueAnimator.start();
+                        }
                     }
                 });
             }
@@ -389,7 +400,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         unitChoicesMenuComponent.registerUnitSelectedListener(new UnitSelectedListener() {
             @Override
-            public void onUnitSelected(Units units) {
+            public void onUnitSelected(UnitType unitType) {
                 googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
                     @Override
                     public void onMapClick(LatLng latLng) {
@@ -413,15 +424,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         unitChoicesMenuComponent.registerConfirmRouteListener(new ConfirmRouteListener() {
             @Override
-            public void onConfirmRoute(Units selectedUnit) {
+            public void onConfirmRoute(UnitType selectedUnit) {
                 logger.i("On route clicked");
-                playerService.makePurchase(selectedUnit.getCost());
-                drawRouteService.createRoutesForUnit(selectedUnit, waypoints, playerLocation, opponentLocation);
-
-                // TODO DELETE
-                logger.i("Creating enemy unit.");
-                drawRouteService.createRoutesForEnemyUnit(Units.MARAUDER, new ArrayList<Marker>(), playerLocation, opponentLocation);
-                // TODO END OF DELETE
+                ArrayList<LatLng> intermediaryPositions = new ArrayList<>();
+                for (Marker marker : waypoints) {
+                    intermediaryPositions.add(marker.getPosition());
+                }
+                gameService.createEntity(playerService.getMainPlayerId(), selectedUnit, playerLocation, opponentLocation, intermediaryPositions);
 
                 googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
                     @Override

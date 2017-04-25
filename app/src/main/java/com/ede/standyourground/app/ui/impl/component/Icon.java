@@ -7,7 +7,7 @@ import android.widget.ImageView;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.ui.api.component.ComponentElement;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 
 import java.util.UUID;
 
@@ -17,14 +17,14 @@ public class Icon extends ComponentElement {
     private final Drawable icon;
     private final ImageView container;
 
-    public Icon(UUID componentElementId, Activity activity, Units units) {
+    public Icon(UUID componentElementId, Activity activity, UnitType unitType) {
         super(activity.getApplicationContext());
         this.componentElementId = componentElementId;
         container = (ImageView) LayoutInflater.from(activity).inflate(R.layout.icon_image, null);
 
         Drawable drawableIcon = null;
         try {
-            drawableIcon = Drawable.createFromXml(activity.getResources(), activity.getResources().getXml(units.getDrawableId()));
+            drawableIcon = Drawable.createFromXml(activity.getResources(), activity.getResources().getXml(unitType.getDrawableId()));
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -3,7 +3,7 @@ package com.ede.standyourground.framework.impl.service;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.service.DirectionsService;
 import com.ede.standyourground.framework.api.service.DrawRouteService;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.networking.api.model.Routes;
 import com.google.android.gms.maps.model.LatLng;
@@ -36,17 +36,12 @@ public class DrawRouteServiceImpl implements DrawRouteService {
     }
 
     @Override
-    public void createRoutesForUnit(final Units toCreate, final List<Marker> markers, final LatLng playerLocation, final LatLng opponentLocation) {
-        ArrayList<LatLng> waypointsLatLng = new ArrayList<>();
-        for (Marker marker : markers) {
-            waypointsLatLng.add(marker.getPosition());
-        }
-
-        directionsService.get().getRoutes(playerLocation, opponentLocation, waypointsLatLng, new Callback<Routes>() {
+    public void createRoutesForUnit(final LatLng start, final LatLng end, final List<LatLng> intermediaryPoints, final Callback<Routes> callback) {
+        directionsService.get().getRoutes(start, end, intermediaryPoints, new Callback<Routes>() {
             @Override
             public void onResponse(Call<Routes> call, Response<Routes> response) {
                 logger.i("response with routes received");
-                unitService.get().createFriendlyUnit(PolyUtil.decode(response.body().getRoutes().get(0).getOverviewPolyline().getPoints()), playerLocation, toCreate);
+                callback.onResponse(call, response);
             }
 
             @Override
@@ -60,7 +55,7 @@ public class DrawRouteServiceImpl implements DrawRouteService {
      * TODO DELETE ME
      */
     @Override
-    public void createRoutesForEnemyUnit(final Units toCreate, final List<Marker> markers, final LatLng playerLocation, final LatLng opponentLocation) {
+    public void createRoutesForEnemyUnit(final UnitType toCreate, final List<Marker> markers, final LatLng playerLocation, final LatLng opponentLocation) {
         ArrayList<LatLng> waypointsLatLng = new ArrayList<>();
         for (Marker marker : markers) {
             waypointsLatLng.add(marker.getPosition());

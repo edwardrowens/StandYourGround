@@ -5,7 +5,10 @@ import com.ede.standyourground.game.api.event.listener.IncomeAccruedListener;
 import com.ede.standyourground.game.api.model.Player;
 import com.ede.standyourground.game.api.service.PlayerService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.inject.Inject;
@@ -17,7 +20,8 @@ import javax.inject.Singleton;
 @Singleton
 public class PlayerServiceImpl implements PlayerService {
 
-    private Player player;
+    private final Map<UUID, Player> players = new HashMap<>();
+    private UUID mainPlayerId;
 
     // Listeners
     private final List<CoinBalanceChangeListener> coinBalanceChangeListeners = new CopyOnWriteArrayList<>();
@@ -31,61 +35,69 @@ public class PlayerServiceImpl implements PlayerService {
     public void addPlayer(Player player) {
         player.registerCoinBalanceChangeListener(new CoinBalanceChangeListener() {
             @Override
-            public void onCoinBalanceChange(int oldBalance, int newBalance) {
+            public void onCoinBalanceChange(Player player, int oldBalance, int newBalance) {
                 for (CoinBalanceChangeListener coinBalanceChangeListener : coinBalanceChangeListeners) {
-                    coinBalanceChangeListener.onCoinBalanceChange(oldBalance, newBalance);
+                    coinBalanceChangeListener.onCoinBalanceChange(player, oldBalance, newBalance);
                 }
             }
         });
-        this.player = player;
-        player.setLastResourceAccrual(System.currentTimeMillis());
-    }
-
-    @Override
-    public void makePurchase(int costOfItem) {
-        if (checkFunds(costOfItem)) {
-            player.updateCoins(-costOfItem);
+        players.put(player.getId(), player);
+        if (player.isMainPlayer()) {
+            mainPlayerId = player.getId();
         }
     }
 
     @Override
-    public void updateIncome(int updateAmount) {
-        player.updateIncome(updateAmount);
+    public void makePurchase(UUID playerId, int costOfItem) {
+        if (checkFunds(playerId, costOfItem)) {
+            players.get(playerId).updateCoins(-costOfItem);
+        }
+    }
+
+    @Override
+    public void updateIncome(UUID playerId, int updateAmount) {
+        players.get(playerId).updateIncome(updateAmount);
     }
 
     @Override
     public void accrueIncome() {
-        player.setLastResourceAccrual(System.currentTimeMillis());
-        player.updateCoins(player.getIncome());
-
+        for (Map.Entry<UUID, Player> entry : players.entrySet()) {
+            entry.getValue().setLastResourceAccrual(System.currentTimeMillis());
+            entry.getValue().updateCoins(entry.getValue().getIncome());
+        }
         for (IncomeAccruedListener incomeAccruedListener : incomeAccruedListeners) {
             incomeAccruedListener.onIncomeAccrued();
         }
     }
 
     @Override
-    public long getLastResourceAccrual() {
-        return player.getLastResourceAccrual();
+    public long getLastResourceAccrual(UUID playerId) {
+        return players.get(playerId).getLastResourceAccrual();
     }
 
     @Override
-    public boolean checkFunds(int amountToCheck) {
-        return player.getCoins() >= amountToCheck;
+    public boolean checkFunds(UUID playerId, int amountToCheck) {
+        return players.get(playerId).getCoins() >= amountToCheck;
     }
 
     @Override
-    public int getCurrentBalance() {
-        return player.getCoins();
+    public int getCurrentBalance(UUID playerId) {
+        return players.get(playerId).getCoins();
     }
 
     @Override
-    public int getMedicNeutralCampCount() {
-        return player.getMedicNeutralCampCount();
+    public int getMedicNeutralCampCount(UUID playerId) {
+        return players.get(playerId).getMedicNeutralCampCount();
     }
 
     @Override
-    public int getBankNeutralCampCount() {
-        return player.getBankNeutralCampCount();
+    public int getBankNeutralCampCount(UUID playerId) {
+        return players.get(playerId).getBankNeutralCampCount();
+    }
+
+    @Override
+    public UUID getMainPlayerId() {
+        return mainPlayerId;
     }
 
     @Override

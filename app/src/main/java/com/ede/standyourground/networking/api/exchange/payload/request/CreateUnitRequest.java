@@ -1,6 +1,6 @@
 package com.ede.standyourground.networking.api.exchange.payload.request;
 
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.networking.api.exchange.payload.Exchange;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -8,7 +8,7 @@ import java.util.List;
 
 public class CreateUnitRequest extends Exchange {
 
-    private Units unit;
+    private UnitType unit;
     private List<LatLng> waypoints;
     private LatLng position;
     private final String type = CreateUnitRequest.class.getSimpleName();
@@ -18,11 +18,11 @@ public class CreateUnitRequest extends Exchange {
         return type;
     }
 
-    public Units getUnit() {
+    public UnitType getUnit() {
         return unit;
     }
 
-    public void setUnit(Units unit) {
+    public void setUnit(UnitType unit) {
         this.unit = unit;
     }
 

@@ -8,7 +8,7 @@ import com.ede.standyourground.game.api.model.Healable;
 import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Path;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class Marauder extends MovableUnit implements Attacker, Healable {
     private long lastAttackTime;
 
     public Marauder(List<LatLng> waypoints, LatLng position, Path path, Hostility hostility, Cell cell) {
-        super(waypoints, position, path, Units.MARAUDER, hostility, cell);
+        super(waypoints, position, path, UnitType.MARAUDER, hostility, cell);
         this.lastAttackTime = 0;
         this.attackRange = getRadius() * 2;
     }

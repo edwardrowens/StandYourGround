@@ -11,7 +11,7 @@ public abstract class NeutralCamp extends Unit {
     private final String name;
     private final String photoReference;
 
-    public NeutralCamp(LatLng startingPosition, Units type, String name, String photoReference, Hostility hostility, Cell cell) {
+    public NeutralCamp(LatLng startingPosition, UnitType type, String name, String photoReference, Hostility hostility, Cell cell) {
         super(startingPosition, type, hostility, cell);
         this.name = name;
         this.photoReference = photoReference;

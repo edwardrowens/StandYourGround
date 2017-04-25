@@ -11,7 +11,8 @@ import com.ede.standyourground.R;
 import com.ede.standyourground.app.ui.api.service.UnitChoicesMenuService;
 import com.ede.standyourground.app.ui.impl.component.UnitChoicesMenuComponent;
 import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener;
-import com.ede.standyourground.game.api.model.Units;
+import com.ede.standyourground.game.api.model.Player;
+import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.PlayerService;
 import com.google.android.gms.maps.model.LatLng;
@@ -50,11 +51,13 @@ public class UnitChoicesMenuComponentFactory {
 
         gameService.get().registerCoinBalanceChangeListener(new CoinBalanceChangeListener() {
             @Override
-            public void onCoinBalanceChange(int oldBalance, int newBalance) {
+            public void onCoinBalanceChange(final Player player, int oldBalance, int newBalance) {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        unitChoicesMenuService.get().checkUnitsAvailableForPurchase(unitChoicesMenuComponent);
+                        if (player.isMainPlayer()) {
+                            unitChoicesMenuService.get().checkUnitsAvailableForPurchase(unitChoicesMenuComponent);
+                        }
                     }
                 });
             }
@@ -63,21 +66,21 @@ public class UnitChoicesMenuComponentFactory {
         unitChoices.findViewById(R.id.medic_choice_container).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                unitChoicesMenuService.get().onUnitSelected(unitChoicesMenuComponent, Units.MEDIC);
+                unitChoicesMenuService.get().onUnitSelected(unitChoicesMenuComponent, UnitType.MEDIC);
             }
         });
 
         unitChoices.findViewById(R.id.marauder_choice_container).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                unitChoicesMenuService.get().onUnitSelected(unitChoicesMenuComponent, Units.MARAUDER);
+                unitChoicesMenuService.get().onUnitSelected(unitChoicesMenuComponent, UnitType.MARAUDER);
             }
         });
 
         unitChoices.findViewById(R.id.foot_soldier_choice_container).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                unitChoicesMenuService.get().onUnitSelected(unitChoicesMenuComponent, Units.FOOT_SOLDIER);
+                unitChoicesMenuService.get().onUnitSelected(unitChoicesMenuComponent, UnitType.FOOT_SOLDIER);
             }
         });
 
