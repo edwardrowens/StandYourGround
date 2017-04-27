@@ -12,16 +12,24 @@ import android.view.View;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.framework.api.Logger;
+import com.ede.standyourground.framework.api.dagger.application.MyApp;
+import com.ede.standyourground.framework.api.dagger.providers.GameModeProvider;
 import com.ede.standyourground.game.api.model.GameMode;
+
+import javax.inject.Inject;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final Logger logger = new Logger(MainActivity.class);
     private static final int FINE_LOCATION_PERMISSION_REQUEST_CODE = 1;
 
+    @Inject
+    GameModeProvider gameModeProvider;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MyApp.getAppComponent().inject(this);
         setContentView(R.layout.activity_main);
 
         requestPermissions();
@@ -44,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     public void startMultiplayerGame(View view) {
         logger.i("Starting multiplayer game");
+        gameModeProvider.setGameMode(GameMode.MULTIPLAYER);
         Intent intent = new Intent(this, SelectLocationActivity.class);
         intent.putExtra(SelectLocationActivity.GAME_MODE, GameMode.MULTIPLAYER);
         startActivity(intent);
@@ -51,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     public void startSinglePlayerGame(View view) {
         logger.i("Starting single player game");
+        gameModeProvider.setGameMode(GameMode.SINGLE_PLAYER);
         Intent intent = new Intent(this, SelectLocationActivity.class);
         intent.putExtra(SelectLocationActivity.GAME_MODE, GameMode.SINGLE_PLAYER);
         startActivity(intent);

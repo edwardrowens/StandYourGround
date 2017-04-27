@@ -10,12 +10,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
+import com.ede.standyourground.framework.api.service.DirectionsService;
 import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.game.api.model.GameMode;
+import com.ede.standyourground.networking.api.model.Routes;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -38,6 +41,10 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class SelectLocationActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private static final Logger logger = new Logger(SelectLocationActivity.class);
@@ -52,10 +59,12 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
     private Marker marker;
     private Circle enemySearchRadius;
     private GameMode gameMode;
-    private int enemyRangeInKm;
+    private int enemyRangeInKm = 2;
 
     @Inject
     LatLngService latLngService;
+    @Inject
+    DirectionsService directionsService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +89,6 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         this.googleMap = googleMap;
-
         final Button confirmButton = (Button) findViewById(R.id.confirmLocationButton);
         final Button cancelButton = (Button) findViewById(R.id.cancelLocationButton);
         final SeekBar seekBar = (SeekBar) findViewById(R.id.specifyEnemyRange);
@@ -193,15 +201,34 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
         playerLocation = new LatLng(location.getLatitude(), location.getLongitude());
     }
 
-    public void onConfirmLocation(View view) {
-        switch (gameMode) {
-            case SINGLE_PLAYER:
-                singlePlayerGame();
-                break;
-            case MULTIPLAYER:
-                multiplayerGame();
-                break;
-        }
+    public void onConfirmLocation(final View view) {
+        Random random = new Random();
+        int opponentDistanceInKm = random.nextInt(enemyRangeInKm + 1 - 2) + 2;
+        final LatLng opponentLocation = latLngService.generateRandomLocation(marker.getPosition(), opponentDistanceInKm * 1000);
+        directionsService.getRoutes(playerLocation, opponentLocation, null, new Callback<Routes>() {
+            @Override
+            public void onResponse(Call<Routes> call, Response<Routes> response) {
+                if (response.body().getRoutes().isEmpty()) {
+                    Toast.makeText(SelectLocationActivity.this, "Choose a new location. The one you have chosen is not reachable!", Toast.LENGTH_LONG).show();
+                    onCancelLocation(view);
+                    centerCamera();
+                } else {
+                    switch (gameMode) {
+                        case SINGLE_PLAYER:
+                            singlePlayerGame(opponentLocation);
+                            break;
+                        case MULTIPLAYER:
+                            multiplayerGame();
+                            break;
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Routes> call, Throwable t) {
+
+            }
+        });
     }
 
     public void onCancelLocation(View view) {
@@ -216,15 +243,16 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
         startActivity(intent);
     }
 
-    private void singlePlayerGame() {
-        Random random = new Random();
-        int opponentDistanceInKm = random.nextInt(enemyRangeInKm + 1 - 2) + 2;
-        final LatLng opponentLocation = latLngService.generateRandomLocation(marker.getPosition(), opponentDistanceInKm * 1000);
+    private void singlePlayerGame(LatLng opponentLocation) {
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra(MapsActivity.OPPONENT_LOCATION, opponentLocation);
         intent.putExtra(MapsActivity.PLAYER_LOCATION, marker.getPosition());
         intent.putExtra(MapsActivity.GAME_SESSION_ID, UUID.randomUUID().toString());
         intent.putExtra(MapsActivity.GAME_MODE, GameMode.SINGLE_PLAYER);
         startActivity(intent);
+    }
+
+    private void centerCamera() {
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 12));
     }
 }

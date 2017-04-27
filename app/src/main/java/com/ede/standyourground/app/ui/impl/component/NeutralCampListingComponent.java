@@ -118,6 +118,7 @@ public class NeutralCampListingComponent implements Component {
             });
         } else {
             logger.i("No photos found for %s", textView.getText());
+            progressBar.setVisibility(View.GONE);
         }
     }
 

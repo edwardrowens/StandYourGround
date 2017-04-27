@@ -1,7 +1,7 @@
 package com.ede.standyourground.game.impl.service;
 
 import com.ede.standyourground.framework.api.Logger;
-import com.ede.standyourground.framework.api.service.DrawRouteService;
+import com.ede.standyourground.framework.api.service.DirectionsService;
 import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener;
 import com.ede.standyourground.game.api.event.listener.GameEndListener;
@@ -26,10 +26,8 @@ import com.ede.standyourground.game.impl.model.MedicNeutralCamp;
 import com.ede.standyourground.game.impl.update.UpdateLoop;
 import com.ede.standyourground.networking.api.model.Routes;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.PolyUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,7 +49,7 @@ public class GameServiceImpl implements GameService {
     private final Lazy<PlayerService> playerService;
     private final Lazy<LatLngService> latLngService;
     private final Lazy<WorldGridService> worldGridService;
-    private final Lazy<DrawRouteService> drawRouteService;
+    private final Lazy<DirectionsService> directionsService;
     private final Lazy<ArtificialOpponentFactory> artificialOpponentFactory;
     private final Lazy<ArtificialOpponentService> artificialOpponentService;
     private WorldGrid worldGrid;
@@ -62,7 +60,7 @@ public class GameServiceImpl implements GameService {
                     Lazy<PlayerService> playerService,
                     Lazy<LatLngService> latLngService,
                     Lazy<WorldGridService> worldGridService,
-                    Lazy<DrawRouteService> drawRouteService,
+                    Lazy<DirectionsService> directionsService,
                     Lazy<ArtificialOpponentFactory> artificialOpponentFactory,
                     Lazy<ArtificialOpponentService> artificialOpponentService) {
         this.updateLoop = updateLoop;
@@ -70,7 +68,7 @@ public class GameServiceImpl implements GameService {
         this.playerService = playerService;
         this.latLngService = latLngService;
         this.worldGridService = worldGridService;
-        this.drawRouteService = drawRouteService;
+        this.directionsService = directionsService;
         this.artificialOpponentFactory = artificialOpponentFactory;
         this.artificialOpponentService = artificialOpponentService;
     }
@@ -135,15 +133,11 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void createEntity(final UUID playerId, final UnitType type, final LatLng start, final LatLng end, List<LatLng> intermediaryPositions) {
-        drawRouteService.get().createRoutesForUnit(start, end, intermediaryPositions, new Callback<Routes>() {
+        directionsService.get().getRoutes(start, end, intermediaryPositions, new Callback<Routes>() {
             @Override
             public void onResponse(Call<Routes> call, Response<Routes> response) {
                 unitService.get().createFriendlyUnit(PolyUtil.decode(response.body().getRoutes().get(0).getOverviewPolyline().getPoints()), start, type);
                 playerService.get().makePurchase(playerId, type.getCost());
-                // TODO DELETE
-                logger.i("Creating enemy unit.");
-                drawRouteService.get().createRoutesForEnemyUnit(UnitType.MARAUDER, new ArrayList<Marker>(), start, end);
-                // TODO END OF DELETE
             }
 
             @Override

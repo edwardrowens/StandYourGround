@@ -32,10 +32,8 @@ import com.ede.standyourground.game.impl.service.PlayerServiceImpl;
 import com.ede.standyourground.game.impl.service.UnitServiceImpl;
 import com.ede.standyourground.game.impl.service.UpdateServiceImpl;
 import com.ede.standyourground.game.impl.service.WorldGridServiceImpl;
-import com.ede.standyourground.networking.api.NetworkingHandler;
 import com.ede.standyourground.networking.api.service.GooglePlacesNearbySearchService;
 import com.ede.standyourground.networking.api.service.GooglePlacesService;
-import com.ede.standyourground.networking.impl.MockNetworkingHandler;
 import com.ede.standyourground.networking.impl.service.GooglePlacesNearbySearchServiceImpl;
 import com.ede.standyourground.networking.impl.service.GooglePlacesServiceImpl;
 
@@ -50,8 +48,6 @@ public abstract class ServiceModule {
     @Binds public abstract RouteService bindRouteService(RouteServiceImpl routeServiceImpl);
 
     @Binds public abstract LatLngService bindLatLngService(LatLngServiceImpl latLngServiceImpl);
-
-    @Binds public abstract NetworkingHandler bindNetworkingHandler(MockNetworkingHandler networkingManager);
 
     @Binds public abstract MathService bindMathService(MathServiceImpl mathService);
 

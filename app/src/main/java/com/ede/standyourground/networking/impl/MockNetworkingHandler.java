@@ -1,23 +1,18 @@
 package com.ede.standyourground.networking.impl;
 
 import com.ede.standyourground.framework.api.Logger;
-import com.ede.standyourground.framework.api.service.DrawRouteService;
 import com.ede.standyourground.framework.api.transmit.Callback;
 import com.ede.standyourground.networking.api.NetworkingHandler;
 import com.ede.standyourground.networking.api.exchange.payload.Exchange;
 
 import javax.inject.Inject;
 
-import dagger.Lazy;
-
 public class MockNetworkingHandler implements NetworkingHandler {
 
     private static final Logger logger = new Logger(MockNetworkingHandler.class);
-    private final Lazy<DrawRouteService> drawRouteService;
 
     @Inject
-    MockNetworkingHandler(Lazy<DrawRouteService> drawRouteService) {
-        this.drawRouteService = drawRouteService;
+    public MockNetworkingHandler() {
     }
 
     @Override

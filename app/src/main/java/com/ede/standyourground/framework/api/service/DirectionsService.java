@@ -9,5 +9,5 @@ import retrofit2.Callback;
 
 
 public interface DirectionsService {
-    void getRoutes(LatLng origin, LatLng destination, List<LatLng> waypoints, final Callback<Routes> callback);
+    void getRoutes(LatLng origin, LatLng destination, List<LatLng> intermediaryPositions, final Callback<Routes> callback);
 }

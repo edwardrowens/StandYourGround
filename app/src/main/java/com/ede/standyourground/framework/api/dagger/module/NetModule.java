@@ -1,5 +1,11 @@
 package com.ede.standyourground.framework.api.dagger.module;
 
+import com.ede.standyourground.framework.Lazy;
+import com.ede.standyourground.framework.api.dagger.providers.GameModeProvider;
+import com.ede.standyourground.networking.api.NetworkingHandler;
+import com.ede.standyourground.networking.impl.MockNetworkingHandler;
+import com.ede.standyourground.networking.impl.NetworkingHandlerImpl;
+import com.ede.standyourground.networking.impl.exchange.handler.request.CreateUnitRequestHandler;
 import com.google.gson.Gson;
 
 import javax.inject.Singleton;
@@ -38,5 +44,18 @@ public class NetModule {
                 .baseUrl(baseUrl)
                 .client(okHttpClient)
                 .build();
+    }
+
+    @Provides
+    @Singleton
+    NetworkingHandler provideNetworkingHandler(GameModeProvider gameModeProvider, CreateUnitRequestHandler createUnitRequestHandler, Gson gson, Retrofit retrofit) {
+        switch (gameModeProvider.getGameMode()) {
+            case SINGLE_PLAYER:
+                return new MockNetworkingHandler();
+            case MULTIPLAYER:
+                return new NetworkingHandlerImpl(Lazy.of(createUnitRequestHandler), Lazy.of(gson), Lazy.of(retrofit));
+            default:
+                throw new UnsupportedOperationException("Invalid game mode selected");
+        }
     }
 }

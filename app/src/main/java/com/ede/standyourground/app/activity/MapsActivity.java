@@ -464,7 +464,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void addCircle(UUID unitId, CircleOptions circleOptions) {
         logger.d("Creating circle for unit %s", unitId);
-        circles.put(unitId, googleMap.addCircle(circleOptions));
+        Circle circle = googleMap.addCircle(circleOptions);
+        circle.setTag(unitId);
+        circles.put(unitId, circle);
     }
 
     private Polyline drawRoute(List<LatLng> route, int color) {

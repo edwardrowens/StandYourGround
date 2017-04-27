@@ -1,6 +1,7 @@
 package com.ede.standyourground.framework.api.dagger.component;
 
 import com.ede.standyourground.app.activity.FindMatchActivity;
+import com.ede.standyourground.app.activity.MainActivity;
 import com.ede.standyourground.app.activity.MapsActivity;
 import com.ede.standyourground.app.activity.SelectLocationActivity;
 import com.ede.standyourground.app.ui.impl.component.NeutralCampListingComponent;
@@ -22,6 +23,7 @@ public interface AppComponent {
     void inject(MapsActivity mapsActivity);
     void inject(NeutralCampListingComponent neutralCampListingComponent);
     void inject(SelectLocationActivity selectLocationActivity);
+    void inject(MainActivity mainActivity);
     Lazy<UnitService> getUnitService();
     Lazy<Retrofit> getRetrofit();
 }

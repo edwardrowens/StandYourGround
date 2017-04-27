@@ -1,5 +1,6 @@
 package com.ede.standyourground.framework.api.dagger.module;
 
+import com.ede.standyourground.framework.api.dagger.providers.GameModeProvider;
 import com.ede.standyourground.framework.api.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
 
@@ -22,4 +23,8 @@ public class AppModule {
     static GameSessionIdProvider gameSessionIdProvider() {
         return new GameSessionIdProvider();
     }
+
+    @Provides
+    @Singleton
+    static GameModeProvider gameModeProvider() {return new GameModeProvider();}
 }

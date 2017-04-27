@@ -16,6 +16,7 @@ import com.ede.standyourground.game.api.model.NeutralCamp;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.UnitService;
+import com.ede.standyourground.game.api.service.WorldGridService;
 import com.ede.standyourground.game.impl.model.Base;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.Projection;
@@ -48,18 +49,21 @@ public class OnCircleClickListenerFactory {
     private final Lazy<UnitService> unitService;
     private final Lazy<LatLngService> latLngService;
     private final Lazy<UnitChoicesMenuService> unitChoicesMenuService;
+    private final Lazy<WorldGridService> worldGridService;
 
     @Inject
     OnCircleClickListenerFactory(Lazy<GoogleMapProvider> googleMapProvider,
                                  Lazy<MathService> mathService,
                                  Lazy<UnitService> unitService,
                                  Lazy<LatLngService> latLngService,
-                                 Lazy<UnitChoicesMenuService> unitChoicesMenuService) {
+                                 Lazy<UnitChoicesMenuService> unitChoicesMenuService,
+                                 Lazy<WorldGridService> worldGridService) {
         this.googleMapProvider = googleMapProvider;
         this.mathService = mathService;
         this.unitService = unitService;
         this.latLngService = latLngService;
         this.unitChoicesMenuService = unitChoicesMenuService;
+        this.worldGridService = worldGridService;
     }
 
     public GoogleMap.OnCircleClickListener createOnCircleClickedListener(final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent, final UnitChoicesMenuComponent unitChoicesMenuComponent) {
@@ -69,30 +73,28 @@ public class OnCircleClickListenerFactory {
                 unitGroupComponent.clear();
                 neutralCampListingComponent.clear();
 
-                Map<UnitType, Integer> bag = new HashMap<>();
-                List<Unit> unitsOnPosition = new ArrayList<>();
-                Unit unitClicked = null;
+                Unit unitClicked = unitService.get().getUnit((UUID) circle.getTag());
+                final Map<UnitType, Integer> bag = new HashMap<>();
+                final List<Unit> unitsOnPosition = new ArrayList<>();
 
-                // Find what unit was clicked or if multiple units were clicked
-                for (Unit unit : unitService.get().getUnits()) {
-                    LatLng unitPosition = unit instanceof MovableUnit ? ((MovableUnit) unit).getCurrentPosition() : unit.getStartingPosition();
-                    boolean samePosition = latLngService.get().withinDistance(unitPosition, circle.getCenter(), EQUAL_DISTANCE_TOLERANCE);
-                    if (unit.getHostility() == Hostility.FRIENDLY && samePosition) {
-                        unitsOnPosition.add(unit);
-                        bag.put(unit.getType(), bag.containsKey(unit.getType()) ? bag.get(unit.getType()) + 1 : 1);
-                    }
-                    if (unit instanceof NeutralCamp && samePosition) {
-                        unitClicked = unit;
-                    } else if (unit instanceof Base && samePosition) {
-                        unitClicked = unit;
-                    }
-                }
+                Projection projection = googleMapProvider.get().getGoogleMap().getProjection();
+                Point center = projection.toScreenLocation(circle.getCenter());
+                Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(circle.getCenter(), circle.getRadius(), 0d));
+                double lineDistance = mathService.get().calculateLinearDistance(center, edge);
 
-                if (unitsOnPosition.size() > 1) {
-                    Projection projection = googleMapProvider.get().getGoogleMap().getProjection();
-                    Point center = projection.toScreenLocation(circle.getCenter());
-                    Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(circle.getCenter(), circle.getRadius(), 0d));
-                    double lineDistance = mathService.get().calculateLinearDistance(center, edge);
+                if (unitClicked instanceof NeutralCamp) {
+                    neutralCampListingComponent.setTextAndPhoto(((NeutralCamp) unitClicked).getName(), ((NeutralCamp) unitClicked).getPhotoReference(), center, lineDistance);
+                } else if (unitClicked instanceof Base && unitClicked.getHostility() == Hostility.FRIENDLY) {
+                    unitChoicesMenuService.get().realign(unitChoicesMenuComponent);
+                } else {
+                    for (Unit unit : worldGridService.get().retrieveUnitsAtCell(unitClicked.getCell())) {
+                        LatLng unitPosition = unit instanceof MovableUnit ? ((MovableUnit) unit).getCurrentPosition() : unit.getStartingPosition();
+                        boolean samePosition = latLngService.get().withinDistance(unitPosition, circle.getCenter(), EQUAL_DISTANCE_TOLERANCE);
+                        if (samePosition) {
+                            unitsOnPosition.add(unit);
+                            bag.put(unit.getType(), bag.containsKey(unit.getType()) ? bag.get(unit.getType()) + 1 : 1);
+                        }
+                    }
 
                     // The 5 is for padding
                     final Point point = new Point();
@@ -117,17 +119,6 @@ public class OnCircleClickListenerFactory {
                             }
                             unitGroupComponent.createUnitGroupBlockCount(unitIds, e.getKey());
                         }
-                    }
-                }
-                if (unitClicked != null) {
-                    Projection projection = googleMapProvider.get().getGoogleMap().getProjection();
-                    Point center = projection.toScreenLocation(circle.getCenter());
-                    Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(circle.getCenter(), circle.getRadius(), 0d));
-                    double lineDistance = mathService.get().calculateLinearDistance(center, edge);
-                    if (unitClicked instanceof NeutralCamp) {
-                        neutralCampListingComponent.setTextAndPhoto(((NeutralCamp) unitClicked).getName(), ((NeutralCamp) unitClicked).getPhotoReference(), center, lineDistance);
-                    } else {
-                        unitChoicesMenuService.get().realign(unitChoicesMenuComponent);
                     }
                 }
             }

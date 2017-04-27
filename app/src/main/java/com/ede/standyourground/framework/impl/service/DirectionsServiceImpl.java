@@ -31,7 +31,7 @@ public class DirectionsServiceImpl implements DirectionsService {
     }
 
     @Override
-    public void getRoutes(final LatLng origin, final LatLng destination, final List<LatLng> waypoints, final Callback<Routes> callback) {
+    public void getRoutes(final LatLng origin, final LatLng destination, final List<LatLng> intermediaryPositions, final Callback<Routes> callback) {
         GoogleDirectionsApi googleDirectionsApi = retrofit.get().create(GoogleDirectionsApi.class);
 
         RoutesRequest routesRequest = new RoutesRequest();
@@ -39,7 +39,7 @@ public class DirectionsServiceImpl implements DirectionsService {
         routesRequest.setEndLng(destination.longitude);
         routesRequest.setStartLat(origin.latitude);
         routesRequest.setStartLng(origin.longitude);
-        routesRequest.setWaypoints(waypoints);
+        routesRequest.setWaypoints(intermediaryPositions);
 
         Call<Routes> routesCall = googleDirectionsApi.calculateRoutes(routesRequest);
 
