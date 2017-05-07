@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -60,6 +61,8 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
     private Circle enemySearchRadius;
     private GameMode gameMode;
     private int enemyRangeInKm = 2;
+    private ViewGroup settingUpGamePromptContainer;
+    private Button confirmButton;
 
     @Inject
     LatLngService latLngService;
@@ -78,6 +81,9 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.selectLocationMap);
         mapFragment.getMapAsync(this);
+
+        settingUpGamePromptContainer = (ViewGroup) findViewById(R.id.settingUpGamePromptContainer);
+        confirmButton = (Button) findViewById(R.id.confirmLocationButton);
 
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -202,6 +208,9 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
     }
 
     public void onConfirmLocation(final View view) {
+        settingUpGamePromptContainer.setVisibility(View.VISIBLE);
+        confirmButton.setEnabled(false);
+
         Random random = new Random();
         int opponentDistanceInKm = random.nextInt(enemyRangeInKm + 1 - 2) + 2;
         final LatLng opponentLocation = latLngService.generateRandomLocation(marker.getPosition(), opponentDistanceInKm * 1000);
@@ -232,6 +241,8 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
     }
 
     public void onCancelLocation(View view) {
+        settingUpGamePromptContainer.setVisibility(View.GONE);
+        confirmButton.setEnabled(true);
         marker.setPosition(playerLocation);
         enemySearchRadius.setCenter(playerLocation);
     }

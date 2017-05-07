@@ -22,16 +22,86 @@
             android:id="@+id/resourcesLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_alignParentRight="true"
-            android:gravity="center">
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/medicCountContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/medicCountIcon"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/medic"/>
+
+                <TextView
+                    android:id="@+id/medicCountText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="5dp"
+                    android:text="@string/startingUnitCount"
+                    android:textColor="@color/cast_expanded_controller_background_color"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/marauderCountContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/marauderCountIcon"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/marauder"/>
+
+                <TextView
+                    android:id="@+id/marauderCountText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="5dp"
+                    android:text="@string/startingUnitCount"
+                    android:textColor="@color/cast_expanded_controller_background_color"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/footSoldierCountContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/footSoldierCountIcon"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/foot_soldier"
+                    android:text="@string/startingUnitCount"/>
+
+                <TextView
+                    android:id="@+id/footSoldierCountText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="5dp"
+                    android:text="@string/startingUnitCount"
+                    android:textColor="@color/cast_expanded_controller_background_color"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
             <ImageView
                 android:id="@+id/coinImage"
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:adjustViewBounds="true"
-                android:src="@drawable/goldcoin"
-                />
+                android:src="@drawable/goldcoin"/>
 
             <TextView
                 android:id="@+id/coins"

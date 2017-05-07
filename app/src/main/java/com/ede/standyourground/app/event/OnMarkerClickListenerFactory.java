@@ -20,8 +20,8 @@ import com.ede.standyourground.game.api.service.WorldGridService;
 import com.ede.standyourground.game.impl.model.Base;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.Projection;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
@@ -37,9 +37,9 @@ import dagger.Lazy;
 /**
  *
  */
-public class OnCircleClickListenerFactory {
+public class OnMarkerClickListenerFactory {
 
-    private static final Logger logger = new Logger(OnCircleClickListenerFactory.class);
+    private static final Logger logger = new Logger(OnMarkerClickListenerFactory.class);
 
     // In meters
     private static final double EQUAL_DISTANCE_TOLERANCE = 5d;
@@ -52,7 +52,7 @@ public class OnCircleClickListenerFactory {
     private final Lazy<WorldGridService> worldGridService;
 
     @Inject
-    OnCircleClickListenerFactory(Lazy<GoogleMapProvider> googleMapProvider,
+    OnMarkerClickListenerFactory(Lazy<GoogleMapProvider> googleMapProvider,
                                  Lazy<MathService> mathService,
                                  Lazy<UnitService> unitService,
                                  Lazy<LatLngService> latLngService,
@@ -66,20 +66,26 @@ public class OnCircleClickListenerFactory {
         this.worldGridService = worldGridService;
     }
 
-    public GoogleMap.OnCircleClickListener createOnCircleClickedListener(final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent, final UnitChoicesMenuComponent unitChoicesMenuComponent) {
-        return new GoogleMap.OnCircleClickListener() {
+    public GoogleMap.OnMarkerClickListener createOnMarkerClickedListener(final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent, final UnitChoicesMenuComponent unitChoicesMenuComponent) {
+        return new GoogleMap.OnMarkerClickListener() {
             @Override
-            public void onCircleClick(Circle circle) {
+            public boolean onMarkerClick(Marker marker) {
+                if (marker.getTag() == null) {
+                    logger.i("A marker was clicked with a null tag.");
+                    return true;
+                }
                 unitGroupComponent.clear();
                 neutralCampListingComponent.clear();
 
-                Unit unitClicked = unitService.get().getUnit((UUID) circle.getTag());
+                Unit unitClicked = unitService.get().getUnit((UUID) marker.getTag());
+                LatLng clickedUnitPosition = unitClicked instanceof MovableUnit ? ((MovableUnit) unitClicked).getCurrentPosition() : unitClicked.getStartingPosition();
+
                 final Map<UnitType, Integer> bag = new HashMap<>();
                 final List<Unit> unitsOnPosition = new ArrayList<>();
 
                 Projection projection = googleMapProvider.get().getGoogleMap().getProjection();
-                Point center = projection.toScreenLocation(circle.getCenter());
-                Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(circle.getCenter(), circle.getRadius(), 0d));
+                Point center = projection.toScreenLocation(clickedUnitPosition);
+                Point edge = projection.toScreenLocation(SphericalUtil.computeOffset(clickedUnitPosition, unitClicked.getRadius(), 0d));
                 double lineDistance = mathService.get().calculateLinearDistance(center, edge);
 
                 if (unitClicked instanceof NeutralCamp) {
@@ -89,7 +95,7 @@ public class OnCircleClickListenerFactory {
                 } else {
                     for (Unit unit : worldGridService.get().retrieveUnitsAtCell(unitClicked.getCell())) {
                         LatLng unitPosition = unit instanceof MovableUnit ? ((MovableUnit) unit).getCurrentPosition() : unit.getStartingPosition();
-                        boolean samePosition = latLngService.get().withinDistance(unitPosition, circle.getCenter(), EQUAL_DISTANCE_TOLERANCE);
+                        boolean samePosition = latLngService.get().withinDistance(unitPosition, clickedUnitPosition, EQUAL_DISTANCE_TOLERANCE);
                         if (samePosition) {
                             unitsOnPosition.add(unit);
                             bag.put(unit.getType(), bag.containsKey(unit.getType()) ? bag.get(unit.getType()) + 1 : 1);
@@ -121,6 +127,7 @@ public class OnCircleClickListenerFactory {
                         }
                     }
                 }
+                return true;
             }
         };
     }

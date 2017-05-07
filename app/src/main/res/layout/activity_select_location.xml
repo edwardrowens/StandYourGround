@@ -1,65 +1,105 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/mapActivityContainer"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
-
-    <fragment xmlns:tools="http://schemas.android.com/tools"
-              android:id="@+id/selectLocationMap"
-              android:name="com.google.android.gms.maps.SupportMapFragment"
-              android:layout_width="match_parent"
-              android:layout_height="0dp"
-              android:layout_weight="1"
-              tools:context="com.ede.standyourground.app.activity.SelectLocationActivity"/>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/selectLocationActivityContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/contentBelowMap"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
+        android:id="@+id/mapActivityContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <SeekBar
-            android:id="@+id/specifyEnemyRange"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:clickable="false"
-            android:max="23"/>
+        <fragment xmlns:tools="http://schemas.android.com/tools"
+                  android:id="@+id/selectLocationMap"
+                  android:name="com.google.android.gms.maps.SupportMapFragment"
+                  android:layout_width="match_parent"
+                  android:layout_height="0dp"
+                  android:layout_weight="1"
+                  tools:context="com.ede.standyourground.app.activity.SelectLocationActivity">
 
-        <TextView
-            android:id="@+id/seekBarOutput"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="@string/staticEnemyRange"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:id="@+id/settingUpGamePromptContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:animateLayoutChanges="true"
+                    android:background="@drawable/border"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:visibility="invisible">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/creating_game"
+                        android:paddingBottom="5dp"/>
+
+                    <ProgressBar
+                        android:id="@+id/creatingGameProgressBar"
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="true"/>
+                </LinearLayout>
+
+            </RelativeLayout>
+        </fragment>
 
         <LinearLayout
-            android:id="@+id/confirmCancelLocationContainer"
+            android:id="@+id/contentBelowMap"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_gravity="center"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/confirmLocationButton"
-                android:layout_width="150dp"
+            <SeekBar
+                android:id="@+id/specifyEnemyRange"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"
-                android:enabled="false"
-                android:onClick="onConfirmLocation"
-                android:text="@string/confirm"/>
+                android:layout_marginBottom="5dp"
+                android:clickable="false"
+                android:max="23"/>
 
-            <Button
-                android:id="@+id/cancelLocationButton"
-                android:layout_width="150dp"
+            <TextView
+                android:id="@+id/seekBarOutput"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:enabled="false"
-                android:onClick="onCancelLocation"
-                android:text="@string/cancel"/>
+                android:layout_marginBottom="10dp"
+                android:text="@string/staticEnemyRange"/>
+
+            <LinearLayout
+                android:id="@+id/confirmCancelLocationContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/confirmLocationButton"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dp"
+                    android:enabled="false"
+                    android:onClick="onConfirmLocation"
+                    android:text="@string/confirm"/>
+
+                <Button
+                    android:id="@+id/cancelLocationButton"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:onClick="onCancelLocation"
+                    android:text="@string/cancel"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</RelativeLayout>
 

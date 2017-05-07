@@ -21,6 +21,7 @@
     <string name="marauder">Marauder</string>
     <string name="medic">Medic</string>
     <string name="unitGroupCountText">x%1$d</string>
+    <string name="startingUnitCount">x0</string>
     <string name="title_activity_select_location">Map</string>
     <string name="enemyRange">Find enemies within a %1$d km radius</string>
     <string name="staticEnemyRange">Find enemies within a 2 km radius</string>

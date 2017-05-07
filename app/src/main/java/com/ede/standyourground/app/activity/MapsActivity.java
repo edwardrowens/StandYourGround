@@ -19,10 +19,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ede.standyourground.R;
+import com.ede.standyourground.app.activity.service.MarkerOptionsFactory;
 import com.ede.standyourground.app.activity.service.StopGameService;
 import com.ede.standyourground.app.event.OnCameraMoveListenerFactory;
-import com.ede.standyourground.app.event.OnCircleClickListenerFactory;
 import com.ede.standyourground.app.event.OnMapLoadedCallbackFactory;
+import com.ede.standyourground.app.event.OnMarkerClickListenerFactory;
 import com.ede.standyourground.app.ui.api.component.Component;
 import com.ede.standyourground.app.ui.api.component.HealthBarComponentFactory;
 import com.ede.standyourground.app.ui.api.component.UnitChoicesMenuComponentFactory;
@@ -64,8 +65,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.Dot;
 import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.LatLng;
@@ -85,6 +84,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
 
@@ -107,6 +107,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     // VIEWS
     private TextView coins;
+    private TextView marauderCountTextView;
+    private TextView footSoldierCountTextView;
+    private TextView medicCountTextView;
 
     private static GoogleMap googleMap;
     private List<Marker> waypoints = new ArrayList<>();
@@ -114,8 +117,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng opponentLocation;
     private GameMode gameMode;
     private static final Map<Class<? extends Component>, Component> componentMap = new ConcurrentHashMap<>();
-    private static final Map<UUID, Circle> circles = new ConcurrentHashMap<>();
+    private static final Map<UUID, Marker> markers = new ConcurrentHashMap<>();
     private static final Map<UUID, Polyline> polylines = new ConcurrentHashMap<>();
+    private final AtomicInteger marauderCount = new AtomicInteger(0);
+    private final AtomicInteger medicCount = new AtomicInteger(0);
+    private final AtomicInteger footSoldierCount = new AtomicInteger(0);
 
     @Inject
     GoogleMapProvider googleMapProvider;
@@ -128,7 +134,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Inject
     UnitService unitService;
     @Inject
-    OnCircleClickListenerFactory onCircleClickListenerFactory;
+    OnMarkerClickListenerFactory onMarkerClickListenerFactory;
     @Inject
     HealthBarComponentFactory healthBarComponentFactory;
     @Inject
@@ -145,6 +151,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     UnitChoicesMenuService unitChoicesMenuService;
     @Inject
     LatLngService latLngService;
+    @Inject
+    MarkerOptionsFactory markerOptionsFactory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -200,7 +208,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setCompassEnabled(false);
 
-        final double distance = UnitType.BASE.getCircleOptions().getRadius() * 2;
+        final double distance = UnitType.BASE.getRadius() * 2;
         LatLng p1 = SphericalUtil.computeOffset(playerLocation, distance, 0);
         LatLng p2 = SphericalUtil.computeOffset(playerLocation, distance, 90);
         LatLng p3 = SphericalUtil.computeOffset(playerLocation, distance, 180);
@@ -209,17 +217,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0, 0));
         NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0, 0), "");
-        final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer), playerLocation, UnitType.BASE.getCircleOptions().getRadius());
+        final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer), playerLocation, UnitType.BASE.getRadius());
 
         componentMap.put(UnitGroupComponent.class, unitGroupComponent);
         componentMap.put(NeutralCampListingComponent.class, neutralCampListingComponent);
         componentMap.put(UnitChoicesMenuComponent.class, unitChoicesMenuComponent);
 
         // Create map listeners
-        GoogleMap.OnCircleClickListener onCircleClickListener = onCircleClickListenerFactory.createOnCircleClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent);
+        GoogleMap.OnMarkerClickListener onMarkerClickListener = onMarkerClickListenerFactory.createOnMarkerClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent);
         googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent));
         googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(gameMode, playerLocation, opponentLocation, unitGroupComponent, neutralCampListingComponent));
-        googleMap.setOnCircleClickListener(onCircleClickListener);
+        googleMap.setOnMarkerClickListener(onMarkerClickListener);
 
         // Register listeners for game events
         gameService.registerGameEndListener(new GameEndListener() {
@@ -246,13 +254,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MapsActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        // Add circle
-                        if (unit.getHostility() == Hostility.NEUTRAL || unit.getHostility() == Hostility.ENEMY) {
-                            int color = ContextCompat.getColor(MapsActivity.this, unit.getType().getEnemyColor());
-                            addCircle(unit.getId(), unit.getType().getCircleOptions().center(unit.getStartingPosition()).fillColor(color));
-                        } else {
-                            int color = ContextCompat.getColor(MapsActivity.this, unit.getType().getFriendlyColor());
-                            addCircle(unit.getId(), unit.getType().getCircleOptions().center(unit.getStartingPosition()).fillColor(color));
+                        int colorHostility = unit.getHostility() == Hostility.FRIENDLY ? unit.getType().getFriendlyColor() : unit.getType().getEnemyColor();
+                        int color = ContextCompat.getColor(MapsActivity.this, colorHostility);
+
+                        addMarker(unit.getId(), markerOptionsFactory.createMarkerOptions(unit, getString(colorHostility)));
+
+                        if (unit.getHostility() == Hostility.FRIENDLY) {
+                            switch (unit.getType()) {
+                                case FOOT_SOLDIER:
+                                    footSoldierCountTextView.setText(getString(R.string.unitGroupCountText, footSoldierCount.incrementAndGet()));
+                                    break;
+                                case MARAUDER:
+                                    marauderCountTextView.setText(getString(R.string.unitGroupCountText, marauderCount.incrementAndGet()));
+                                    break;
+                                case MEDIC:
+                                    medicCountTextView.setText(getString(R.string.unitGroupCountText, medicCount.incrementAndGet()));
+                                    break;
+                            }
                             if (unit instanceof MovableUnit) {
                                 polylines.put(unit.getId(), drawRoute(((MovableUnit) unit).getPath().getPoints(), color));
                             } else if (unit instanceof NeutralCamp) {
@@ -267,7 +285,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 polygon.setPoints(hull);
                             }
                         }
-                        circles.get(unit.getId()).setVisible(unit.isVisible());
+                        markers.get(unit.getId()).setVisible(unit.isVisible());
                     }
                 });
             }
@@ -279,17 +297,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MapsActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Circle circle = circles.get(mortal.getId());
+                        Marker marker = markers.get(mortal.getId());
                         Polyline polyline = polylines.get(mortal.getId());
                         if (polyline != null) {
                             polyline.remove();
                             polylines.remove(mortal.getId());
                         }
-                        if (circle != null) {
-                            removeCircle(mortal.getId());
+                        if (marker != null) {
+                            removeMarker(mortal.getId());
                         }
                         if (mortal instanceof MedicNeutralCamp && killer.getHostility() == Hostility.FRIENDLY) {
                             unitChoicesMenuService.setVisibility(unitChoicesMenuComponent, UnitType.MEDIC, View.VISIBLE);
+                        }
+
+                        if (mortal.getHostility() == Hostility.FRIENDLY) {
+                            switch (mortal.getType()) {
+                                case FOOT_SOLDIER:
+                                    footSoldierCountTextView.setText(getString(R.string.unitGroupCountText, footSoldierCount.decrementAndGet()));
+                                    break;
+                                case MARAUDER:
+                                    marauderCountTextView.setText(getString(R.string.unitGroupCountText, marauderCount.decrementAndGet()));
+                                    break;
+                                case MEDIC:
+                                    medicCountTextView.setText(getString(R.string.unitGroupCountText, medicCount.decrementAndGet()));
+                                    break;
+                            }
                         }
                     }
                 });
@@ -304,10 +336,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void run() {
                         if (unit instanceof NeutralCamp) {
                             if (unit.isVisible()) {
-                                circles.get(unit.getId()).setVisible(true);
+                                markers.get(unit.getId()).setVisible(true);
                             }
                         } else {
-                            circles.get(unit.getId()).setVisible(unit.isVisible());
+                            markers.get(unit.getId()).setVisible(unit.isVisible());
                         }
                     }
                 });
@@ -320,7 +352,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MapsActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        circles.get(movableUnit.getId()).setCenter(movableUnit.getCurrentPosition());
+                        markers.get(movableUnit.getId()).setPosition(movableUnit.getCurrentPosition());
                     }
                 });
             }
@@ -409,6 +441,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         waypoints.add(googleMap.addMarker(markerOptions));
                     }
                 });
+                for (Unit unit : unitService.getUnits()) {
+                    if (unit.getType() != UnitType.BASE) {
+                        markers.get(unit.getId()).setVisible(false);
+                    }
+                }
             }
         });
 
@@ -419,6 +456,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     marker.remove();
                 }
                 waypoints.clear();
+                for (Unit unit : unitService.getUnits()) {
+                    if (unit.getType() != UnitType.BASE) {
+                        markers.get(unit.getId()).setVisible(true);
+                    }
+                }
             }
         });
 
@@ -442,37 +484,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     marker.remove();
                 }
                 waypoints.clear();
+
+                for (Unit unit : unitService.getUnits()) {
+                    if (unit.getType() != UnitType.BASE) {
+                        markers.get(unit.getId()).setVisible(true);
+                    }
+                }
             }
         });
 
         coins = (TextView) findViewById(R.id.coins);
+        marauderCountTextView = (TextView) findViewById(R.id.marauderCountText);
+        footSoldierCountTextView = (TextView) findViewById(R.id.footSoldierCountText);
+        medicCountTextView = (TextView) findViewById(R.id.medicCountText);
 
         LinearLayout resourcesLayout = (LinearLayout) findViewById(R.id.resourcesLayout);
         resourcesLayout.setZ(1f);
     }
 
-    private void removeCircle(UUID unitId) {
-        Circle circle = circles.get(unitId);
-        if (circle == null) {
-            logger.w("Attempted to remove circle that had already been removed for unit %s", unitId);
+    private void removeMarker(UUID unitId) {
+        Marker marker = markers.get(unitId);
+        if (marker == null) {
+            logger.w("Attempted to remove marker that had already been removed for unit %s", unitId);
         } else {
-            logger.i("Removing circle for unit %s", unitId);
-            circle.remove();
+            logger.i("Removing marker for unit %s", unitId);
+            marker.remove();
         }
-        circles.remove(unitId);
+        markers.remove(unitId);
     }
 
-    private void addCircle(UUID unitId, CircleOptions circleOptions) {
-        logger.d("Creating circle for unit %s", unitId);
-        Circle circle = googleMap.addCircle(circleOptions);
-        circle.setTag(unitId);
-        circles.put(unitId, circle);
+    private void addMarker(UUID unitId, MarkerOptions markerOptions) {
+        logger.d("Creating marker for unit %s", unitId);
+        Marker marker = googleMap.addMarker(markerOptions);
+        marker.setTag(unitId);
+        markers.put(unitId, marker);
     }
 
     private Polyline drawRoute(List<LatLng> route, int color) {
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions = polylineOptions.addAll(route)
-                .width(40)
+                .width(30)
                 .pattern(DOTTED_POLYLINE)
                 .color(color);
         logger.i("drawing route");
