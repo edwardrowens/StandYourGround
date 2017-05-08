@@ -39,6 +39,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 
@@ -63,6 +65,11 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
     private int enemyRangeInKm = 2;
     private ViewGroup settingUpGamePromptContainer;
     private Button confirmButton;
+
+    // Concurrency for position and loaded map
+    private final AtomicBoolean positionFound = new AtomicBoolean(false);
+    private final AtomicBoolean mapLoaded = new AtomicBoolean(false);
+    private final CountDownLatch countDownLatch = new CountDownLatch(2);
 
     @Inject
     LatLngService latLngService;
@@ -121,46 +128,69 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
             }
         });
 
-        googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+        new Thread(new Runnable() {
             @Override
-            public void onMapLoaded() {
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 12), new GoogleMap.CancelableCallback() {
+            public void run() {
+                while (!positionFound.get() && !mapLoaded.get()) {
+                    try {
+                        logger.i("Waiting for the position to be found and the map to be loaded");
+                        countDownLatch.await();
+                    } catch (InterruptedException e) {
+                        logger.e("Map loaded thread interrupted", e);
+                    }
+                }
+
+                SelectLocationActivity.this.runOnUiThread(new Runnable() {
                     @Override
-                    public void onFinish() {
-                        googleMap.getUiSettings().setAllGesturesEnabled(true);
-                        marker = googleMap.addMarker(new MarkerOptions().draggable(true).position(playerLocation).title("Drag me to set up your base!").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-                        marker.showInfoWindow();
-                        seekBar.setClickable(true);
-                        confirmButton.setEnabled(true);
-                        cancelButton.setEnabled(true);
-                        enemySearchRadius = googleMap.addCircle(new CircleOptions().center(playerLocation).fillColor(getResources().getColor(R.color.friendlyKingdomBlue)).radius(2000));
-                        final TextView seekBarOutput = (TextView) findViewById(R.id.seekBarOutput);
-
-                        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    public void run() {
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 12), new GoogleMap.CancelableCallback() {
                             @Override
-                            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                                enemyRangeInKm = progress + 2;
-                                enemySearchRadius.setRadius(enemyRangeInKm * 1000);
-                                seekBarOutput.setText(getString(R.string.enemyRange, enemyRangeInKm));
+                            public void onFinish() {
+                                googleMap.getUiSettings().setAllGesturesEnabled(true);
+                                marker = googleMap.addMarker(new MarkerOptions().draggable(true).position(playerLocation).title("Drag me to set up your base!").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                                marker.showInfoWindow();
+                                seekBar.setClickable(true);
+                                confirmButton.setEnabled(true);
+                                cancelButton.setEnabled(true);
+                                enemySearchRadius = googleMap.addCircle(new CircleOptions().center(playerLocation).fillColor(getResources().getColor(R.color.friendlyKingdomBlue)).radius(2000));
+                                final TextView seekBarOutput = (TextView) findViewById(R.id.seekBarOutput);
+
+                                seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                                    @Override
+                                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                                        enemyRangeInKm = progress + 2;
+                                        enemySearchRadius.setRadius(enemyRangeInKm * 1000);
+                                        seekBarOutput.setText(getString(R.string.enemyRange, enemyRangeInKm));
+                                    }
+
+                                    @Override
+                                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                                    }
+
+                                    @Override
+                                    public void onStopTrackingTouch(SeekBar seekBar) {
+
+                                    }
+                                });
                             }
 
                             @Override
-                            public void onStartTrackingTouch(SeekBar seekBar) {
-
-                            }
-
-                            @Override
-                            public void onStopTrackingTouch(SeekBar seekBar) {
+                            public void onCancel() {
 
                             }
                         });
                     }
-
-                    @Override
-                    public void onCancel() {
-
-                    }
                 });
+            }
+        }).start();
+
+        googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                logger.i("Map has been loaded.");
+                mapLoaded.set(true);
+                countDownLatch.countDown();
             }
         });
     }
@@ -205,6 +235,11 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
     @Override
     public void onLocationChanged(Location location) {
         playerLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        logger.i("Player's location has been found <{%s}>", playerLocation);
+        if (!positionFound.get()) {
+            countDownLatch.countDown();
+        }
+        positionFound.set(true);
     }
 
     public void onConfirmLocation(final View view) {

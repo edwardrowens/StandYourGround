@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.activity.service.MarkerOptionsFactory;
 import com.ede.standyourground.app.activity.service.StopGameService;
+import com.ede.standyourground.app.event.MarkerOptionsCallback;
 import com.ede.standyourground.app.event.OnCameraMoveListenerFactory;
 import com.ede.standyourground.app.event.OnMapLoadedCallbackFactory;
 import com.ede.standyourground.app.event.OnMarkerClickListenerFactory;
@@ -257,7 +258,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         int colorHostility = unit.getHostility() == Hostility.FRIENDLY ? unit.getType().getFriendlyColor() : unit.getType().getEnemyColor();
                         int color = ContextCompat.getColor(MapsActivity.this, colorHostility);
 
-                        addMarker(unit.getId(), markerOptionsFactory.createMarkerOptions(unit, getString(colorHostility)));
+                        MarkerOptions markerOptions = markerOptionsFactory.createMarkerOptions(MapsActivity.this, unit, new MarkerOptionsCallback() {
+                            @Override
+                            public void onCreated(MarkerOptions markerOptions) {
+                                removeMarker(unit.getId());
+                                Marker marker = addMarker(unit.getId(), markerOptions);
+                                marker.setVisible(unit.isVisible());
+                            }
+                        });
+
+                        Marker marker = addMarker(unit.getId(), markerOptions);
+                        marker.setVisible(unit.isVisible());
 
                         if (unit.getHostility() == Hostility.FRIENDLY) {
                             switch (unit.getType()) {
@@ -285,7 +296,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 polygon.setPoints(hull);
                             }
                         }
-                        markers.get(unit.getId()).setVisible(unit.isVisible());
                     }
                 });
             }
@@ -513,11 +523,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         markers.remove(unitId);
     }
 
-    private void addMarker(UUID unitId, MarkerOptions markerOptions) {
+    private Marker addMarker(UUID unitId, MarkerOptions markerOptions) {
         logger.d("Creating marker for unit %s", unitId);
         Marker marker = googleMap.addMarker(markerOptions);
         marker.setTag(unitId);
         markers.put(unitId, marker);
+        return marker;
     }
 
     private Polyline drawRoute(List<LatLng> route, int color) {
