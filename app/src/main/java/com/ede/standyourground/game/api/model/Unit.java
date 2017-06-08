@@ -80,7 +80,7 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
 
     @Override
     public void onDeath(Unit killer) {
-        logger.i("%s has died.", getId());
+        logger.i("%s has died. Calling all listeners", getId());
         alive.set(false);
         onUnitDeath();
         onDeathListener.onDeath(this, killer);
@@ -173,9 +173,6 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + type.hashCode();
         result = 31 * result + cell.hashCode();
-        result = 31 * result + onDeathListener.hashCode();
-        result = 31 * result + healthChangeListener.hashCode();
-        result = 31 * result + visibilityChangeListener.hashCode();
         result = 31 * result + isVisible.hashCode();
         return result;
     }

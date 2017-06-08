@@ -26,8 +26,8 @@ import com.ede.standyourground.app.event.OnCameraMoveListenerFactory;
 import com.ede.standyourground.app.event.OnMapLoadedCallbackFactory;
 import com.ede.standyourground.app.event.OnMarkerClickListenerFactory;
 import com.ede.standyourground.app.ui.api.component.Component;
-import com.ede.standyourground.app.ui.api.component.HealthBarComponentFactory;
 import com.ede.standyourground.app.ui.api.component.UnitChoicesMenuComponentFactory;
+import com.ede.standyourground.app.ui.api.component.UnitGroupComponentFactory;
 import com.ede.standyourground.app.ui.api.event.ConfirmRouteListener;
 import com.ede.standyourground.app.ui.api.event.RouteCancelListener;
 import com.ede.standyourground.app.ui.api.event.UnitSelectedListener;
@@ -41,7 +41,6 @@ import com.ede.standyourground.framework.api.dagger.application.MyApp;
 import com.ede.standyourground.framework.api.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.framework.api.service.DrawRouteService;
-import com.ede.standyourground.framework.api.service.GraphicService;
 import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.game.api.event.listener.BankNeutralCampIncomeListener;
 import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener;
@@ -137,15 +136,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Inject
     OnMarkerClickListenerFactory onMarkerClickListenerFactory;
     @Inject
-    HealthBarComponentFactory healthBarComponentFactory;
-    @Inject
     OnMapLoadedCallbackFactory onMapLoadedCallbackFactory;
     @Inject
     OnCameraMoveListenerFactory onCameraMoveListenerFactory;
     @Inject
     PlayerService playerService;
-    @Inject
-    GraphicService graphicService;
     @Inject
     UnitChoicesMenuComponentFactory unitChoicesMenuComponentFactory;
     @Inject
@@ -154,6 +149,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LatLngService latLngService;
     @Inject
     MarkerOptionsFactory markerOptionsFactory;
+    @Inject
+    UnitGroupComponentFactory unitGroupComponentFactory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,7 +213,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng p4 = SphericalUtil.computeOffset(playerLocation, distance, 270);
         final Polygon polygon = googleMap.addPolygon(new PolygonOptions().add(p1, p2, p3, p4).fillColor(getResources().getColor(R.color.friendlyKingdomBlue)));
 
-        UnitGroupComponent unitGroupComponent = new UnitGroupComponent(this, new Point(0, 0));
+        UnitGroupComponent unitGroupComponent = unitGroupComponentFactory.createUnitGroupComponent(this, playerLocation, UnitType.BASE.getRadius());
         NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0, 0), "");
         final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer), playerLocation, UnitType.BASE.getRadius());
 

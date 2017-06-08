@@ -14,7 +14,6 @@ import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener
 import com.ede.standyourground.game.api.model.Player;
 import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.GameService;
-import com.ede.standyourground.game.api.service.PlayerService;
 import com.google.android.gms.maps.model.LatLng;
 
 import javax.inject.Inject;
@@ -29,15 +28,12 @@ public class UnitChoicesMenuComponentFactory {
 
     private final Lazy<UnitChoicesMenuService> unitChoicesMenuService;
     private final Lazy<GameService> gameService;
-    private final Lazy<PlayerService> playerService;
 
     @Inject
     UnitChoicesMenuComponentFactory(Lazy<UnitChoicesMenuService> unitChoicesMenuService,
-                                    Lazy<GameService> gameService,
-                                    Lazy<PlayerService> playerService) {
+                                    Lazy<GameService> gameService) {
         this.unitChoicesMenuService = unitChoicesMenuService;
         this.gameService = gameService;
-        this.playerService = playerService;
     }
 
     public UnitChoicesMenuComponent createUnitChoicesMenuComponent(final Activity activity, ViewGroup parent, LatLng centerPoint, double radiusReference) {
@@ -47,7 +43,7 @@ public class UnitChoicesMenuComponentFactory {
         final HorizontalScrollView unitChoices = (HorizontalScrollView) LayoutInflater.from(activity).inflate(R.layout.unit_choices, unitChoicesMenu).findViewById(R.id.unitChoicesScrollView);
         LinearLayout routeUnitChoice = (LinearLayout) LayoutInflater.from(activity).inflate(R.layout.route_unit_choice, unitChoicesMenu).findViewById(R.id.routeUnitChoice);
 
-        final UnitChoicesMenuComponent unitChoicesMenuComponent = new UnitChoicesMenuComponent(activity, unitChoicesMenu, routeUnitChoice, unitChoices, centerPoint, radiusReference);
+        final UnitChoicesMenuComponent unitChoicesMenuComponent = new UnitChoicesMenuComponent(activity, unitChoicesMenu, unitChoicesMenu, routeUnitChoice, unitChoices, centerPoint, radiusReference);
 
         gameService.get().registerCoinBalanceChangeListener(new CoinBalanceChangeListener() {
             @Override

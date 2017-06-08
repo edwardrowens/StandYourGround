@@ -11,6 +11,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.ede.standyourground.R;
+import com.ede.standyourground.app.ui.api.component.UnitGroupBlockCountComponentFactory;
+import com.ede.standyourground.app.ui.api.component.UnitGroupBlockHealthBarComponentFactory;
+import com.ede.standyourground.app.ui.api.component.UnitGroupComponentFactory;
+import com.ede.standyourground.app.ui.api.service.UnitGroupComponentService;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
 import com.ede.standyourground.framework.api.dagger.providers.GameModeProvider;
@@ -25,6 +29,17 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     @Inject
     GameModeProvider gameModeProvider;
+
+    @Inject
+    UnitGroupBlockCountComponentFactory unitGroupBlockCountComponentFactory;
+
+    @Inject
+    UnitGroupComponentFactory unitGroupComponentFactory;
+
+    @Inject
+    UnitGroupComponentService unitGroupComponentService;
+    @Inject
+    UnitGroupBlockHealthBarComponentFactory unitGroupBlockHealthBarComponentFactory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

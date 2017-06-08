@@ -1,83 +1,41 @@
 package com.ede.standyourground.app.ui.impl.component;
 
 import android.app.Activity;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.ede.standyourground.R;
-import com.ede.standyourground.app.ui.api.component.UnitGroupBlock;
-import com.ede.standyourground.app.ui.api.event.FinalDecrementListener;
-import com.ede.standyourground.app.ui.api.event.FinalDecrementObserver;
-import com.ede.standyourground.framework.api.Logger;
+import com.ede.standyourground.app.ui.api.component.Component;
+import com.ede.standyourground.app.ui.api.event.UnitGroupBlockCountComponentChangeListener;
+import com.ede.standyourground.app.ui.api.event.UnitGroupBlockCountComponentChangeObserver;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
-import com.ede.standyourground.game.api.model.Unit;
-import com.ede.standyourground.game.api.model.UnitType;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  *
  */
 
-public class UnitGroupBlockCount extends UnitGroupBlock implements FinalDecrementObserver {
-
-    private static Logger logger = new Logger(UnitGroupBlockCount.class);
+public class UnitGroupBlockCount implements Component, UnitGroupBlockCountComponentChangeObserver {
 
     private final TextView countContainer;
+    private final ViewGroup container;
     private final Activity activity;
-    private final OnDeathListener onDeathListener;
+    private final UUID componentElementId;
+    private final Set<UUID> unitIds;
+    private final List<UnitGroupBlockCountComponentChangeListener> unitGroupBlockCountComponentChangeListeners = new CopyOnWriteArrayList<>();
+    private final List<OnDeathListener> onDeathListeners = new CopyOnWriteArrayList<>();
 
-    private FinalDecrementListener finalDecrementListener;
+    private OnDeathListener onDeathListenerHook;
 
-    public UnitGroupBlockCount(UUID componentElementId, final List<UUID> unitIds, Activity activity, UnitType unitType) {
-        super(componentElementId, unitIds, activity, unitType);
+    public UnitGroupBlockCount(Activity activity, UUID componentElementId, final Set<UUID> unitIds, ViewGroup container, TextView countContainer) {
         this.activity = activity;
-        this.countContainer = (TextView) LayoutInflater.from(activity).inflate(R.layout.text_view_component, null);
-
-        countContainer.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        countContainer.setText(activity.getResources().getString(R.string.unitGroupCountText, getUnitIds().size()));
-        container.addView(countContainer);
-
-        onDeathListener = new OnDeathListener() {
-            @Override
-            public void onDeath(final Unit mortal, final Unit killer) {
-                logger.e("on death called! %s", mortal.getId());
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getUnitIds().remove(mortal.getId())) {
-                            refreshText();
-                            if (getUnitIds().size() == 1) {
-                                finalDecrementListener.onFinalDecrement(unitService.get().getUnit(getUnitIds().iterator().next()));
-                            }
-                        }
-                    }
-                });
-            }
-        };
-
-        unitService.get().registerOnDeathListener(onDeathListener);
-    }
-
-    @Override
-    protected void setVisible(int visibility) {
-        countContainer.setVisibility(visibility);
-    }
-
-    @Override
-    protected void clearViews() {
-        unitService.get().removeOnDeathListener(onDeathListener);
-        countContainer.setVisibility(View.GONE);
-    }
-
-    @Override
-    public View getContainer() {
-        return container;
+        this.componentElementId = componentElementId;
+        this.unitIds = unitIds;
+        this.container = container;
+        this.countContainer = countContainer;
     }
 
     @Override
@@ -86,18 +44,36 @@ public class UnitGroupBlockCount extends UnitGroupBlock implements FinalDecremen
     }
 
     @Override
-    public void drawComponentElements() {
-        iconContainer.postInvalidate();
-        countContainer.postInvalidate();
+    public ViewGroup getContainer() {
+        return container;
     }
 
     @Override
-    public void registerFinalDecrementListener(FinalDecrementListener finalDecrementListener) {
-        this.finalDecrementListener = finalDecrementListener;
+    public void registerUnitGroupBlockCountComponentChangeListener(UnitGroupBlockCountComponentChangeListener unitGroupBlockCountComponentChangeListener) {
+        unitGroupBlockCountComponentChangeListeners.add(unitGroupBlockCountComponentChangeListener);
     }
 
-    private int refreshText() {
-        countContainer.setText(activity.getResources().getString(R.string.unitGroupCountText, getUnitIds().size()));
-        return getUnitIds().size();
+    public TextView getCountContainer() {
+        return countContainer;
+    }
+
+    public UUID getComponentElementId() {
+        return componentElementId;
+    }
+
+    public Set<UUID> getUnitIds() {
+        return unitIds;
+    }
+
+    public List<UnitGroupBlockCountComponentChangeListener> getUnitGroupBlockCountComponentChangeListeners() {
+        return unitGroupBlockCountComponentChangeListeners;
+    }
+
+    public OnDeathListener getOnDeathListenerHook() {
+        return onDeathListenerHook;
+    }
+
+    public void setOnDeathListenerHook(OnDeathListener onDeathListenerHook) {
+        this.onDeathListenerHook = onDeathListenerHook;
     }
 }

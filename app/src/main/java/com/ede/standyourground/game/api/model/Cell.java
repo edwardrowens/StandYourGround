@@ -39,4 +39,12 @@ public class Cell {
         result = 31 * result + y;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Cell{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
+    }
 }

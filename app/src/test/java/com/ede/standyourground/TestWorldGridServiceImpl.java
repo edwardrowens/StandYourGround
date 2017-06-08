@@ -122,19 +122,19 @@ public class TestWorldGridServiceImpl {
         Unit unit13 = mock(Unit.class);
 
         WorldGrid worldGrid = new WorldGrid(new LatLng(0, 0));
-        worldGrid.getGrid().put(cell1, Collections.singletonList(unit1));
-        worldGrid.getGrid().put(cell2, Collections.singletonList(unit2));
-        worldGrid.getGrid().put(cell3, Collections.singletonList(unit3));
-        worldGrid.getGrid().put(cell4, Collections.singletonList(unit4));
-        worldGrid.getGrid().put(cell5, Collections.singletonList(unit5));
-        worldGrid.getGrid().put(cell6, Collections.singletonList(unit6));
-        worldGrid.getGrid().put(cell7, Collections.singletonList(unit7));
-        worldGrid.getGrid().put(cell8, Collections.singletonList(unit8));
-        worldGrid.getGrid().put(cell9, Collections.singletonList(unit9));
-        worldGrid.getGrid().put(cell10, Collections.singletonList(unit10));
-        worldGrid.getGrid().put(cell11, Collections.singletonList(unit11));
-        worldGrid.getGrid().put(cell12, Collections.singletonList(unit12));
-        worldGrid.getGrid().put(cell13, Collections.singletonList(unit13));
+        worldGrid.getGrid().put(cell1, Collections.singleton(unit1));
+        worldGrid.getGrid().put(cell2, Collections.singleton(unit2));
+        worldGrid.getGrid().put(cell3, Collections.singleton(unit3));
+        worldGrid.getGrid().put(cell4, Collections.singleton(unit4));
+        worldGrid.getGrid().put(cell5, Collections.singleton(unit5));
+        worldGrid.getGrid().put(cell6, Collections.singleton(unit6));
+        worldGrid.getGrid().put(cell7, Collections.singleton(unit7));
+        worldGrid.getGrid().put(cell8, Collections.singleton(unit8));
+        worldGrid.getGrid().put(cell9, Collections.singleton(unit9));
+        worldGrid.getGrid().put(cell10, Collections.singleton(unit10));
+        worldGrid.getGrid().put(cell11, Collections.singleton(unit11));
+        worldGrid.getGrid().put(cell12, Collections.singleton(unit12));
+        worldGrid.getGrid().put(cell13, Collections.singleton(unit13));
 
         when(gameService.getWorldGrid()).thenReturn(worldGrid);
 
@@ -185,18 +185,18 @@ public class TestWorldGridServiceImpl {
         Unit unit12 = mock(Unit.class);
 
         WorldGrid worldGrid = new WorldGrid(new LatLng(0, 0));
-        worldGrid.getGrid().put(cell1, Collections.singletonList(unit1));
-        worldGrid.getGrid().put(cell2, Collections.singletonList(unit2));
-        worldGrid.getGrid().put(cell3, Collections.singletonList(unit3));
-        worldGrid.getGrid().put(cell4, Collections.singletonList(unit4));
-        worldGrid.getGrid().put(cell5, Collections.singletonList(unit5));
-        worldGrid.getGrid().put(cell6, Collections.singletonList(unit6));
-        worldGrid.getGrid().put(cell7, Collections.singletonList(unit7));
-        worldGrid.getGrid().put(cell8, Collections.singletonList(unit8));
-        worldGrid.getGrid().put(cell9, Collections.singletonList(unit9));
-        worldGrid.getGrid().put(cell10, Collections.singletonList(unit10));
-        worldGrid.getGrid().put(cell11, Collections.singletonList(unit11));
-        worldGrid.getGrid().put(cell12, Collections.singletonList(unit12));
+        worldGrid.getGrid().put(cell1, Collections.singleton(unit1));
+        worldGrid.getGrid().put(cell2, Collections.singleton(unit2));
+        worldGrid.getGrid().put(cell3, Collections.singleton(unit3));
+        worldGrid.getGrid().put(cell4, Collections.singleton(unit4));
+        worldGrid.getGrid().put(cell5, Collections.singleton(unit5));
+        worldGrid.getGrid().put(cell6, Collections.singleton(unit6));
+        worldGrid.getGrid().put(cell7, Collections.singleton(unit7));
+        worldGrid.getGrid().put(cell8, Collections.singleton(unit8));
+        worldGrid.getGrid().put(cell9, Collections.singleton(unit9));
+        worldGrid.getGrid().put(cell10, Collections.singleton(unit10));
+        worldGrid.getGrid().put(cell11, Collections.singleton(unit11));
+        worldGrid.getGrid().put(cell12, Collections.singleton(unit12));
 
         when(gameService.getWorldGrid()).thenReturn(worldGrid);
 
@@ -240,18 +240,18 @@ public class TestWorldGridServiceImpl {
         Unit unit12 = mock(Unit.class);
 
         WorldGrid worldGrid = new WorldGrid(new LatLng(0, 0));
-        worldGrid.getGrid().put(cell1, Collections.singletonList(unit1));
-        worldGrid.getGrid().put(cell2, Collections.singletonList(unit2));
-        worldGrid.getGrid().put(cell3, Collections.singletonList(unit3));
-        worldGrid.getGrid().put(cell4, Collections.singletonList(unit4));
-        worldGrid.getGrid().put(cell5, Collections.singletonList(unit5));
-        worldGrid.getGrid().put(cell6, Collections.singletonList(unit6));
-        worldGrid.getGrid().put(cell7, Collections.singletonList(unit7));
-        worldGrid.getGrid().put(cell8, Collections.singletonList(unit8));
-        worldGrid.getGrid().put(cell9, Collections.singletonList(unit9));
-        worldGrid.getGrid().put(cell10, Collections.singletonList(unit10));
-        worldGrid.getGrid().put(cell11, Collections.singletonList(unit11));
-        worldGrid.getGrid().put(cell12, Collections.singletonList(unit12));
+        worldGrid.getGrid().put(cell1, Collections.singleton(unit1));
+        worldGrid.getGrid().put(cell2, Collections.singleton(unit2));
+        worldGrid.getGrid().put(cell3, Collections.singleton(unit3));
+        worldGrid.getGrid().put(cell4, Collections.singleton(unit4));
+        worldGrid.getGrid().put(cell5, Collections.singleton(unit5));
+        worldGrid.getGrid().put(cell6, Collections.singleton(unit6));
+        worldGrid.getGrid().put(cell7, Collections.singleton(unit7));
+        worldGrid.getGrid().put(cell8, Collections.singleton(unit8));
+        worldGrid.getGrid().put(cell9, Collections.singleton(unit9));
+        worldGrid.getGrid().put(cell10, Collections.singleton(unit10));
+        worldGrid.getGrid().put(cell11, Collections.singleton(unit11));
+        worldGrid.getGrid().put(cell12, Collections.singleton(unit12));
 
         when(gameService.getWorldGrid()).thenReturn(worldGrid);
 

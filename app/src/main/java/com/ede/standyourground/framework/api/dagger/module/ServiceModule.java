@@ -2,8 +2,14 @@ package com.ede.standyourground.framework.api.dagger.module;
 
 import com.ede.standyourground.app.ui.api.service.HealthBarService;
 import com.ede.standyourground.app.ui.api.service.UnitChoicesMenuService;
+import com.ede.standyourground.app.ui.api.service.UnitGroupBlockCountComponentService;
+import com.ede.standyourground.app.ui.api.service.UnitGroupBlockHealthBarComponentService;
+import com.ede.standyourground.app.ui.api.service.UnitGroupComponentService;
 import com.ede.standyourground.app.ui.impl.service.HealthBarServiceImpl;
 import com.ede.standyourground.app.ui.impl.service.UnitChoicesMenuServiceImpl;
+import com.ede.standyourground.app.ui.impl.service.UnitGroupBlockCountComponentServiceImpl;
+import com.ede.standyourground.app.ui.impl.service.UnitGroupBlockHealthBarComponentServiceImpl;
+import com.ede.standyourground.app.ui.impl.service.UnitGroupComponentServiceImpl;
 import com.ede.standyourground.framework.api.service.DirectionsService;
 import com.ede.standyourground.framework.api.service.DrawRouteService;
 import com.ede.standyourground.framework.api.service.GraphicService;
@@ -11,6 +17,7 @@ import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.framework.api.service.MathService;
 import com.ede.standyourground.framework.api.service.ProjectionService;
 import com.ede.standyourground.framework.api.service.RouteService;
+import com.ede.standyourground.framework.api.service.ViewService;
 import com.ede.standyourground.framework.impl.service.DirectionsServiceImpl;
 import com.ede.standyourground.framework.impl.service.DrawRouteServiceImpl;
 import com.ede.standyourground.framework.impl.service.GraphicServiceImpl;
@@ -18,6 +25,7 @@ import com.ede.standyourground.framework.impl.service.LatLngServiceImpl;
 import com.ede.standyourground.framework.impl.service.MathServiceImpl;
 import com.ede.standyourground.framework.impl.service.ProjectionServiceImpl;
 import com.ede.standyourground.framework.impl.service.RouteServiceImpl;
+import com.ede.standyourground.framework.impl.service.ViewServiceImpl;
 import com.ede.standyourground.game.api.service.ArtificialOpponentService;
 import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.NeutralCampService;
@@ -78,4 +86,12 @@ public abstract class ServiceModule {
     @Binds public abstract WorldGridService bindWorldGridService(WorldGridServiceImpl worldGridService);
 
     @Binds public abstract ArtificialOpponentService bindArtificialOpponentService(ArtificialOpponentServiceImpl artificialOpponentService);
+
+    @Binds public abstract ViewService bindComponentService(ViewServiceImpl componentService);
+
+    @Binds public abstract UnitGroupComponentService bindUnitGroupComponentService(UnitGroupComponentServiceImpl unitGroupComponentService);
+
+    @Binds public abstract UnitGroupBlockHealthBarComponentService bindUnitGroupBlockHealthBarComponentService(UnitGroupBlockHealthBarComponentServiceImpl unitGroupBlockHealthBarComponentService);
+
+    @Binds public abstract UnitGroupBlockCountComponentService bindUnitGroupBlockCountService(UnitGroupBlockCountComponentServiceImpl unitGroupBlockCountService);
 }

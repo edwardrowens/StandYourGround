@@ -8,4 +8,5 @@ import com.ede.standyourground.game.impl.model.ArtificialOpponent;
 
 public interface ArtificialOpponentService {
     void runArtificialOpponent(ArtificialOpponent artificialOpponent);
+    void kill(ArtificialOpponent artificialOpponent);
 }

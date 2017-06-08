@@ -1,11 +1,11 @@
 package com.ede.standyourground.app.ui.impl.component;
 
 import android.app.Activity;
+import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.ui.api.component.Component;
-import com.ede.standyourground.app.ui.api.component.ComponentElement;
 
 import java.util.Map;
 import java.util.UUID;
@@ -46,9 +46,7 @@ public class HealthBarComponent implements Component {
     }
 
     @Override
-    public void drawComponentElements() {
-        for (ComponentElement healthBar : healthBars.values()) {
-            healthBar.invalidate();
-        }
+    public ViewGroup getContainer() {
+        return null;
     }
 }

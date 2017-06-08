@@ -46,6 +46,15 @@ public class ArtificialOpponentServiceImpl implements ArtificialOpponentService 
         }
     }
 
+    @Override
+    public void kill(ArtificialOpponent artificialOpponent) {
+        artificialOpponent.getHandler().removeCallbacks(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
+    }
+
     private void runEasyArtificialOpponent(final ArtificialOpponent artificialOpponent) {
         artificialOpponent.getHandler().postDelayed(new Runnable() {
             @Override
@@ -61,7 +70,7 @@ public class ArtificialOpponentServiceImpl implements ArtificialOpponentService 
 
                     }
                 });
-                artificialOpponent.getHandler().postDelayed(this, 30000);
+                artificialOpponent.getHandler().postDelayed(this, 1000);
             }
         }, 30000);
     }

@@ -1,5 +1,6 @@
 package com.ede.standyourground.game.impl.service;
 
+import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.game.api.model.Cell;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.WorldGrid;
@@ -11,6 +12,8 @@ import com.google.maps.android.SphericalUtil;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
@@ -21,6 +24,8 @@ import dagger.Lazy;
  */
 
 public class WorldGridServiceImpl implements WorldGridService {
+
+    private static final Logger logger = new Logger(WorldGridServiceImpl.class);
 
     private final Lazy<GameService> gameService;
 
@@ -57,7 +62,7 @@ public class WorldGridServiceImpl implements WorldGridService {
     @Override
     public void removeUnitAtCell(Cell cell, Unit unit) {
         WorldGrid worldGrid = gameService.get().getWorldGrid();
-        List<Unit> unitsAtCoordinate = worldGrid.getGrid().get(cell);
+        Set<Unit> unitsAtCoordinate = worldGrid.getGrid().get(cell);
         if (unitsAtCoordinate != null && unitsAtCoordinate.contains(unit)) {
             unitsAtCoordinate.remove(unit);
         }
@@ -66,25 +71,29 @@ public class WorldGridServiceImpl implements WorldGridService {
     @Override
     public void addUnitAtCell(Cell cell, Unit unit) {
         WorldGrid worldGrid = gameService.get().getWorldGrid();
-        List<Unit> unitsAtCoordinate = worldGrid.getGrid().get(cell);
+        Set<Unit> unitsAtCoordinate = worldGrid.getGrid().get(cell);
         if (unitsAtCoordinate != null) {
             unitsAtCoordinate.add(unit);
         } else {
-            worldGrid.getGrid().put(cell, new LinkedList<>(Collections.singletonList(unit)));
+            Set<Unit> newSet = Collections.newSetFromMap(new ConcurrentHashMap<Unit, Boolean>());
+            newSet.add(unit);
+            worldGrid.getGrid().put(cell, newSet);
         }
     }
 
     @Override
     public List<Unit> retrieveUnitsAtCell(Cell cell) {
-        List<Unit> toReturn = gameService.get().getWorldGrid().getGrid().get(cell);
-        return toReturn == null ? new LinkedList<Unit>() : toReturn;
+        if (gameService.get().getWorldGrid().getGrid().containsKey(cell)) {
+            return new LinkedList<>(gameService.get().getWorldGrid().getGrid().get(cell));
+        } else {
+            return new LinkedList<>();
+        }
     }
 
     @Override
     public List<Unit> retrieveUnitsInCellRange(Cell cell, double distance) {
         int range = (int) Math.ceil(distance / WorldGrid.CELL_LENGTH);
-        List<Unit> unitsInRange = new LinkedList<>();
-        unitsInRange.addAll(retrieveUnitsAtCell(cell));
+        List<Unit> unitsInRange = retrieveUnitsAtCell(cell);
 
         for (int x = 1; x <= range; ++x) {
             for (int y = 1; y <= range; ++y) {

@@ -1,6 +1,7 @@
 package com.ede.standyourground.app.ui.impl.component;
 
 import android.app.Activity;
+import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
@@ -24,6 +25,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver, UnitSelectedObserver, RouteCancelObserver {
 
     private final Activity activity;
+    private final ViewGroup container;
     private final HorizontalScrollView unitChoices;
     private final LinearLayout unitChoicesMenu;
     private final LinearLayout routeUnitChoice;
@@ -37,8 +39,9 @@ public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver
     private final List<RouteCancelListener> routeCancelListeners = new CopyOnWriteArrayList<>();
     private UnitType selectedUnit;
 
-    public UnitChoicesMenuComponent(Activity activity, LinearLayout unitChoicesMenu, LinearLayout routeUnitChoice, HorizontalScrollView unitChoices, LatLng centerPointReference, double radiusReference) {
+    public UnitChoicesMenuComponent(Activity activity, ViewGroup container, LinearLayout unitChoicesMenu, LinearLayout routeUnitChoice, HorizontalScrollView unitChoices, LatLng centerPointReference, double radiusReference) {
         this.activity = activity;
+        this.container = container;
         this.unitChoices = unitChoices;
         this.unitChoicesMenu = unitChoicesMenu;
         this.routeUnitChoice = routeUnitChoice;
@@ -64,8 +67,8 @@ public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver
     }
 
     @Override
-    public void drawComponentElements() {
-
+    public ViewGroup getContainer() {
+        return container;
     }
 
     @Override

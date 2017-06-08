@@ -122,12 +122,13 @@ public class UnitChoicesMenuServiceImpl implements UnitChoicesMenuService {
 
     @Override
     public void clear(UnitChoicesMenuComponent unitChoicesMenuComponent) {
-        unitChoicesMenuComponent.getUnitChoicesMenu().setVisibility(View.GONE);
+        unitChoicesMenuComponent.getContainer().setVisibility(View.GONE);
     }
 
     @Override
     public void checkUnitsAvailableForPurchase(UnitChoicesMenuComponent unitChoicesMenuComponent) {
         ViewGroup unitChoices = unitChoicesMenuComponent.getUnitChoices();
+
         int medicNeutralCampCount = playerService.get().getMedicNeutralCampCount(playerService.get().getMainPlayerId());
         if (medicNeutralCampCount > 0) {
             setVisibility(unitChoicesMenuComponent, UnitType.MEDIC, View.VISIBLE);

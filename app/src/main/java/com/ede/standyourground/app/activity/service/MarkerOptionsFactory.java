@@ -53,7 +53,7 @@ public class MarkerOptionsFactory {
 
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
-                logger.e("Failed to load drawable to a bitmap");
+//                logger.e("Failed to load drawable to a bitmap");
             }
 
             @Override
@@ -63,7 +63,7 @@ public class MarkerOptionsFactory {
         };
         Drawable drawable = activity.getResources().getDrawable(unit.getType().getDrawableId(), null);
         if (drawable != null) {
-            logger.e("WTF PICASSO");
+//            logger.e("WTF PICASSO");
         }
         Picasso.with(activity).load(unit.getType().getDrawableId()).into(target);
         int color = unit.getHostility() == Hostility.FRIENDLY ? unit.getType().getFriendlyColor() : unit.getType().getEnemyColor();

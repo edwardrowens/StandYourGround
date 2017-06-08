@@ -19,7 +19,6 @@ import com.ede.standyourground.game.api.service.ArtificialOpponentService;
 import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
-import com.ede.standyourground.game.api.service.WorldGridService;
 import com.ede.standyourground.game.impl.model.ArtificialOpponent;
 import com.ede.standyourground.game.impl.model.BankNeutralCamp;
 import com.ede.standyourground.game.impl.model.MedicNeutralCamp;
@@ -48,18 +47,17 @@ public class GameServiceImpl implements GameService {
     private final Lazy<UnitService> unitService;
     private final Lazy<PlayerService> playerService;
     private final Lazy<LatLngService> latLngService;
-    private final Lazy<WorldGridService> worldGridService;
     private final Lazy<DirectionsService> directionsService;
     private final Lazy<ArtificialOpponentFactory> artificialOpponentFactory;
     private final Lazy<ArtificialOpponentService> artificialOpponentService;
     private WorldGrid worldGrid;
+    private ArtificialOpponent artificialOpponent;
 
     @Inject
     GameServiceImpl(Lazy<UpdateLoop> updateLoop,
                     Lazy<UnitService> unitService,
                     Lazy<PlayerService> playerService,
                     Lazy<LatLngService> latLngService,
-                    Lazy<WorldGridService> worldGridService,
                     Lazy<DirectionsService> directionsService,
                     Lazy<ArtificialOpponentFactory> artificialOpponentFactory,
                     Lazy<ArtificialOpponentService> artificialOpponentService) {
@@ -67,7 +65,6 @@ public class GameServiceImpl implements GameService {
         this.unitService = unitService;
         this.playerService = playerService;
         this.latLngService = latLngService;
-        this.worldGridService = worldGridService;
         this.directionsService = directionsService;
         this.artificialOpponentFactory = artificialOpponentFactory;
         this.artificialOpponentService = artificialOpponentService;
@@ -109,8 +106,6 @@ public class GameServiceImpl implements GameService {
                         }
                     }
                     unitService.get().createNeutralUnit(mortal.getStartingPosition(), mortal.getType(), ((NeutralCamp) mortal).getName(), ((NeutralCamp) mortal).getPhotoReference(), killer.getHostility());
-                } else {
-                    worldGridService.get().removeUnitAtCell(mortal.getCell(), mortal);
                 }
             }
         });
@@ -129,6 +124,7 @@ public class GameServiceImpl implements GameService {
     public void stopGame() {
         logger.i("Ending game");
         updateLoop.get().stopLoop();
+        artificialOpponentService.get().kill(artificialOpponent);
     }
 
     @Override
@@ -167,7 +163,7 @@ public class GameServiceImpl implements GameService {
     }
 
     private void startSinglePlayerGame(LatLng playerLocation, LatLng opponentLocation) {
-        ArtificialOpponent artificialOpponent = artificialOpponentFactory.get().createArtificialOpponent(ArtificialOpponentDifficulty.EASY, opponentLocation, playerLocation);
+        artificialOpponent = artificialOpponentFactory.get().createArtificialOpponent(ArtificialOpponentDifficulty.EASY, opponentLocation, playerLocation);
         artificialOpponentService.get().runArtificialOpponent(artificialOpponent);
     }
 }

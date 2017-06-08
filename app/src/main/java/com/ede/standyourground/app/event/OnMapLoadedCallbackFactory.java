@@ -60,7 +60,6 @@ public class OnMapLoadedCallbackFactory {
             @Override
             public void onMapLoaded() {
                 gameService.get().startGame(gameMode, playerLocation, opponentLocation);
-                unitGroupComponent.initialize(R.id.mapContainer);
                 neutralCampListingComponent.initialize(R.id.mapContainer);
 
                 // Set up the camera's initial position

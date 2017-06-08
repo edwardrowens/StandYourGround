@@ -15,6 +15,7 @@ import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
+import com.ede.standyourground.game.api.service.WorldGridService;
 import com.ede.standyourground.game.impl.model.BankNeutralCamp;
 import com.ede.standyourground.game.impl.model.Base;
 import com.ede.standyourground.networking.api.NetworkingHandler;
@@ -43,6 +44,7 @@ public class UnitServiceImpl implements UnitService {
     private final Lazy<NetworkingHandler> networkingManager;
     private final Lazy<GameSessionIdProvider> gameSessionIdProvider;
     private final Lazy<PlayerService> playerService;
+    private final Lazy<WorldGridService> worldGridService;
 
     // Listeners
     private final List<OnDeathListener> onDeathListeners = new CopyOnWriteArrayList<>();
@@ -57,11 +59,13 @@ public class UnitServiceImpl implements UnitService {
     UnitServiceImpl(Lazy<UnitFactory> unitFactory,
                     Lazy<NetworkingHandler> networkingManager,
                     Lazy<GameSessionIdProvider> gameSessionIdProvider,
-                    Lazy<PlayerService> playerService) {
+                    Lazy<PlayerService> playerService,
+                    Lazy<WorldGridService> worldGridService) {
         this.unitCreator = unitFactory;
         this.networkingManager = networkingManager;
         this.gameSessionIdProvider = gameSessionIdProvider;
         this.playerService = playerService;
+        this.worldGridService = worldGridService;
     }
 
     @Override
@@ -150,14 +154,17 @@ public class UnitServiceImpl implements UnitService {
                         gameEndListener.onGameEnd(mortal.getHostility() == Hostility.ENEMY);
                     }
                 }
+
+                for (OnDeathListener onDeathListener : onDeathListeners) {
+                    onDeathListener.onDeath(mortal, killer);
+                }
+
+                worldGridService.get().removeUnitAtCell(mortal.getCell(), mortal);
+
                 if (units.remove(mortal.getId()) != null) {
                     logger.i("Unit %s has been removed from the game.", mortal.getId());
                 } else {
                     logger.w("Unit %s was not contained within the game.", mortal.getId());
-                }
-
-                for (OnDeathListener onDeathListener : onDeathListeners) {
-                    onDeathListener.onDeath(unit, killer);
                 }
             }
         });

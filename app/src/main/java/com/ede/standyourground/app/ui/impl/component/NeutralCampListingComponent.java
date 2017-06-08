@@ -17,6 +17,7 @@ import com.ede.standyourground.R;
 import com.ede.standyourground.app.ui.api.component.Component;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
+import com.ede.standyourground.framework.api.service.ViewService;
 import com.ede.standyourground.networking.api.service.GooglePlacesService;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -41,6 +42,9 @@ public class NeutralCampListingComponent implements Component {
 
     @Inject
     GooglePlacesService googlePlacesService;
+
+    @Inject
+    ViewService viewService;
 
     public NeutralCampListingComponent(Activity activity, Point point, String neutralCampName) {
         MyApp.getAppComponent().inject(this);
@@ -74,9 +78,10 @@ public class NeutralCampListingComponent implements Component {
     }
 
     @Override
-    public void drawComponentElements() {
-
+    public ViewGroup getContainer() {
+        return container;
     }
+
 
     public void clear() {
         container.setVisibility(View.INVISIBLE);
@@ -89,13 +94,9 @@ public class NeutralCampListingComponent implements Component {
         if (onGlobalLayoutListener != null) {
             container.getViewTreeObserver().removeOnGlobalLayoutListener(onGlobalLayoutListener);
         }
-        realign(center, lineDistance);
+        onGlobalLayoutListener = viewService.centerViewGroup(container, center, lineDistance, getWidth());
         textView.setText(text.trim());
         setPhoto(photoReference);
-    }
-
-    public void setPoint(Point point) {
-        this.container.setLayoutParams(createLayoutParams(point));
     }
 
     private void setPhoto(String photoReference) {
@@ -136,22 +137,5 @@ public class NeutralCampListingComponent implements Component {
         layoutParams.topMargin = point.y;
 
         return layoutParams;
-    }
-
-    private void realign(final Point center, final double lineDistance) {
-        final Point point = new Point();
-        point.x = center.x - (int) Math.round(lineDistance) - 5 - (getWidth() / 2) + (int) Math.round(lineDistance);
-
-        onGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                point.y = center.y - (int) Math.round(lineDistance) - 5 - container.getMeasuredHeight();
-                setPoint(point);
-                container.setVisibility(View.VISIBLE);
-            }
-        };
-
-        container.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
-        container.bringToFront();
     }
 }
