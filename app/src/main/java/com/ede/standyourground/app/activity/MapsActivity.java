@@ -45,6 +45,7 @@ import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.game.api.event.listener.BankNeutralCampIncomeListener;
 import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener;
 import com.ede.standyourground.game.api.event.listener.GameEndListener;
+import com.ede.standyourground.game.api.event.listener.HealthChangeListener;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
 import com.ede.standyourground.game.api.event.listener.PositionChangeListener;
 import com.ede.standyourground.game.api.event.listener.UnitCreatedListener;
@@ -497,6 +498,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         markers.get(unit.getId()).setVisible(true);
                     }
                 }
+            }
+        });
+
+        unitService.registerHealthChangeListener(new HealthChangeListener() {
+            @Override
+            public void onHealthChange(final Unit unit) {
+                MapsActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Marker marker = markers.get(unit.getId());
+                        marker.setAlpha(1 - (float)((1 - ((float)unit.getHealth() / unit.getMaxHealth())) * .5));
+                    }
+                });
             }
         });
 

@@ -7,6 +7,8 @@
         android:id="@+id/mapActivityContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:orientation="vertical">
 
         <fragment xmlns:tools="http://schemas.android.com/tools"
@@ -37,8 +39,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/creating_game"
-                        android:paddingBottom="5dp"/>
+                        android:paddingBottom="5dp"
+                        android:text="@string/creating_game"/>
 
                     <ProgressBar
                         android:id="@+id/creatingGameProgressBar"
@@ -66,7 +68,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
-                android:clickable="false"
+                android:enabled="false"
                 android:max="23"/>
 
             <TextView

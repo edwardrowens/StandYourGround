@@ -65,6 +65,7 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
     private int enemyRangeInKm = 2;
     private ViewGroup settingUpGamePromptContainer;
     private Button confirmButton;
+    private SeekBar seekBar;
 
     // Concurrency for position and loaded map
     private final AtomicBoolean positionFound = new AtomicBoolean(false);
@@ -104,7 +105,8 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
         this.googleMap = googleMap;
         final Button confirmButton = (Button) findViewById(R.id.confirmLocationButton);
         final Button cancelButton = (Button) findViewById(R.id.cancelLocationButton);
-        final SeekBar seekBar = (SeekBar) findViewById(R.id.specifyEnemyRange);
+        seekBar = (SeekBar) findViewById(R.id.specifyEnemyRange);
+        seekBar.setEnabled(false);
 
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
         googleMap.getUiSettings().setMapToolbarEnabled(false);
@@ -149,7 +151,7 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
                                 googleMap.getUiSettings().setAllGesturesEnabled(true);
                                 marker = googleMap.addMarker(new MarkerOptions().draggable(true).position(playerLocation).title("Drag me to set up your base!").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
                                 marker.showInfoWindow();
-                                seekBar.setClickable(true);
+                                seekBar.setEnabled(true);
                                 confirmButton.setEnabled(true);
                                 cancelButton.setEnabled(true);
                                 enemySearchRadius = googleMap.addCircle(new CircleOptions().center(playerLocation).fillColor(getResources().getColor(R.color.friendlyKingdomBlue)).radius(2000));
@@ -244,6 +246,7 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
 
     public void onConfirmLocation(final View view) {
         settingUpGamePromptContainer.setVisibility(View.VISIBLE);
+        seekBar.setEnabled(false);
         confirmButton.setEnabled(false);
 
         Random random = new Random();
@@ -278,11 +281,13 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
     public void onCancelLocation(View view) {
         settingUpGamePromptContainer.setVisibility(View.GONE);
         confirmButton.setEnabled(true);
+        seekBar.setEnabled(true);
         marker.setPosition(playerLocation);
         enemySearchRadius.setCenter(playerLocation);
     }
 
     private void multiplayerGame() {
+        onStop();
         Intent intent = new Intent(this, FindMatchActivity.class);
         intent.putExtra(FindMatchActivity.PLAYER_LOCATION, marker.getPosition());
         intent.putExtra(FindMatchActivity.ENEMY_SEARCH_RADIUS, enemyRangeInKm);
@@ -290,6 +295,7 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
     }
 
     private void singlePlayerGame(LatLng opponentLocation) {
+        onStop();
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra(MapsActivity.OPPONENT_LOCATION, opponentLocation);
         intent.putExtra(MapsActivity.PLAYER_LOCATION, marker.getPosition());

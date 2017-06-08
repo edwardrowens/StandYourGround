@@ -70,7 +70,6 @@ public class ArtificialOpponentServiceImpl implements ArtificialOpponentService 
 
                     }
                 });
-                artificialOpponent.getHandler().postDelayed(this, 1000);
             }
         }, 30000);
     }
