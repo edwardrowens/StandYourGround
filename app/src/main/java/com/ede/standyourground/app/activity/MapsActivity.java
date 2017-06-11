@@ -12,8 +12,10 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,8 +42,9 @@ import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
 import com.ede.standyourground.framework.api.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
-import com.ede.standyourground.framework.api.service.DrawRouteService;
+import com.ede.standyourground.framework.api.service.GraphicService;
 import com.ede.standyourground.framework.api.service.LatLngService;
+import com.ede.standyourground.framework.api.ui.OnAnimationEndListener;
 import com.ede.standyourground.game.api.event.listener.BankNeutralCampIncomeListener;
 import com.ede.standyourground.game.api.event.listener.CoinBalanceChangeListener;
 import com.ede.standyourground.game.api.event.listener.GameEndListener;
@@ -62,13 +65,17 @@ import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.game.impl.model.BankNeutralCamp;
 import com.ede.standyourground.game.impl.model.MedicNeutralCamp;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Dot;
 import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -99,6 +106,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static String GAME_SESSION_ID = MapsActivity.class.getName() + ".gameSessionId";
 
     private static final int PATTERN_GAP_LENGTH_PX = 20;
+    private static final int CAMERA_PADDING_DP = 10;
     private static final PatternItem DOT = new Dot();
     private static final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
 
@@ -111,6 +119,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private TextView marauderCountTextView;
     private TextView footSoldierCountTextView;
     private TextView medicCountTextView;
+    private ImageButton unitSelectorButton;
+    private ImageButton resetLocationButton;
 
     private static GoogleMap googleMap;
     private List<Marker> waypoints = new ArrayList<>();
@@ -129,8 +139,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Inject
     GameSessionIdProvider gameSessionIdProvider;
     @Inject
-    DrawRouteService drawRouteService;
-    @Inject
     GameService gameService;
     @Inject
     UnitService unitService;
@@ -147,11 +155,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Inject
     UnitChoicesMenuService unitChoicesMenuService;
     @Inject
-    LatLngService latLngService;
-    @Inject
     MarkerOptionsFactory markerOptionsFactory;
     @Inject
     UnitGroupComponentFactory unitGroupComponentFactory;
+    @Inject
+    GraphicService graphicService;
+    @Inject
+    LatLngService latLngService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -199,6 +209,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         logger.i("Starting map");
         MapsActivity.googleMap = googleMap;
 
+        unitSelectorButton = (ImageButton) findViewById(R.id.unitSelectorButton);
+        resetLocationButton = (ImageButton) findViewById(R.id.resetLocationButton);
+        unitSelectorButton.setEnabled(false);
+        resetLocationButton.setEnabled(false);
+
         googleMapProvider.setGoogleMap(googleMap);
 
         // Map setup
@@ -216,16 +231,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         UnitGroupComponent unitGroupComponent = unitGroupComponentFactory.createUnitGroupComponent(this, playerLocation, UnitType.BASE.getRadius());
         NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0, 0), "");
-        final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer), playerLocation, UnitType.BASE.getRadius());
+        final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer));
 
         componentMap.put(UnitGroupComponent.class, unitGroupComponent);
         componentMap.put(NeutralCampListingComponent.class, neutralCampListingComponent);
         componentMap.put(UnitChoicesMenuComponent.class, unitChoicesMenuComponent);
 
         // Create map listeners
-        GoogleMap.OnMarkerClickListener onMarkerClickListener = onMarkerClickListenerFactory.createOnMarkerClickedListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent);
-        googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, neutralCampListingComponent, unitChoicesMenuComponent));
-        googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(gameMode, playerLocation, opponentLocation, unitGroupComponent, neutralCampListingComponent));
+        GoogleMap.OnMarkerClickListener onMarkerClickListener = onMarkerClickListenerFactory.createOnMarkerClickedListener(unitGroupComponent, neutralCampListingComponent);
+        googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, neutralCampListingComponent));
+        final int cameraPaddingInPixels = graphicService.dpToPixel(CAMERA_PADDING_DP, this);
+        googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(gameMode, playerLocation, opponentLocation, neutralCampListingComponent, unitSelectorButton, resetLocationButton, cameraPaddingInPixels));
         googleMap.setOnMarkerClickListener(onMarkerClickListener);
 
         // Register listeners for game events
@@ -508,7 +524,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void run() {
                         Marker marker = markers.get(unit.getId());
-                        marker.setAlpha(1 - (float)((1 - ((float)unit.getHealth() / unit.getMaxHealth())) * .5));
+                        marker.setAlpha(1 - (float) ((1 - ((float) unit.getHealth() / unit.getMaxHealth())) * .5));
                     }
                 });
             }
@@ -521,6 +537,52 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         LinearLayout resourcesLayout = (LinearLayout) findViewById(R.id.resourcesLayout);
         resourcesLayout.setZ(1f);
+    }
+
+    public void onSelectUnitButtonClicked(final View view) {
+        final UnitChoicesMenuComponent unitChoicesMenuComponent = (UnitChoicesMenuComponent) componentMap.get(UnitChoicesMenuComponent.class);
+        if (unitChoicesMenuComponent.getContainer().getVisibility() == View.VISIBLE) {
+            Animation resetRotationAnimation = AnimationUtils.loadAnimation(this, R.anim.deactivate_button_animation);
+            resetRotationAnimation.setAnimationListener(new OnAnimationEndListener() {
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    unitChoicesMenuComponent.getContainer().setVisibility(View.GONE);
+                }
+            });
+            view.startAnimation(resetRotationAnimation);
+        } else {
+            Animation rotate = AnimationUtils.loadAnimation(this, R.anim.activate_button_animation);
+            rotate.setAnimationListener(new OnAnimationEndListener() {
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    unitChoicesMenuComponent.getContainer().setVisibility(View.VISIBLE);
+                }
+            });
+            view.startAnimation(rotate);
+        }
+    }
+
+    public void onResetCameraViewClicked(View view) {
+        final int cameraPaddingInPixels = graphicService.dpToPixel(CAMERA_PADDING_DP, this);
+        final LatLngBounds latLngBounds = LatLngBounds.builder().include(opponentLocation).include(playerLocation).build();
+        final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, cameraPaddingInPixels);
+        googleMap.animateCamera(cameraUpdate, new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                float zoom = googleMap.getCameraPosition().zoom;
+                CameraPosition cameraPosition = CameraPosition.builder()
+                        .target(latLngService.midpoint(playerLocation, opponentLocation))
+                        .bearing((float) latLngService.bearing(playerLocation, opponentLocation))
+                        .zoom(zoom)
+                        .build();
+                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
     }
 
     private void removeMarker(UUID unitId) {

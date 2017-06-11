@@ -10,4 +10,5 @@
     <dimen name="unit_choice_scroll_width">200dp</dimen>
     <dimen name="unit_choice_title_size">12sp</dimen>
     <dimen name="unit_choice_cost_size">12sp</dimen>
+    <dimen name="unit_selector_button_size">65dp</dimen>
 </resources>

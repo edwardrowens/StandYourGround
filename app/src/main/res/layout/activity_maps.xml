@@ -7,7 +7,9 @@
     <RelativeLayout
         android:id="@+id/mapContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
 
         <fragment
             xmlns:tools="http://schemas.android.com/tools"
@@ -113,5 +115,52 @@
                 android:textStyle="bold"/>
         </LinearLayout>
 
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true">
+
+                <include
+                    layout="@layout/unit_choices_menu"
+                    android:visibility="gone"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/gameButtonsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp">
+
+                <ImageButton
+                    android:id="@+id/unitSelectorButton"
+                    android:layout_width="@dimen/unit_selector_button_size"
+                    android:layout_height="@dimen/unit_selector_button_size"
+                    android:background="@drawable/circular_background"
+                    android:onClick="onSelectUnitButtonClicked"
+                    android:padding="10dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/marker_icon_48dp"
+                    android:tint="@color/colorAccent"/>
+
+                <ImageButton
+                    android:id="@+id/resetLocationButton"
+                    android:layout_width="@dimen/unit_selector_button_size"
+                    android:layout_height="@dimen/unit_selector_button_size"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/circular_background"
+                    android:onClick="onResetCameraViewClicked"
+                    android:padding="10dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/location_icon_48dp"
+                    android:tint="@color/colorAccent"/>
+            </RelativeLayout>
+        </RelativeLayout>
     </RelativeLayout>
 </RelativeLayout>

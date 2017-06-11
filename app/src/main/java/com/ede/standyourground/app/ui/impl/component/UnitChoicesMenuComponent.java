@@ -2,8 +2,6 @@ package com.ede.standyourground.app.ui.impl.component;
 
 import android.app.Activity;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
-import android.widget.LinearLayout;
 
 import com.ede.standyourground.app.ui.api.component.Component;
 import com.ede.standyourground.app.ui.api.event.ConfirmRouteListener;
@@ -13,7 +11,6 @@ import com.ede.standyourground.app.ui.api.event.RouteCancelObserver;
 import com.ede.standyourground.app.ui.api.event.UnitSelectedListener;
 import com.ede.standyourground.app.ui.api.event.UnitSelectedObserver;
 import com.ede.standyourground.game.api.model.UnitType;
-import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,11 +23,9 @@ public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver
 
     private final Activity activity;
     private final ViewGroup container;
-    private final HorizontalScrollView unitChoices;
-    private final LinearLayout unitChoicesMenu;
-    private final LinearLayout routeUnitChoice;
-    private final LatLng centerPointReference;
-    private final double radiusReference;
+    private final ViewGroup unitChoices;
+    private final ViewGroup unitChoicesMenu;
+    private final ViewGroup routeUnitChoice;
 
     // Listeners
     private final List<ConfirmRouteListener> confirmRouteListeners = new CopyOnWriteArrayList<>();
@@ -39,25 +34,23 @@ public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver
     private final List<RouteCancelListener> routeCancelListeners = new CopyOnWriteArrayList<>();
     private UnitType selectedUnit;
 
-    public UnitChoicesMenuComponent(Activity activity, ViewGroup container, LinearLayout unitChoicesMenu, LinearLayout routeUnitChoice, HorizontalScrollView unitChoices, LatLng centerPointReference, double radiusReference) {
+    public UnitChoicesMenuComponent(Activity activity, ViewGroup unitChoicesMenu, ViewGroup routeUnitChoice, ViewGroup unitChoices) {
         this.activity = activity;
-        this.container = container;
+        this.container = unitChoicesMenu;
         this.unitChoices = unitChoices;
         this.unitChoicesMenu = unitChoicesMenu;
         this.routeUnitChoice = routeUnitChoice;
-        this.centerPointReference = centerPointReference;
-        this.radiusReference = radiusReference;
     }
 
-    public HorizontalScrollView getUnitChoices() {
+    public ViewGroup getUnitChoices() {
         return unitChoices;
     }
 
-    public LinearLayout getUnitChoicesMenu() {
+    public ViewGroup getUnitChoicesMenu() {
         return unitChoicesMenu;
     }
 
-    public LinearLayout getRouteUnitChoice() {
+    public ViewGroup getRouteUnitChoice() {
         return  routeUnitChoice;
     }
 
@@ -104,13 +97,5 @@ public class UnitChoicesMenuComponent implements Component, ConfirmRouteObserver
 
     public List<UnitSelectedListener> getUnitSelectedListeners() {
         return unitSelectedListeners;
-    }
-
-    public LatLng getCenterPointReference() {
-        return centerPointReference;
-    }
-
-    public double getRadiusReference() {
-        return radiusReference;
     }
 }

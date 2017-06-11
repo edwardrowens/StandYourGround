@@ -4,10 +4,8 @@ import android.graphics.Point;
 
 import com.ede.standyourground.app.ui.api.component.UnitGroupBlockCountComponentFactory;
 import com.ede.standyourground.app.ui.api.component.UnitGroupBlockHealthBarComponentFactory;
-import com.ede.standyourground.app.ui.api.service.UnitChoicesMenuService;
 import com.ede.standyourground.app.ui.api.service.UnitGroupComponentService;
 import com.ede.standyourground.app.ui.impl.component.NeutralCampListingComponent;
-import com.ede.standyourground.app.ui.impl.component.UnitChoicesMenuComponent;
 import com.ede.standyourground.app.ui.impl.component.UnitGroupBlockCount;
 import com.ede.standyourground.app.ui.impl.component.UnitGroupBlockHealthBarComponent;
 import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
@@ -15,14 +13,12 @@ import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.framework.api.service.MathService;
-import com.ede.standyourground.game.api.model.Hostility;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.NeutralCamp;
 import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.game.api.service.WorldGridService;
-import com.ede.standyourground.game.impl.model.Base;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.LatLng;
@@ -55,7 +51,6 @@ public class OnMarkerClickListenerFactory {
     private final Lazy<MathService> mathService;
     private final Lazy<UnitService> unitService;
     private final Lazy<LatLngService> latLngService;
-    private final Lazy<UnitChoicesMenuService> unitChoicesMenuService;
     private final Lazy<WorldGridService> worldGridService;
     private final Lazy<UnitGroupComponentService> unitGroupComponentService;
     private final Lazy<UnitGroupBlockHealthBarComponentFactory> unitGroupBlockHealthBarComponentFactory;
@@ -66,7 +61,6 @@ public class OnMarkerClickListenerFactory {
                                  Lazy<MathService> mathService,
                                  Lazy<UnitService> unitService,
                                  Lazy<LatLngService> latLngService,
-                                 Lazy<UnitChoicesMenuService> unitChoicesMenuService,
                                  Lazy<WorldGridService> worldGridService,
                                  Lazy<UnitGroupComponentService> unitGroupComponentService,
                                  Lazy<UnitGroupBlockHealthBarComponentFactory> unitGroupBlockHealthBarComponentFactory,
@@ -75,14 +69,13 @@ public class OnMarkerClickListenerFactory {
         this.mathService = mathService;
         this.unitService = unitService;
         this.latLngService = latLngService;
-        this.unitChoicesMenuService = unitChoicesMenuService;
         this.worldGridService = worldGridService;
         this.unitGroupComponentService = unitGroupComponentService;
         this.unitGroupBlockHealthBarComponentFactory = unitGroupBlockHealthBarComponentFactory;
         this.unitGroupBlockCountComponentFactory = unitGroupBlockCountComponentFactory;
     }
 
-    public GoogleMap.OnMarkerClickListener createOnMarkerClickedListener(final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent, final UnitChoicesMenuComponent unitChoicesMenuComponent) {
+    public GoogleMap.OnMarkerClickListener createOnMarkerClickedListener(final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent) {
         return new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -109,8 +102,6 @@ public class OnMarkerClickListenerFactory {
 
                 if (unitClicked instanceof NeutralCamp) {
                     neutralCampListingComponent.setTextAndPhoto(((NeutralCamp) unitClicked).getName(), ((NeutralCamp) unitClicked).getPhotoReference(), center, lineDistance);
-                } else if (unitClicked instanceof Base && unitClicked.getHostility() == Hostility.FRIENDLY) {
-                    unitChoicesMenuService.get().realign(unitChoicesMenuComponent);
                 } else {
                     for (Unit unit : worldGridService.get().retrieveUnitsAtCell(unitClicked.getCell())) {
                         LatLng unitPosition = unit instanceof MovableUnit ? ((MovableUnit) unit).getCurrentPosition() : unit.getStartingPosition();

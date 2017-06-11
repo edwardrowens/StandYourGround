@@ -1,15 +1,15 @@
 package com.ede.standyourground.app.event;
 
+import android.widget.ImageButton;
+
 import com.ede.standyourground.R;
 import com.ede.standyourground.app.ui.impl.component.NeutralCampListingComponent;
-import com.ede.standyourground.app.ui.impl.component.UnitGroupComponent;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
 import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.game.api.model.GameMode;
 import com.ede.standyourground.game.api.service.GameService;
 import com.ede.standyourground.game.api.service.NeutralCampService;
-import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.networking.api.event.GooglePlacesResponseCallback;
 import com.ede.standyourground.networking.api.model.GooglePlaceResult;
 import com.ede.standyourground.networking.api.service.GooglePlacesNearbySearchService;
@@ -33,7 +33,6 @@ public class OnMapLoadedCallbackFactory {
 
     private static final int CAMERA_PADDING = 50;
 
-    private final Lazy<UnitService> unitService;
     private final Lazy<LatLngService> latLngService;
     private final Lazy<GoogleMapProvider> googleMapProvider;
     private final Lazy<GooglePlacesNearbySearchService> googlePlacesNearbySearchService;
@@ -41,13 +40,11 @@ public class OnMapLoadedCallbackFactory {
     private final Lazy<GameService> gameService;
 
     @Inject
-    OnMapLoadedCallbackFactory(Lazy<UnitService> unitService,
-                               Lazy<LatLngService> latLngService,
+    OnMapLoadedCallbackFactory(Lazy<LatLngService> latLngService,
                                Lazy<GoogleMapProvider> googleMapProvider,
                                Lazy<GooglePlacesNearbySearchService> googlePlacesNearbySearchService,
                                Lazy<NeutralCampService> neutralCampService,
                                Lazy<GameService> gameService) {
-        this.unitService = unitService;
         this.latLngService = latLngService;
         this.googleMapProvider = googleMapProvider;
         this.googlePlacesNearbySearchService = googlePlacesNearbySearchService;
@@ -55,7 +52,7 @@ public class OnMapLoadedCallbackFactory {
         this.gameService = gameService;
     }
 
-    public GoogleMap.OnMapLoadedCallback createOnMapLoadedCallback(final GameMode gameMode, final LatLng playerLocation, final LatLng opponentLocation, final UnitGroupComponent unitGroupComponent, final NeutralCampListingComponent neutralCampListingComponent) {
+    public GoogleMap.OnMapLoadedCallback createOnMapLoadedCallback(final GameMode gameMode, final LatLng playerLocation, final LatLng opponentLocation, final NeutralCampListingComponent neutralCampListingComponent, final ImageButton unitSelectorButton, final ImageButton resetLocationButton, final int cameraPaddingInPixels) {
         return new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
@@ -64,7 +61,7 @@ public class OnMapLoadedCallbackFactory {
 
                 // Set up the camera's initial position
                 final LatLngBounds latLngBounds = LatLngBounds.builder().include(opponentLocation).include(playerLocation).build();
-                final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, CAMERA_PADDING);
+                final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, cameraPaddingInPixels);
 
                 googlePlacesNearbySearchService.get().nearbySearch(playerLocation, opponentLocation, new GooglePlacesResponseCallback() {
                     @Override
@@ -75,20 +72,20 @@ public class OnMapLoadedCallbackFactory {
                             List<GooglePlaceResult> filteredGooglePlaceResults = neutralCampService.get().filterNeutralCamps(results, playerLocation, opponentLocation);
                             neutralCampService.get().createNeutralCamps(filteredGooglePlaceResults);
                         }
-                        animateCamera(cameraUpdate, playerLocation, opponentLocation);
+                        animateCamera(cameraUpdate, playerLocation, opponentLocation, unitSelectorButton, resetLocationButton);
                     }
 
                     @Override
                     public void onFailure(Throwable t) {
                         logger.e("Could not initialize the neutral camps", t);
-                        animateCamera(cameraUpdate, playerLocation, opponentLocation);
+                        animateCamera(cameraUpdate, playerLocation, opponentLocation, unitSelectorButton, resetLocationButton);
                     }
                 });
             }
         };
     }
 
-    private void animateCamera(CameraUpdate cameraUpdate, final LatLng playerLocation, final LatLng opponentLocation) {
+    private void animateCamera(CameraUpdate cameraUpdate, final LatLng playerLocation, final LatLng opponentLocation, final ImageButton unitSelectorButton, final ImageButton resetLocationButton) {
         googleMapProvider.get().getGoogleMap().animateCamera(cameraUpdate, new GoogleMap.CancelableCallback() {
             @Override
             public void onFinish() {
@@ -103,6 +100,8 @@ public class OnMapLoadedCallbackFactory {
                     public void onFinish() {
                         googleMapProvider.get().getGoogleMap().getUiSettings().setRotateGesturesEnabled(false);
                         googleMapProvider.get().getGoogleMap().getUiSettings().setAllGesturesEnabled(true);
+                        unitSelectorButton.setEnabled(true);
+                        resetLocationButton.setEnabled(true);
                     }
 
                     @Override

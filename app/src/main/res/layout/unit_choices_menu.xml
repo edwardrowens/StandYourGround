@@ -5,7 +5,11 @@
               android:layout_height="wrap_content"
               android:animateLayoutChanges="true"
               android:background="@drawable/border"
-              android:orientation="vertical"
-              android:visibility="invisible">
+              android:orientation="vertical">
 
+    <include layout="@layout/unit_choices"/>
+
+    <include
+        layout="@layout/route_unit_choice"
+        android:visibility="gone"/>
 </LinearLayout>

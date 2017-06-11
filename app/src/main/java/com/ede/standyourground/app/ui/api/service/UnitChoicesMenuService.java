@@ -12,7 +12,6 @@ public interface UnitChoicesMenuService {
     void onRouteCancelled(UnitChoicesMenuComponent unitChoicesMenuComponent);
     void onConfirmRoute(UnitChoicesMenuComponent unitChoicesMenuComponent);
     void setVisibility(UnitChoicesMenuComponent unitChoicesMenuComponent, UnitType unitType, int visibility);
-    void realign(UnitChoicesMenuComponent unitChoicesMenuComponent);
     void clear(UnitChoicesMenuComponent unitChoicesMenuComponent);
     void checkUnitsAvailableForPurchase(UnitChoicesMenuComponent unitChoicesMenuComponent);
 }
