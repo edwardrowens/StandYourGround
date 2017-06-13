@@ -52,8 +52,7 @@ public class UnitGroupBlockHealthBarComponentFactory {
 
         // Create the icon
         ViewGroup iconContainer = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.unit_group_block_icon, container).findViewById(R.id.unitGroupBlockIcon);
-        Icon icon = new Icon(UUID.randomUUID(), activity, unitType);
-        iconContainer.addView(icon.getContainer());
+        new Icon(UUID.randomUUID(), activity, unitType, iconContainer);
 
         // Create the health bar
         ViewGroup healthBarContainer = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.unit_group_block_health_bar, null);

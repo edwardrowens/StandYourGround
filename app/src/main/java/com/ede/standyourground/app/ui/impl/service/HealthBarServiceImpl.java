@@ -6,7 +6,6 @@ import android.graphics.PointF;
 import com.ede.standyourground.app.ui.api.service.HealthBarService;
 import com.ede.standyourground.app.ui.impl.component.HealthBar;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
-import com.ede.standyourground.framework.api.service.MathService;
 import com.ede.standyourground.framework.api.service.ProjectionService;
 import com.ede.standyourground.game.api.model.MovableUnit;
 import com.ede.standyourground.game.api.model.Unit;
@@ -24,15 +23,12 @@ import dagger.Lazy;
 public class HealthBarServiceImpl implements HealthBarService {
 
     private final Lazy<GoogleMapProvider> googleMapProvider;
-    private final Lazy<MathService> mathService;
     private final Lazy<ProjectionService> projectionService;
 
     @Inject
     HealthBarServiceImpl(Lazy<GoogleMapProvider> googleMapProvider,
-                         Lazy<MathService> mathService,
                          Lazy<ProjectionService> projectionService) {
         this.googleMapProvider = googleMapProvider;
-        this.mathService = mathService;
         this.projectionService = projectionService;
     }
 

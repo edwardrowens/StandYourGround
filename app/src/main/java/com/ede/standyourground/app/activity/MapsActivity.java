@@ -71,6 +71,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Dot;
 import com.google.android.gms.maps.model.Gap;
@@ -167,8 +168,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         MyApp.getAppComponent().inject(this);
-
         setContentView(R.layout.activity_maps);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -222,14 +223,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setCompassEnabled(false);
 
-        final double distance = UnitType.BASE.getRadius() * 2;
+        final double distance = UnitType.BASE.getSize() * 2;
         LatLng p1 = SphericalUtil.computeOffset(playerLocation, distance, 0);
         LatLng p2 = SphericalUtil.computeOffset(playerLocation, distance, 90);
         LatLng p3 = SphericalUtil.computeOffset(playerLocation, distance, 180);
         LatLng p4 = SphericalUtil.computeOffset(playerLocation, distance, 270);
-        final Polygon polygon = googleMap.addPolygon(new PolygonOptions().add(p1, p2, p3, p4).fillColor(getResources().getColor(R.color.friendlyKingdomBlue)));
+        final Polygon polygon = googleMap.addPolygon(new PolygonOptions().add(p1, p2, p3, p4).fillColor(getResources().getColor(R.color.kingdomFriendly)));
 
-        UnitGroupComponent unitGroupComponent = unitGroupComponentFactory.createUnitGroupComponent(this, playerLocation, UnitType.BASE.getRadius());
+        UnitGroupComponent unitGroupComponent = unitGroupComponentFactory.createUnitGroupComponent(this, playerLocation, UnitType.BASE.getSize());
         NeutralCampListingComponent neutralCampListingComponent = new NeutralCampListingComponent(this, new Point(0, 0), "");
         final UnitChoicesMenuComponent unitChoicesMenuComponent = unitChoicesMenuComponentFactory.createUnitChoicesMenuComponent(this, (ViewGroup) findViewById(R.id.mapContainer));
 
@@ -269,20 +270,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MapsActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        int colorHostility = unit.getHostility() == Hostility.FRIENDLY ? unit.getType().getFriendlyColor() : unit.getType().getEnemyColor();
-                        int color = ContextCompat.getColor(MapsActivity.this, colorHostility);
+                        int color = ContextCompat.getColor(MapsActivity.this, unit.getType().getColor());
 
-                        MarkerOptions markerOptions = markerOptionsFactory.createMarkerOptions(MapsActivity.this, unit, new MarkerOptionsCallback() {
+                        markerOptionsFactory.createMarkerOptions(MapsActivity.this, unit, new MarkerOptionsCallback() {
                             @Override
                             public void onCreated(MarkerOptions markerOptions) {
-                                removeMarker(unit.getId());
                                 Marker marker = addMarker(unit.getId(), markerOptions);
                                 marker.setVisible(unit.isVisible());
                             }
                         });
-
-                        Marker marker = addMarker(unit.getId(), markerOptions);
-                        marker.setVisible(unit.isVisible());
 
                         if (unit.getHostility() == Hostility.FRIENDLY) {
                             switch (unit.getType()) {
@@ -358,12 +354,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MapsActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        Marker marker = markers.get(unit.getId());
                         if (unit instanceof NeutralCamp) {
                             if (unit.isVisible()) {
-                                markers.get(unit.getId()).setVisible(true);
+                                if (marker != null) {
+                                    marker.setVisible(true);
+                                }
                             }
                         } else {
-                            markers.get(unit.getId()).setVisible(unit.isVisible());
+                            if (marker != null) {
+                                marker.setVisible(unit.isVisible());
+                            }
                         }
                     }
                 });
@@ -376,7 +377,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MapsActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        markers.get(movableUnit.getId()).setPosition(movableUnit.getCurrentPosition());
+                        Marker marker = markers.get(movableUnit.getId());
+                        if (marker != null) {
+                            marker.setPosition(movableUnit.getCurrentPosition());
+                        }
                     }
                 });
             }
@@ -467,7 +471,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 });
                 for (Unit unit : unitService.getUnits()) {
                     if (unit.getType() != UnitType.BASE) {
-                        markers.get(unit.getId()).setVisible(false);
+                        Marker marker = markers.get(unit.getId());
+                        if (marker != null) {
+                            marker.setVisible(false);
+                        }
                     }
                 }
             }
@@ -482,7 +489,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 waypoints.clear();
                 for (Unit unit : unitService.getUnits()) {
                     if (unit.getType() != UnitType.BASE) {
-                        markers.get(unit.getId()).setVisible(true);
+                        Marker marker = markers.get(unit.getId());
+                        if (marker != null) {
+                            marker.setVisible(unit.isVisible());
+                        }
                     }
                 }
             }
@@ -511,7 +521,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 for (Unit unit : unitService.getUnits()) {
                     if (unit.getType() != UnitType.BASE) {
-                        markers.get(unit.getId()).setVisible(true);
+                        Marker marker = markers.get(unit.getId());
+                        if (marker != null) {
+                            marker.setVisible(unit.isVisible());
+                        }
                     }
                 }
             }
@@ -524,7 +537,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void run() {
                         Marker marker = markers.get(unit.getId());
-                        marker.setAlpha(1 - (float) ((1 - ((float) unit.getHealth() / unit.getMaxHealth())) * .5));
+                        if (marker != null) {
+                            marker.setAlpha(1 - (float) ((1 - ((float) unit.getHealth() / unit.getMaxHealth())) * .5));
+                        }
                     }
                 });
             }
@@ -566,6 +581,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final int cameraPaddingInPixels = graphicService.dpToPixel(CAMERA_PADDING_DP, this);
         final LatLngBounds latLngBounds = LatLngBounds.builder().include(opponentLocation).include(playerLocation).build();
         final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, cameraPaddingInPixels);
+        new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker());
         googleMap.animateCamera(cameraUpdate, new GoogleMap.CancelableCallback() {
             @Override
             public void onFinish() {

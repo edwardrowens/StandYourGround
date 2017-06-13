@@ -5,8 +5,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.ede.standyourground.app.ui.api.component.Component;
-import com.ede.standyourground.app.ui.api.event.UnitGroupBlockCountComponentChangeListener;
-import com.ede.standyourground.app.ui.api.event.UnitGroupBlockCountComponentChangeObserver;
+import com.ede.standyourground.app.ui.api.event.ComponentChangeListener;
+import com.ede.standyourground.app.ui.api.event.ComponentChangeObserver;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
 
 import java.util.List;
@@ -18,14 +18,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  */
 
-public class UnitGroupBlockCount implements Component, UnitGroupBlockCountComponentChangeObserver {
+public class UnitGroupBlockCount implements Component, ComponentChangeObserver {
 
     private final TextView countContainer;
     private final ViewGroup container;
     private final Activity activity;
     private final UUID componentElementId;
     private final Set<UUID> unitIds;
-    private final List<UnitGroupBlockCountComponentChangeListener> unitGroupBlockCountComponentChangeListeners = new CopyOnWriteArrayList<>();
+    private final List<ComponentChangeListener> componentChangeListeners = new CopyOnWriteArrayList<>();
     private final List<OnDeathListener> onDeathListeners = new CopyOnWriteArrayList<>();
 
     private OnDeathListener onDeathListenerHook;
@@ -49,8 +49,8 @@ public class UnitGroupBlockCount implements Component, UnitGroupBlockCountCompon
     }
 
     @Override
-    public void registerUnitGroupBlockCountComponentChangeListener(UnitGroupBlockCountComponentChangeListener unitGroupBlockCountComponentChangeListener) {
-        unitGroupBlockCountComponentChangeListeners.add(unitGroupBlockCountComponentChangeListener);
+    public void registerComponentChangeListener(ComponentChangeListener componentChangeListener) {
+        componentChangeListeners.add(componentChangeListener);
     }
 
     public TextView getCountContainer() {
@@ -65,8 +65,8 @@ public class UnitGroupBlockCount implements Component, UnitGroupBlockCountCompon
         return unitIds;
     }
 
-    public List<UnitGroupBlockCountComponentChangeListener> getUnitGroupBlockCountComponentChangeListeners() {
-        return unitGroupBlockCountComponentChangeListeners;
+    public List<ComponentChangeListener> getComponentChangeListeners() {
+        return componentChangeListeners;
     }
 
     public OnDeathListener getOnDeathListenerHook() {

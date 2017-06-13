@@ -45,7 +45,7 @@ public abstract class Unit implements Attackable, VisibilityChangeObserver {
         this.hostility = hostility;
 //        this.isVisible = new AtomicBoolean(this.hostility == Hostility.FRIENDLY);
         this.isVisible = new AtomicBoolean(true);
-        this.radius = type.getRadius();
+        this.radius = type.getSize();
         this.type = type;
         this.cell = new AtomicReference<>(cell);
     }

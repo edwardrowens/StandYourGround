@@ -32,7 +32,7 @@ public class UnitChoicesMenuServiceImpl implements UnitChoicesMenuService {
     @Override
     public void onUnitSelected(final UnitChoicesMenuComponent unitChoicesMenuComponent, UnitType unitType) {
         ImageView routeUnitChoiceIcon = (ImageView) unitChoicesMenuComponent.getRouteUnitChoice().findViewById(R.id.routeUnitChoiceIcon);
-        routeUnitChoiceIcon.setImageDrawable(unitChoicesMenuComponent.getActivity().getDrawable(unitType.getDrawableId()));
+        routeUnitChoiceIcon.setImageDrawable(unitChoicesMenuComponent.getActivity().getDrawable(unitType.getFriendlyDrawableId()));
         unitChoicesMenuComponent.setSelectedUnit(unitType);
         unitChoicesMenuComponent.getUnitChoices().setVisibility(View.GONE);
         unitChoicesMenuComponent.getRouteUnitChoice().setVisibility(View.VISIBLE);

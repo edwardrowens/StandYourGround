@@ -154,7 +154,7 @@ public class SelectLocationActivity extends FragmentActivity implements OnMapRea
                                 seekBar.setEnabled(true);
                                 confirmButton.setEnabled(true);
                                 cancelButton.setEnabled(true);
-                                enemySearchRadius = googleMap.addCircle(new CircleOptions().center(playerLocation).fillColor(getResources().getColor(R.color.friendlyKingdomBlue)).radius(2000));
+                                enemySearchRadius = googleMap.addCircle(new CircleOptions().center(playerLocation).fillColor(getResources().getColor(R.color.kingdomFriendly)).radius(2000));
                                 final TextView seekBarOutput = (TextView) findViewById(R.id.seekBarOutput);
 
                                 seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

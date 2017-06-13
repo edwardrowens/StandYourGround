@@ -6,7 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.ede.standyourground.R;
-import com.ede.standyourground.app.ui.api.event.UnitGroupBlockCountComponentChangeListener;
+import com.ede.standyourground.app.ui.api.event.ComponentChangeListener;
 import com.ede.standyourground.app.ui.api.service.UnitGroupBlockCountComponentService;
 import com.ede.standyourground.app.ui.impl.component.Icon;
 import com.ede.standyourground.app.ui.impl.component.UnitGroupBlockCount;
@@ -16,7 +16,6 @@ import com.ede.standyourground.game.api.model.Unit;
 import com.ede.standyourground.game.api.model.UnitType;
 import com.ede.standyourground.game.api.service.UnitService;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -49,8 +48,7 @@ public class UnitGroupBlockCountComponentFactory {
 
         // Create the icon
         ViewGroup iconContainer = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.unit_group_block_icon, container).findViewById(R.id.unitGroupBlockIcon);
-        Icon icon = new Icon(UUID.randomUUID(), activity, unitType);
-        iconContainer.addView(icon.getContainer());
+        new Icon(UUID.randomUUID(), activity, unitType, iconContainer);
 
         // Create the count container
         final TextView countContainer = (TextView) LayoutInflater.from(activity).inflate(R.layout.text_view_component, container).findViewById(R.id.textViewComponent);
@@ -69,8 +67,8 @@ public class UnitGroupBlockCountComponentFactory {
                             final int count = unitGroupBlockCountComponent.getUnitIds().size();
                             logger.i("Removed <{%s}> from the unit group block count. Count is now <{%d}>", mortal.getId(), count);
                             unitGroupBlockCountComponentService.get().setCount(unitGroupBlockCountComponent, count);
-                            for (UnitGroupBlockCountComponentChangeListener unitGroupBlockCountComponentChangeListener : unitGroupBlockCountComponent.getUnitGroupBlockCountComponentChangeListeners()) {
-                                unitGroupBlockCountComponentChangeListener.onCountChange(unitGroupBlockCountComponent.getContainer(), new HashSet<>(unitGroupBlockCountComponent.getUnitIds()));
+                            for (ComponentChangeListener unitGroupBlockCountComponentChangeListener : unitGroupBlockCountComponent.getComponentChangeListeners()) {
+                                unitGroupBlockCountComponentChangeListener.onComponentChange(unitGroupBlockCountComponent);
                             }
                         } else {
                             logger.i("Could not remove <{%s}> from the unit group block count. Count is <{%d}>", mortal.getId(), unitGroupBlockCountComponent.getUnitIds().size());

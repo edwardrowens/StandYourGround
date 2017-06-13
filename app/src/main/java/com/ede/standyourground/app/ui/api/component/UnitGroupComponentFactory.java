@@ -58,20 +58,6 @@ public class UnitGroupComponentFactory {
         final UnitGroupComponent unitGroupComponent = new UnitGroupComponent(activity, container, centerPointReference, radiusReference);
         unitGroupComponentService.get().setVisibility(unitGroupComponent, View.VISIBLE);
 
-        unitService.get().registerOnDeathListener(new OnDeathListener() {
-            @Override
-            public void onDeath(final Unit mortal, Unit killer) {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (unitGroupComponent.getUnitGroupBlocks().size() == 0) {
-                            unitGroupComponentService.get().clear(unitGroupComponent);
-                        }
-                    }
-                });
-            }
-        });
-
         return unitGroupComponent;
     }
 

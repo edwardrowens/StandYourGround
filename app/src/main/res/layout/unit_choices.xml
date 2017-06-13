@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-                      android:id="@+id/unitChoicesScrollView"
+                      android:id="@+id/unitChoices"
                       android:layout_width="@dimen/unit_choice_scroll_width"
                       android:layout_height="wrap_content"
                       android:paddingLeft="5dp"
@@ -28,10 +28,10 @@
 
                 <ImageView
                     android:id="@+id/foot_soldier_choice_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_centerHorizontal="true"
-                    android:src="@drawable/foot_soldier"/>
+                    android:src="@drawable/foot_soldier_friendly"/>
 
                 <TextView
                     android:id="@+id/foot_soldier_choice_cost"
@@ -68,10 +68,10 @@
 
                 <ImageView
                     android:id="@+id/marauder_choice_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_centerHorizontal="true"
-                    android:src="@drawable/marauder"/>
+                    android:src="@drawable/marauder_friendly"/>
 
                 <TextView
                     android:id="@+id/marauder_choice_cost"
@@ -97,7 +97,8 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:gravity="center_horizontal"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <RelativeLayout
                 android:id="@+id/medic_choice_icon_and_cost_container"
@@ -106,10 +107,10 @@
 
                 <ImageView
                     android:id="@+id/medic_choice_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_centerHorizontal="true"
-                    android:src="@drawable/medic"/>
+                    android:src="@drawable/medic_friendly"/>
 
                 <TextView
                     android:id="@+id/medic_choice_cost"

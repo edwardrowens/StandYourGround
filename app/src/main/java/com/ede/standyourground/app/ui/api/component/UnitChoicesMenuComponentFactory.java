@@ -34,7 +34,7 @@ public class UnitChoicesMenuComponentFactory {
 
     public UnitChoicesMenuComponent createUnitChoicesMenuComponent(final Activity activity, ViewGroup parent) {
         final ViewGroup unitChoicesMenu = (ViewGroup) parent.findViewById(R.id.unitChoicesMenu);
-        final ViewGroup unitChoices = (ViewGroup) unitChoicesMenu.findViewById(R.id.unitChoicesScrollView);
+        final ViewGroup unitChoices = (ViewGroup) unitChoicesMenu.findViewById(R.id.unitChoices);
         final ViewGroup routeUnitChoice = (ViewGroup) unitChoicesMenu.findViewById(R.id.routeUnitChoice);
 
         final UnitChoicesMenuComponent unitChoicesMenuComponent = new UnitChoicesMenuComponent(activity, unitChoicesMenu, routeUnitChoice, unitChoices);

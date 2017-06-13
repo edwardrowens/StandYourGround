@@ -4,9 +4,10 @@ import android.app.Activity;
 import android.view.ViewGroup;
 
 import com.ede.standyourground.app.ui.api.component.Component;
+import com.ede.standyourground.app.ui.api.event.ComponentChangeListener;
+import com.ede.standyourground.app.ui.api.event.ComponentChangeObserver;
 import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.game.api.event.listener.OnDeathListener;
-import com.ede.standyourground.game.api.event.observer.DeathObservable;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  *
  */
-public class UnitGroupBlockHealthBarComponent implements Component, DeathObservable {
+public class UnitGroupBlockHealthBarComponent implements Component, ComponentChangeObserver {
 
     private static final Logger logger = new Logger(UnitGroupBlockHealthBarComponent.class);
 
@@ -23,7 +24,7 @@ public class UnitGroupBlockHealthBarComponent implements Component, DeathObserva
     private final UUID componentElementId;
     private final UUID unitId;
     private final Activity activity;
-    private final List<OnDeathListener> onDeathListeners = new CopyOnWriteArrayList<>();
+    private final List<ComponentChangeListener> componentChangeListeners = new CopyOnWriteArrayList<>();
 
     private OnDeathListener onDeathListenerHook;
 
@@ -44,15 +45,6 @@ public class UnitGroupBlockHealthBarComponent implements Component, DeathObserva
         return container;
     }
 
-    @Override
-    public void registerOnDeathListener(OnDeathListener onDeathListener) {
-        onDeathListeners.add(onDeathListener);
-    }
-
-    public List<OnDeathListener> getOnDeathListeners() {
-        return onDeathListeners;
-    }
-
     public UUID getUnitId() {
         return unitId;
     }
@@ -67,5 +59,14 @@ public class UnitGroupBlockHealthBarComponent implements Component, DeathObserva
 
     public void setOnDeathListenerHook(OnDeathListener onDeathListenerHook) {
         this.onDeathListenerHook = onDeathListenerHook;
+    }
+
+    @Override
+    public void registerComponentChangeListener(ComponentChangeListener componentChangeListener) {
+        componentChangeListeners.add(componentChangeListener);
+    }
+
+    public List<ComponentChangeListener> getComponentChangeListeners() {
+        return componentChangeListeners;
     }
 }

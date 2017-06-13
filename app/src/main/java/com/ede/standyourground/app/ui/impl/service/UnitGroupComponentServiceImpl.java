@@ -2,11 +2,10 @@ package com.ede.standyourground.app.ui.impl.service;
 
 import android.graphics.Point;
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.ede.standyourground.app.ui.api.component.Component;
 import com.ede.standyourground.app.ui.api.component.UnitGroupBlockHealthBarComponentFactory;
-import com.ede.standyourground.app.ui.api.event.UnitGroupBlockCountComponentChangeListener;
+import com.ede.standyourground.app.ui.api.event.ComponentChangeListener;
 import com.ede.standyourground.app.ui.api.service.UnitGroupBlockCountComponentService;
 import com.ede.standyourground.app.ui.api.service.UnitGroupBlockHealthBarComponentService;
 import com.ede.standyourground.app.ui.api.service.UnitGroupComponentService;
@@ -23,7 +22,6 @@ import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 
-import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -81,20 +79,23 @@ public class UnitGroupComponentServiceImpl implements UnitGroupComponentService 
             unitGroupComponent.getContainer().setVisibility(View.VISIBLE);
         }
 
-        unitGroupBlockCount.registerUnitGroupBlockCountComponentChangeListener(new UnitGroupBlockCountComponentChangeListener() {
+        unitGroupBlockCount.registerComponentChangeListener(new ComponentChangeListener() {
             @Override
-            public void onCountChange(ViewGroup container, Set<UUID> unitIds) {
-                if (unitIds.size() == 1) {
-                    int index = unitGroupComponent.getContainer().indexOfChild(container);
-                    unitGroupComponent.getContainer().removeView(container);
-                    UUID unitId = unitIds.iterator().next();
-                    Unit unit = unitService.get().getUnit(unitId);
-                    if (unit != null) {
-                        UnitGroupBlockHealthBarComponent unitGroupBlockHealthBarComponent = unitGroupBlockHealthBarComponentFactory.get().createUnitGroupBlockHealthBar(unitGroupComponent.getActivity(), unitGroupComponent.getContainer(), unit.getId(), unit.getHealth() / unit.getMaxHealth(), unit.getType());
-                        addUnitGroupBlock(unitGroupComponent, unitGroupBlockHealthBarComponent, index);
+            public void onComponentChange(Component component) {
+                if (component instanceof UnitGroupBlockCount) {
+                    UnitGroupBlockCount unitGroupBlockCount1 = (UnitGroupBlockCount) component;
+                    if (unitGroupBlockCount1.getUnitIds().size() == 1) {
+                        int index = unitGroupComponent.getContainer().indexOfChild(unitGroupBlockCount1.getContainer());
+                        unitGroupComponent.getContainer().removeView(unitGroupBlockCount1.getContainer());
+                        UUID unitId = unitGroupBlockCount1.getUnitIds().iterator().next();
+                        Unit unit = unitService.get().getUnit(unitId);
+                        if (unit != null) {
+                            UnitGroupBlockHealthBarComponent unitGroupBlockHealthBarComponent = unitGroupBlockHealthBarComponentFactory.get().createUnitGroupBlockHealthBar(unitGroupComponent.getActivity(), unitGroupComponent.getContainer(), unit.getId(), unit.getHealth() / unit.getMaxHealth(), unit.getType());
+                            addUnitGroupBlock(unitGroupComponent, unitGroupBlockHealthBarComponent, index);
+                        }
                     }
                 }
-            }
+                }
         });
 
         unitGroupComponent.getContainer().addView(unitGroupBlockCount.getContainer());
@@ -139,10 +140,18 @@ public class UnitGroupComponentServiceImpl implements UnitGroupComponentService 
         }
     }
 
-    private void addUnitGroupBlockHealthBarComponent(UnitGroupComponent unitGroupComponent, UnitGroupBlockHealthBarComponent unitGroupBlockHealthBarComponent) {
+    private void addUnitGroupBlockHealthBarComponent(final UnitGroupComponent unitGroupComponent, UnitGroupBlockHealthBarComponent unitGroupBlockHealthBarComponent) {
         if (unitGroupComponent.getContainer().getVisibility() != View.VISIBLE) {
             unitGroupComponent.getContainer().setVisibility(View.VISIBLE);
         }
+
+        unitGroupBlockHealthBarComponent.registerComponentChangeListener(new ComponentChangeListener() {
+            @Override
+            public void onComponentChange(Component component) {
+                clear(unitGroupComponent);
+            }
+        });
+
         unitGroupComponent.addUnitGroupBlock(unitGroupBlockHealthBarComponent.getComponentElementId(), unitGroupBlockHealthBarComponent);
     }
 }

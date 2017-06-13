@@ -36,10 +36,11 @@
 
                 <ImageView
                     android:id="@+id/medicCountIcon"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
+                    android:layout_width="@dimen/icon_width"
+                    android:layout_height="@dimen/icon_height"
                     android:adjustViewBounds="true"
-                    android:src="@drawable/medic"/>
+                    android:scaleType="fitXY"
+                    android:src="@drawable/medic_friendly"/>
 
                 <TextView
                     android:id="@+id/medicCountText"
@@ -59,10 +60,11 @@
 
                 <ImageView
                     android:id="@+id/marauderCountIcon"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
+                    android:layout_width="@dimen/icon_width"
+                    android:layout_height="@dimen/icon_height"
                     android:adjustViewBounds="true"
-                    android:src="@drawable/marauder"/>
+                    android:scaleType="fitXY"
+                    android:src="@drawable/marauder_friendly"/>
 
                 <TextView
                     android:id="@+id/marauderCountText"
@@ -82,10 +84,11 @@
 
                 <ImageView
                     android:id="@+id/footSoldierCountIcon"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
+                    android:layout_width="@dimen/icon_width"
+                    android:layout_height="@dimen/icon_height"
                     android:adjustViewBounds="true"
-                    android:src="@drawable/foot_soldier"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/foot_soldier_friendly"
                     android:text="@string/startingUnitCount"/>
 
                 <TextView
@@ -124,8 +127,8 @@
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_centerHorizontal="true">
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true">
 
                 <include
                     layout="@layout/unit_choices_menu"
