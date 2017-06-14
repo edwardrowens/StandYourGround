@@ -42,7 +42,7 @@ import com.ede.standyourground.framework.api.Logger;
 import com.ede.standyourground.framework.api.dagger.application.MyApp;
 import com.ede.standyourground.framework.api.dagger.providers.GameSessionIdProvider;
 import com.ede.standyourground.framework.api.dagger.providers.GoogleMapProvider;
-import com.ede.standyourground.framework.api.service.GraphicService;
+import com.ede.standyourground.framework.api.service.CameraService;
 import com.ede.standyourground.framework.api.service.LatLngService;
 import com.ede.standyourground.framework.api.ui.OnAnimationEndListener;
 import com.ede.standyourground.game.api.event.listener.BankNeutralCampIncomeListener;
@@ -65,18 +65,15 @@ import com.ede.standyourground.game.api.service.PlayerService;
 import com.ede.standyourground.game.api.service.UnitService;
 import com.ede.standyourground.game.impl.model.BankNeutralCamp;
 import com.ede.standyourground.game.impl.model.MedicNeutralCamp;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Dot;
 import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -94,6 +91,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 
@@ -107,7 +105,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static String GAME_SESSION_ID = MapsActivity.class.getName() + ".gameSessionId";
 
     private static final int PATTERN_GAP_LENGTH_PX = 20;
-    private static final int CAMERA_PADDING_DP = 10;
     private static final PatternItem DOT = new Dot();
     private static final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
 
@@ -120,8 +117,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private TextView marauderCountTextView;
     private TextView footSoldierCountTextView;
     private TextView medicCountTextView;
-    private ImageButton unitSelectorButton;
-    private ImageButton resetLocationButton;
 
     private static GoogleMap googleMap;
     private List<Marker> waypoints = new ArrayList<>();
@@ -134,6 +129,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private final AtomicInteger marauderCount = new AtomicInteger(0);
     private final AtomicInteger medicCount = new AtomicInteger(0);
     private final AtomicInteger footSoldierCount = new AtomicInteger(0);
+    private final AtomicReference<CameraPosition> cameraPositionReference = new AtomicReference<>();
 
     @Inject
     GoogleMapProvider googleMapProvider;
@@ -160,9 +156,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Inject
     UnitGroupComponentFactory unitGroupComponentFactory;
     @Inject
-    GraphicService graphicService;
-    @Inject
     LatLngService latLngService;
+    @Inject
+    CameraService cameraService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,8 +206,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         logger.i("Starting map");
         MapsActivity.googleMap = googleMap;
 
-        unitSelectorButton = (ImageButton) findViewById(R.id.unitSelectorButton);
-        resetLocationButton = (ImageButton) findViewById(R.id.resetLocationButton);
+        ImageButton unitSelectorButton = (ImageButton) findViewById(R.id.unitSelectorButton);
+        ImageButton resetLocationButton = (ImageButton) findViewById(R.id.resetLocationButton);
         unitSelectorButton.setEnabled(false);
         resetLocationButton.setEnabled(false);
 
@@ -241,8 +237,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Create map listeners
         GoogleMap.OnMarkerClickListener onMarkerClickListener = onMarkerClickListenerFactory.createOnMarkerClickedListener(unitGroupComponent, neutralCampListingComponent);
         googleMap.setOnCameraMoveListener(onCameraMoveListenerFactory.createOnCameraMoveListener(unitGroupComponent, neutralCampListingComponent));
-        final int cameraPaddingInPixels = graphicService.dpToPixel(CAMERA_PADDING_DP, this);
-        googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(gameMode, playerLocation, opponentLocation, neutralCampListingComponent, unitSelectorButton, resetLocationButton, cameraPaddingInPixels));
+        googleMap.setOnMapLoadedCallback(onMapLoadedCallbackFactory.createOnMapLoadedCallback(gameMode, playerLocation, opponentLocation, neutralCampListingComponent, unitSelectorButton, resetLocationButton, cameraPositionReference));
         googleMap.setOnMarkerClickListener(onMarkerClickListener);
 
         // Register listeners for game events
@@ -578,27 +573,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void onResetCameraViewClicked(View view) {
-        final int cameraPaddingInPixels = graphicService.dpToPixel(CAMERA_PADDING_DP, this);
-        final LatLngBounds latLngBounds = LatLngBounds.builder().include(opponentLocation).include(playerLocation).build();
-        final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLngBounds, cameraPaddingInPixels);
-        new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker());
-        googleMap.animateCamera(cameraUpdate, new GoogleMap.CancelableCallback() {
-            @Override
-            public void onFinish() {
-                float zoom = googleMap.getCameraPosition().zoom;
-                CameraPosition cameraPosition = CameraPosition.builder()
-                        .target(latLngService.midpoint(playerLocation, opponentLocation))
-                        .bearing((float) latLngService.bearing(playerLocation, opponentLocation))
-                        .zoom(zoom)
-                        .build();
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            }
-
-            @Override
-            public void onCancel() {
-
-            }
-        });
+        if (cameraPositionReference.get() != null) {
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPositionReference.get()));
+        } else {
+            cameraPositionReference.set(cameraService.focusCamera(playerLocation, opponentLocation, null));
+        }
     }
 
     private void removeMarker(UUID unitId) {

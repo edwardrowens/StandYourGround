@@ -10,6 +10,7 @@ import com.ede.standyourground.app.ui.impl.service.UnitChoicesMenuServiceImpl;
 import com.ede.standyourground.app.ui.impl.service.UnitGroupBlockCountComponentServiceImpl;
 import com.ede.standyourground.app.ui.impl.service.UnitGroupBlockHealthBarComponentServiceImpl;
 import com.ede.standyourground.app.ui.impl.service.UnitGroupComponentServiceImpl;
+import com.ede.standyourground.framework.api.service.CameraService;
 import com.ede.standyourground.framework.api.service.DirectionsService;
 import com.ede.standyourground.framework.api.service.DrawRouteService;
 import com.ede.standyourground.framework.api.service.GraphicService;
@@ -18,6 +19,7 @@ import com.ede.standyourground.framework.api.service.MathService;
 import com.ede.standyourground.framework.api.service.ProjectionService;
 import com.ede.standyourground.framework.api.service.RouteService;
 import com.ede.standyourground.framework.api.service.ViewService;
+import com.ede.standyourground.framework.impl.service.CameraServiceImpl;
 import com.ede.standyourground.framework.impl.service.DirectionsServiceImpl;
 import com.ede.standyourground.framework.impl.service.DrawRouteServiceImpl;
 import com.ede.standyourground.framework.impl.service.GraphicServiceImpl;
@@ -94,4 +96,6 @@ public abstract class ServiceModule {
     @Binds public abstract UnitGroupBlockHealthBarComponentService bindUnitGroupBlockHealthBarComponentService(UnitGroupBlockHealthBarComponentServiceImpl unitGroupBlockHealthBarComponentService);
 
     @Binds public abstract UnitGroupBlockCountComponentService bindUnitGroupBlockCountService(UnitGroupBlockCountComponentServiceImpl unitGroupBlockCountService);
+
+    @Binds public abstract CameraService bindCameraService(CameraServiceImpl cameraService);
 }
